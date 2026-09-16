@@ -72,10 +72,10 @@ export class VRMManager {
     // 2. Scene
     this.scene = new THREE.Scene();
 
-    // 3. 3D Antique Chair for Sitting Animations
+    // 3. 3D Antique Chair for Sitting Animations and Room Setting
     this.chairGroup = new THREE.Group();
     this.chairGroup.name = 'RayaChairGroup';
-    this.chairGroup.visible = false;
+    this.chairGroup.visible = true;
     this.scene.add(this.chairGroup);
     this.loadAntiqueChair('/models/antique_chair.glb');
 
@@ -471,7 +471,11 @@ export class VRMManager {
             node.castShadow = true;
             node.receiveShadow = true;
             if (node.material) {
-              node.material.envMapIntensity = 1.1;
+              // Calibrate materials: Sketchfab 1.0 metalness renders pitch black without HDR;
+              // 0.12 metalness and 0.55 roughness brings out gorgeous antique mahogany wood, gold trim, and red velvet cushion
+              node.material.metalness = 0.12;
+              node.material.roughness = 0.55;
+              node.material.needsUpdate = true;
             }
           }
         });
@@ -500,8 +504,8 @@ export class VRMManager {
         }
         this.chairGroup.add(chairModel);
 
-        // Position chair in scene: aligned right behind avatar's resting hips
-        this.chairGroup.position.set(0, 0, -0.06);
+        // Position chair in scene: comfortably behind avatar's standing space
+        this.chairGroup.position.set(0, 0, -0.22);
         console.log('[VRMManager] Antique Chair successfully grounded and calibrated.');
       },
       undefined,
@@ -545,13 +549,13 @@ export class VRMManager {
     return chair;
   }
 
-  setChairVisible(visible) {
+  setChairVisible(isSitting) {
     if (this.chairGroup) {
-      this.chairGroup.visible = !!visible;
+      this.chairGroup.visible = true;
     }
     // Smooth camera framing: lower camera target slightly when seated to center character
     if (this.cameraTarget) {
-      this.cameraTarget.set(0, visible ? 1.02 : 1.15, 0);
+      this.cameraTarget.set(0, isSitting ? 1.02 : 1.15, 0);
     }
     if (this.camera) {
       this.camera.lookAt(this.cameraTarget);
