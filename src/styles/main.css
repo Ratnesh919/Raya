@@ -231,15 +231,36 @@ html, body {
   align-items: center;
   gap: 1rem;
   margin-bottom: 0.5rem;
+  transition: margin-left 0.35s cubic-bezier(0.16, 1, 0.3, 1), max-width 0.35s ease;
+}
+
+/* When the left conversation drawer is open, shift controls to prevent overlapping buttons */
+body.drawer-open .bottom-controls,
+#app-overlay.drawer-open .bottom-controls {
+  margin-left: 380px;
+  max-width: calc(100vw - 420px);
 }
 
 .action-chips {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.55rem 0.85rem;
   overflow-x: auto;
   max-width: 90vw;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(168, 85, 247, 0.4) transparent;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.action-chips::-webkit-scrollbar {
+  height: 4px;
+}
+
+.action-chips::-webkit-scrollbar-thumb {
+  background: rgba(168, 85, 247, 0.4);
+  border-radius: 4px;
 }
 
 .chip {
@@ -1068,6 +1089,12 @@ select option:hover, select option:focus, select option:checked {
   .chat-drawer {
     width: 100%;
     max-width: 86vw;
+  }
+
+  body.drawer-open .bottom-controls,
+  #app-overlay.drawer-open .bottom-controls {
+    margin-left: 0;
+    max-width: 100%;
   }
 
   /* Settings Modal mobile */

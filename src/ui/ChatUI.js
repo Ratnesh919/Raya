@@ -30,12 +30,23 @@ export class ChatUI {
       }
     });
 
-    // Drawer toggle
+    // Drawer toggle state synchronization
+    const updateDrawerState = (isOpen) => {
+      document.body.classList.toggle('drawer-open', isOpen);
+      document.getElementById('app-overlay')?.classList.toggle('drawer-open', isOpen);
+    };
+
+    if (this.chatDrawerEl?.classList.contains('open')) {
+      updateDrawerState(true);
+    }
+
     this.drawerToggleBtn?.addEventListener('click', () => {
-      this.chatDrawerEl?.classList.toggle('open');
+      const isOpen = this.chatDrawerEl?.classList.toggle('open');
+      updateDrawerState(!!isOpen);
     });
     this.drawerCloseBtn?.addEventListener('click', () => {
       this.chatDrawerEl?.classList.remove('open');
+      updateDrawerState(false);
     });
 
     // Mic button
@@ -75,6 +86,8 @@ export class ChatUI {
     this.addMessageToDrawer('user', text);
     if (this.chatDrawerEl && !this.chatDrawerEl.classList.contains('open')) {
       this.chatDrawerEl.classList.add('open');
+      document.body.classList.add('drawer-open');
+      document.getElementById('app-overlay')?.classList.add('drawer-open');
     }
 
     // Strict chat-only guard: prevent coding requests
