@@ -1,6 +1,7 @@
 [build]
   publish = "dist"
   command = "npm run build"
+  functions = "netlify/functions"
 
 [[redirects]]
   from = "/api/nvidia/*"
@@ -8,6 +9,16 @@
   status = 200
   force = true
   headers = {X-From = "Netlify"}
+
+[[redirects]]
+  from = "/api/memory"
+  to = "/.netlify/functions/memory"
+  status = 200
+
+[[redirects]]
+  from = "/api/memory/*"
+  to = "/.netlify/functions/memory/:splat"
+  status = 200
 
 [[redirects]]
   from = "/*"

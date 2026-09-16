@@ -1,10 +1,11 @@
 export class ChatUI {
-  constructor({ llmService, voiceService, expressionManager, animationEngine, vrmManager }) {
+  constructor({ llmService, voiceService, expressionManager, animationEngine, vrmManager, memoryService }) {
     this.llmService = llmService;
     this.voiceService = voiceService;
     this.expressionManager = expressionManager;
     this.animationEngine = animationEngine;
     this.vrmManager = vrmManager;
+    this.memoryService = memoryService;
 
     this.chatDrawerEl = document.getElementById('chat-drawer');
     this.messagesListEl = document.getElementById('messages-list');
@@ -14,10 +15,16 @@ export class ChatUI {
     this.drawerToggleBtn = document.getElementById('btn-toggle-drawer');
     this.drawerCloseBtn = document.getElementById('btn-close-drawer');
 
+    // Memory status elements (Netlify Blobs DB)
+    this.memoryUserNameEl = document.getElementById('memory-user-name');
+    this.memoryFactsSummaryEl = document.getElementById('memory-facts-summary');
+    this.btnResetMemoryEl = document.getElementById('btn-reset-memory');
+
     this.thinkingItemEl = null;
     this.isProcessing = false;
 
     this.setupListeners();
+    this.setupMemoryUI();
   }
 
   setupListeners() {
@@ -81,6 +88,11 @@ export class ChatUI {
 
     this.isProcessing = true;
     this.chatInputEl.value = '';
+
+    // Automatically detect and remember user facts in Netlify Blobs Database
+    if (this.memoryService) {
+      this.memoryService.detectAndStoreLearnedFacts(text);
+    }
 
     // Append to chat drawer and ensure drawer is open to view dialogue
     this.addMessageToDrawer('user', text);
@@ -223,5 +235,43 @@ export class ChatUI {
     item.textContent = text;
     this.messagesListEl.appendChild(item);
     this.messagesListEl.scrollTop = this.messagesListEl.scrollHeight;
+  }
+
+  setupMemoryUI() {
+    if (!this.memoryService) return;
+
+    this.memoryService.onMemoryUpdate = (mem) => {
+      this.renderMemoryStatus(mem);
+    };
+
+    // Initial render
+    this.renderMemoryStatus(this.memoryService.getMemory());
+
+    // Reset memory button listener
+    this.btnResetMemoryEl?.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (confirm("Reset Raya's Netlify database memory? She will forget personal facts across visits.")) {
+        await this.memoryService.resetMemory();
+        this.addMessageToDrawer('assistant', "I've reset my database memory. Let's start fresh! ✨");
+      }
+    });
+  }
+
+  renderMemoryStatus(mem) {
+    if (!mem) return;
+    if (this.memoryUserNameEl) {
+      this.memoryUserNameEl.textContent = mem.userName || 'Friend';
+    }
+    if (this.memoryFactsSummaryEl) {
+      const factCount = mem.facts?.length || 0;
+      const interests = (mem.userInterests || []).slice(0, 3).join(', ');
+      if (interests) {
+        this.memoryFactsSummaryEl.textContent = `Interests: ${interests} (${factCount} facts stored)`;
+      } else if (factCount > 0) {
+        this.memoryFactsSummaryEl.textContent = `Stored ${factCount} companion memories in database.`;
+      } else {
+        this.memoryFactsSummaryEl.textContent = 'Persistent storage active via Netlify Blobs.';
+      }
+    }
   }
 }

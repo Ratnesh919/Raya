@@ -1,96 +1,123 @@
-# Raya AI Assistant — 3D Interactive VRM Chatbot
+# Raya AI Assistant — 3D Interactive VRM Companion
 
-An interactive, responsive 3D AI companion web application featuring real-time conversational chat, voice interaction (STT & TTS), facial emotion blending, procedural life simulation, audio-reactive lip-sync, and Mixamo humanoid animation retargeting.
+[![Live Demo](https://img.shields.io/badge/Live_Demo-rayaai919.netlify.app-00f2fe?style=for-the-badge&logo=netlify)](https://rayaai919.netlify.app)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-Ratnesh919%2FRaya-a855f7?style=for-the-badge&logo=github)](https://github.com/Ratnesh919/Raya)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
+An expressive, responsive 3D AI companion web application featuring real-time conversational chat, voice interaction (STT & TTS), facial emotion blending, procedural life simulation, audio-reactive lip-sync, and persistent memory powered by **Netlify Blobs Database**.
 
 ---
 
-## ✨ Features
+## 🌐 Live Access & Repository
+- **Live Application**: [https://rayaai919.netlify.app](https://rayaai919.netlify.app)
+- **GitHub Repository**: [https://github.com/Ratnesh919/Raya](https://github.com/Ratnesh919/Raya)
+
+---
+
+## ✨ Key Features
 
 - **3D VRM Avatars**:
   - Integrated with `@pixiv/three-vrm` supporting both VRM 0.0 & VRM 1.0 standards.
-  - Preloaded Wuwa characters (`Changli`, `Jinshi`, `Kid Changli`) and `Xavier Model`.
-  - **Drag & Drop Custom VRMs**: Drop any `.vrm` or `.glb` character model directly into the browser to load it on the fly!
-- **Animation & Pose Retargeting**:
-  - Full bone retargeting mapping Mixamo humanoid FBX files to VRM bones with coordinate normalization.
-  - Gestures included: **Wave**, **Happy**, **Excited**, **Yawn**, **Angry**, **No**, **Sitting**, **Sad**, and **Idle**.
-  - Procedural finger curls & spreads (`idle`, `pointing`, `wave`, `excited`, `angry`, `happy`).
+  - Preloaded roster: **Changli (Default)**, **Camellya**, **Yinlin**, and **Yangyang**.
+  - **Drag & Drop Custom VRMs**: Drop any `.vrm` or `.glb` model directly into the browser to load your own avatar on the fly!
+- **🧠 Netlify Database Memory**:
+  - Powered by **Netlify Blobs** (`@netlify/blobs`) and **Netlify Functions** (`@netlify/functions`).
+  - Persistent serverless data store: Raya remembers your name, interests, and conversational facts across visits.
+  - Zero external database configuration needed — automatically connects to Netlify platform storage.
+  - Client-side fallback to `localStorage` when running offline or in local development.
+- **Natural Voice & Lip-Sync**:
+  - Web Speech API speech synthesis with automatic browser autoplay unpausing and Chromium GC safeguards.
+  - Natural multilingual phonetic pronunciation for English and Romanized Hinglish.
+  - Audio-reactive viseme synthesizer generating dynamic mouth shapes (`aa`, `ee`, `ih`, `oh`, `ou`) in sync with voice output.
 - **Life Simulation & Expressions (AIRI-Inspired)**:
   - Procedural spine/chest breathing oscillation.
   - Natural blinking with randomized intervals.
   - Micro eye saccades and smooth cursor gaze tracking.
   - Cubic smooth expression blending: **Happy**, **Surprised**, **Sad**, **Angry**, **Think**, **Wink**, and **Neutral**.
-- **Real-Time Audio Lip-Sync**:
-  - Dynamic vowel blendshapes (`aa`, `ee`, `ih`, `oh`, `ou`) synchronized with voice output.
-  - Syllable rhythm synthesizer during Speech Synthesis.
-- **Direct Online AI Chat ("Just talk using API key")**:
-  - Supports **Google Gemini** (Gemini 2.0 Flash / 1.5 Flash), **Groq** (Llama 3.3 70B), **OpenAI** (GPT-4o Mini), and **OpenRouter**.
-  - **Zero Server Setup Needed**: Browser connects directly to the AI provider using your API key.
-  - **Privacy First**: All keys are stored client-side in `localStorage`.
-- **Hands-Free Voice Mode**:
-  - Tap the glowing microphone button or speak directly to talk back and forth with Raya.
+- **Privacy First & Secure AI Connections**:
+  - Direct connection to **Google Gemini** (Gemini 2.0 Flash / 1.5 Flash), **Groq** (Llama 3.3 70B), **OpenAI** (GPT-4o Mini), or **OpenRouter**.
+  - **Zero Keys in Repo**: All API keys are stored strictly in client-side `localStorage` or inputted via the Settings modal. No secrets or credentials are ever tracked or committed.
+- **Modern Cyberpunk UI**:
+  - Glassmorphic interface with floating chat dock, appearance adjustments popover (skin/hair/lighting brightness), and conversation history drawer.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies & Start Local Dev Server
+### 1. Clone & Install Dependencies
 ```bash
+git clone https://github.com/Ratnesh919/Raya.git
+cd Raya
 npm install
+```
+
+### 2. Run Local Development Server
+```bash
 npm run dev
 ```
 Open [http://localhost:5173](http://localhost:5173) in your browser.
 
-### 2. Connect Your API Key
+### 3. Connect Your AI Provider
 1. Click the **⚙️ Settings** icon in the top right.
-2. Select your AI provider (e.g., **Google Gemini** or **Groq**).
-3. Paste your API key:
-   - **Google Gemini**: Get a free API key at [Google AI Studio](https://aistudio.google.com/app/apikey).
-   - **Groq**: Get a free API key at [Groq Console](https://console.groq.com/keys).
-   - **OpenAI**: Get a key at [OpenAI Platform](https://platform.openai.com/api-keys).
-   - **OpenRouter**: Get a key at [OpenRouter](https://openrouter.ai/keys).
+2. Select your AI provider (e.g. **Google Gemini** or **Groq**).
+3. Paste your free API key:
+   - **Google Gemini**: [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - **Groq**: [Groq Console](https://console.groq.com/keys)
+   - **OpenAI**: [OpenAI Platform](https://platform.openai.com/api-keys)
+   - **OpenRouter**: [OpenRouter Keys](https://openrouter.ai/keys)
 4. Click **Save Settings**.
 
-### 3. Talk to Raya!
-- **Type**: Enter a message in the bottom dock and press Enter.
-- **Speak**: Click the glowing circular microphone button and speak naturally. Raya will listen, reply, speak back, emote, and move her lips in sync with her voice!
+### 4. Talk to Raya!
+- **Type**: Type in the bottom floating dock and press Enter.
+- **Voice**: Click the circular microphone icon and speak naturally. Raya will listen, reply, speak back, emote, and remember details about you in her database!
 
 ---
 
-## 📁 Project Structure
+## 📁 Project Architecture
 
 ```
-raya ai assistant/
-├── index.html                 # Main web shell with glassmorphic layout
-├── vite.config.js             # Vite development & asset configuration
-├── package.json               # Three.js & @pixiv/three-vrm dependencies
+Raya/
+├── index.html                 # Main web shell with glassmorphic viewport
+├── netlify.toml               # Netlify build, redirects, and serverless functions config
+├── vite.config.js             # Vite development & asset bundling configuration
+├── package.json               # Three.js, @pixiv/three-vrm, @netlify/blobs dependencies
+├── netlify/
+│   └── functions/
+│       └── memory.mts         # Netlify Serverless Function managing Blobs Database
 ├── public/
-│   ├── animations/            # Mixamo FBX animations (Idle, Wave, Happy, etc.)
-│   └── models/                # VRM character models (Changli, Jinshi, Xavier, etc.)
+│   ├── animations/            # Mixamo FBX animations (Idle, Happy, Wave, etc.)
+│   └── models/                # VRM character models (Changli, Camellya, Yinlin, Yangyang)
 └── src/
-    ├── main.js                # Application bootstrapper and render loop
-    ├── vrm/
-    │   ├── VRMManager.js      # Three.js scene, camera, lighting, and VRM loader
-    │   ├── AnimationEngine.js # Mixamo FBX retargeter and procedural finger poses
-    │   ├── ExpressionManager.js # Emotion states and smooth cubic lerp
-    │   ├── LipSyncEngine.js   # Real-time audio and vowel viseme generator
-    │   └── LifeSimulator.js   # Breathing, blinking, saccades, and gaze tracking
+    ├── main.js                # App bootstrap, render loop, and memory initialization
     ├── ai/
-    │   ├── LLMService.js      # Direct API client (Gemini, Groq, OpenAI, OpenRouter)
-    │   ├── PromptEngine.js    # Persona prompt and [emotion] / [action] tag parser
-    │   └── VoiceService.js    # Web Speech API STT/TTS voice driver
+    │   ├── MemoryService.js   # Netlify Database client with local-storage fallback
+    │   ├── LLMService.js      # Direct AI client (Gemini, Groq, OpenAI, OpenRouter)
+    │   ├── PromptEngine.js    # System persona and memory context injection
+    │   └── VoiceService.js    # Web Speech API voice synthesis & recognition
+    ├── vrm/
+    │   ├── VRMManager.js      # Three.js scene, lighting, camera, and VRM loader
+    │   ├── AnimationEngine.js # Humanoid bone retargeting & finger poses
+    │   ├── ExpressionManager.js # Emotion blendshape state interpolator
+    │   ├── LipSyncEngine.js   # Audio viseme analyzer and mouth sync
+    │   └── LifeSimulator.js   # Breathing, blinking, saccades, and gaze tracking
     ├── ui/
-    │   ├── ChatUI.js          # Speech bubble, chat drawer, and typewriter effect
-    │   ├── ControlsHUD.js     # Character switcher, animation triggers, and camera
-    │   └── SettingsModal.js   # API key input, model picker, and voice tuning
+    │   ├── ChatUI.js          # Chat dock, conversation drawer, and memory widget
+    │   ├── ControlsHUD.js     # Model switcher and camera toggles
+    │   └── SettingsModal.js   # API key input and voice tuning
     └── styles/
-        └── main.css           # Futuristic cyberpunk glassmorphic UI stylesheet
+        └── main.css           # Futuristic glassmorphic stylesheet
 ```
 
 ---
 
-## 🌐 Online Deployment
+## 🔒 Security & Privacy Statement
 
-Since the entire application runs client-side:
-- **Netlify**: Run `npm run build` and publish the `dist` folder, or connect to GitHub.
-- **Vercel**: Deploy the folder directly with Vite preset.
-- **GitHub Pages**: Deploy the `dist` folder to GitHub Pages.
+- **No Secrets in Repo**: No API keys, credentials, or personal tokens are stored in the codebase or git history.
+- **Local Key Storage**: API keys entered in the browser are kept exclusively in the user's private browser `localStorage`.
+- **Database Privacy**: Data stored via Netlify Blobs is scoped to the companion memory store for user personalization and can be reset at any time via the "Reset" button in the conversation drawer.
+
+---
+
+## 📜 License
+
+MIT License © 2026 Ratnesh

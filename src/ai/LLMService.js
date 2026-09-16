@@ -36,7 +36,35 @@ export class LLMService {
       this.systemPrompt = savedPrompt;
     }
 
+    this.memoryService = null;
     this.messages = [];
+  }
+
+  setMemoryService(memoryService) {
+    this.memoryService = memoryService;
+  }
+
+  getEffectiveSystemPrompt() {
+    let base = this.systemPrompt || DEFAULT_SYSTEM_PROMPT;
+    if (this.memoryService) {
+      const mem = this.memoryService.getMemory();
+      if (mem) {
+        const memParts = [];
+        if (mem.userName) {
+          memParts.push(`- User's Name: "${mem.userName}" (Address them warmly by name)`);
+        }
+        if (mem.userInterests && mem.userInterests.length > 0) {
+          memParts.push(`- User's Favorite Topics/Interests: ${mem.userInterests.join(', ')}`);
+        }
+        if (mem.facts && mem.facts.length > 0) {
+          memParts.push(`- Stored Facts & Past Memories:\n  • ${mem.facts.join('\n  • ')}`);
+        }
+        if (memParts.length > 0) {
+          base += `\n\n[PERSISTENT COMPANION MEMORY (STORED IN NETLIFY DATABASE)]:\n${memParts.join('\n')}\nUse these stored details naturally so the user feels truly remembered across visits!`;
+        }
+      }
+    }
+    return base;
   }
 
   seedDefaultKeys() {
@@ -159,7 +187,7 @@ export class LLMService {
             body: JSON.stringify({
               model: m,
               messages: [
-                { role: 'system', content: this.systemPrompt },
+                { role: 'system', content: this.getEffectiveSystemPrompt() },
                 ...this.messages
               ],
               temperature: 0.75,
@@ -194,7 +222,7 @@ export class LLMService {
     const contents = [];
     const systemInstruction = {
       role: 'user',
-      parts: [{ text: this.systemPrompt }]
+      parts: [{ text: this.getEffectiveSystemPrompt() }]
     };
 
     this.messages.forEach((msg) => {
@@ -236,7 +264,7 @@ export class LLMService {
 
   async callOpenAICompatible(baseUrl, defaultHeaders = {}) {
     const messages = [
-      { role: 'system', content: this.systemPrompt },
+      { role: 'system', content: this.getEffectiveSystemPrompt() },
       ...this.messages
     ];
 

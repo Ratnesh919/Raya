@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@netlify/blobs": "^11.1.0",
+    "@netlify/functions": "^6.0.0",
     "@pixiv/three-vrm": "^3.3.6",
     "@pixiv/three-vrm-animation": "^3.3.6",
     "three": "^0.163.0"

@@ -7,6 +7,7 @@ import { LifeSimulator } from './vrm/LifeSimulator.js';
 
 import { LLMService } from './ai/LLMService.js';
 import { VoiceService } from './ai/VoiceService.js';
+import { MemoryService } from './ai/MemoryService.js';
 
 import { ChatUI } from './ui/ChatUI.js';
 import { ControlsHUD } from './ui/ControlsHUD.js';
@@ -24,8 +25,13 @@ async function bootstrap() {
   const lipSyncEngine = new LipSyncEngine(vrmManager);
   const lifeSimulator = new LifeSimulator(vrmManager);
 
-  // 2. AI & Voice Services
+  // 2. AI, Voice & Netlify Database Memory Services
+  const memoryService = new MemoryService();
+  await memoryService.loadMemory();
+
   const llmService = new LLMService();
+  llmService.setMemoryService(memoryService);
+
   const voiceService = new VoiceService(lipSyncEngine);
 
   // 3. User Interface Layer
@@ -34,7 +40,8 @@ async function bootstrap() {
     voiceService,
     expressionManager,
     animationEngine,
-    vrmManager
+    vrmManager,
+    memoryService
   });
 
   const controlsHUD = new ControlsHUD({
@@ -88,8 +95,11 @@ async function bootstrap() {
     const defaultModelUrl = '/models/changli.vrm';
     await vrmManager.loadModel(defaultModelUrl);
 
-    // Add welcoming greeting to chat drawer with happy expression (no jarring wave animation)
-    const greeting = "Hello! I am Raya, your AI companion. I'm ready to talk online whenever you are. Let's chat!";
+    // Add welcoming greeting to chat drawer with happy expression
+    const mem = memoryService.getMemory();
+    const greeting = mem.userName
+      ? `Welcome back, ${mem.userName}! I'm Raya, your AI companion. I'm ready to chat whenever you are! ✨`
+      : "Hello! I am Raya, your AI companion. I'm ready to talk online whenever you are. Let's chat!";
     chatUI.addMessageToDrawer('assistant', greeting);
     expressionManager.setEmotionWithAutoReset('happy', 6000);
 
