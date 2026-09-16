@@ -42,6 +42,41 @@ export function detectLanguage(text) {
 }
 
 /**
+ * Phonetically transliterates Devanagari Hindi text to Roman Latin characters
+ * so that English/Indian-English TTS voices on phones and PCs can speak it aloud without failing.
+ */
+export function transliterateDevanagari(text) {
+  if (!text || !/[\u0900-\u097F]/.test(text)) return text;
+  const wordMap = {
+    'नमस्ते': 'Namaste', 'नमस्ते!': 'Namaste!', 'प्रणाम': 'Pranam', 'हैलो': 'Hello', 'हाय': 'Hi',
+    'हाँ': 'Haan', 'नहीं': 'Nahi', 'धन्यवाद': 'Dhanyavaad', 'शुक्रिया': 'Shukriya', 'अलविदा': 'Alvida',
+    'बहुत': 'bahut', 'अच्छा': 'achha', 'अच्छी': 'achhi', 'अच्छे': 'achhe', 'बढ़िया': 'badhiya',
+    'कैसे': 'kaise', 'कैसा': 'kaisa', 'कैसी': 'kaisi', 'हो': 'ho', 'हैं': 'hain', 'है': 'hai', 'हूँ': 'hoon',
+    'आप': 'aap', 'तुम': 'tum', 'मैं': 'main', 'हम': 'hum', 'क्या': 'kya', 'क्यों': 'kyun', 'कहाँ': 'kahan',
+    'बताओ': 'batao', 'बोलो': 'bolo', 'दिन': 'din', 'बात': 'baat', 'दोस्त': 'dost', 'प्यार': 'pyaar',
+    'सुप्रभात': 'Shuprabhat', 'शुभ रात्रि': 'Shubh raatri', 'सब': 'sab', 'ठीक': 'theek'
+  };
+  let res = text;
+  for (const [hi, en] of Object.entries(wordMap)) {
+    res = res.replace(new RegExp(hi, 'g'), en);
+  }
+  if (/[\u0900-\u097F]/.test(res)) {
+    const chars = {
+      'अ':'a','आ':'aa','इ':'i','ई':'ee','उ':'u','ऊ':'oo','ए':'e','ऐ':'ai','ओ':'o','औ':'au','अं':'am','अः':'ah',
+      'क':'k','ख':'kh','ग':'g','घ':'gh','ङ':'ng',
+      'च':'ch','छ':'chh','ज':'j','झ':'jh','ञ':'ny',
+      'ट':'t','ठ':'th','ड':'d','ढ':'dh','ण':'n',
+      'त':'t','थ':'th','द':'d','ध':'dh','न':'n',
+      'प':'p','फ':'ph','ब':'b','भ':'bh','म':'m',
+      'य':'y','र':'r','ल':'l','व':'v','श':'sh','ष':'sh','स':'s','ह':'h',
+      'ा':'a','ि':'i','ी':'ee','ु':'u','ू':'oo','े':'e','ै':'ai','ो':'o','ौ':'au','्':'','ं':'n','ः':'h','ँ':'n'
+    };
+    res = res.replace(/[\u0900-\u097F]/g, (c) => chars[c] || '');
+  }
+  return res;
+}
+
+/**
  * Helper to check if a voice is female (strictly excluding male voices)
  */
 export function isFemaleVoice(voice) {
@@ -78,6 +113,7 @@ export class VoiceService {
     this.rate = parseFloat(localStorage.getItem('raya_voice_rate') || '1.0');
     this.autoSpeak = localStorage.getItem('raya_auto_speak') !== 'false';
     this.isSpeaking = false;
+    this.currentUtterance = null;
 
     // Multilingual STT state
     this.recognitionLang = localStorage.getItem('raya_stt_lang') || 'en-IN';
@@ -87,6 +123,16 @@ export class VoiceService {
     this.onSpeechResult = null;
     this.onSpeechStatus = null;
     this.onInterimTranscript = null;
+
+    // Browser autoplay policy / audio wake-up listeners
+    const unlockSynth = () => {
+      if (this.synth && this.synth.paused) {
+        this.synth.resume();
+      }
+    };
+    ['pointerdown', 'click', 'keydown', 'touchstart'].forEach((evt) => {
+      window.addEventListener(evt, unlockSynth, { passive: true });
+    });
 
     this.initVoices();
     this.initRecognition();
@@ -222,10 +268,13 @@ export class VoiceService {
   speak(text) {
     if (!this.synth || !this.autoSpeak || !text) return;
 
-    // Cancel ongoing speech
+    // Stop ongoing speech and unpause synth if frozen
     this.stopSpeaking();
+    if (this.synth.paused) {
+      this.synth.resume();
+    }
 
-    const cleanText = text.replace(/\[.*?\]/g, '').replace(/[*_#~`]/g, '').trim();
+    let cleanText = text.replace(/\[.*?\]/g, '').replace(/[*_#~`]/g, '').trim();
     if (!cleanText) return;
 
     const detectedLang = detectLanguage(cleanText);
@@ -242,11 +291,18 @@ export class VoiceService {
 
       if ((isDevanagari && !this.selectedVoice.lang.startsWith('hi')) ||
           (isBengali && !this.selectedVoice.lang.startsWith('bn'))) {
-        // Automatic script fallback so Hindi/Bengali text is pronounced correctly
         voiceToUse = this.getBestRealisticVoice(detectedLang);
       } else {
         voiceToUse = this.selectedVoice;
       }
+    }
+
+    // CRITICAL: If text contains Devanagari Hindi but chosen voice does not natively speak Hindi,
+    // transliterate into phonetic Latin Roman text so English / Indian English voices speak it aloud.
+    const isDevanagari = /[\u0900-\u097F]/.test(cleanText);
+    const voiceLang = (voiceToUse?.lang || '').toLowerCase();
+    if (isDevanagari && !voiceLang.startsWith('hi')) {
+      cleanText = transliterateDevanagari(cleanText);
     }
 
     const utterance = new SpeechSynthesisUtterance(cleanText);
@@ -257,10 +313,27 @@ export class VoiceService {
       utterance.lang = detectedLang;
     }
 
-    // Maximum speech volume & warm female anime tone
+    // Speech parameters
     utterance.volume = 1.0;
     utterance.pitch = this.pitch || 1.05;
     utterance.rate = this.rate || 1.0;
+
+    // CRITICAL: Prevent Chromium garbage collection bug by pinning reference
+    window._currentRayaUtterance = utterance;
+    this.currentUtterance = utterance;
+
+    let watchdogTimer = null;
+
+    const cleanup = () => {
+      if (watchdogTimer) clearInterval(watchdogTimer);
+      window._currentRayaUtterance = null;
+      this.currentUtterance = null;
+      this.isSpeaking = false;
+      if (this.lipSyncEngine) {
+        this.lipSyncEngine.stopSyntheticSpeech();
+      }
+      if (this.onSpeechStatus) this.onSpeechStatus('idle');
+    };
 
     utterance.onstart = () => {
       this.isSpeaking = true;
@@ -268,36 +341,53 @@ export class VoiceService {
         this.lipSyncEngine.startSyntheticSpeech();
       }
       if (this.onSpeechStatus) this.onSpeechStatus('speaking');
+
+      // Watchdog: Chrome long-speech pause bug workaround
+      watchdogTimer = setInterval(() => {
+        if (!this.isSpeaking) {
+          clearInterval(watchdogTimer);
+          return;
+        }
+        if (this.synth && this.synth.paused) {
+          this.synth.resume();
+        }
+      }, 2500);
     };
 
     utterance.onend = () => {
-      this.isSpeaking = false;
-      if (this.lipSyncEngine) {
-        this.lipSyncEngine.stopSyntheticSpeech();
-      }
-      if (this.onSpeechStatus) this.onSpeechStatus('idle');
+      cleanup();
     };
 
     utterance.onerror = (e) => {
       console.warn('[VoiceService] Speech error:', e);
-      this.isSpeaking = false;
-      if (this.lipSyncEngine) {
-        this.lipSyncEngine.stopSyntheticSpeech();
-      }
-      if (this.onSpeechStatus) this.onSpeechStatus('idle');
+      cleanup();
     };
 
-    this.synth.speak(utterance);
+    try {
+      this.synth.speak(utterance);
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
+    } catch (e) {
+      console.warn('[VoiceService] synth.speak threw error:', e);
+      cleanup();
+    }
   }
 
   stopSpeaking() {
-    if (this.synth && this.synth.speaking) {
+    if (this.synth) {
       this.synth.cancel();
+      if (this.synth.paused) {
+        this.synth.resume();
+      }
     }
+    window._currentRayaUtterance = null;
+    this.currentUtterance = null;
     this.isSpeaking = false;
     if (this.lipSyncEngine) {
       this.lipSyncEngine.stopSyntheticSpeech();
     }
+    if (this.onSpeechStatus) this.onSpeechStatus('idle');
   }
 
   initRecognition() {

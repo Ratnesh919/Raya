@@ -55,13 +55,6 @@ export class ControlsHUD {
       this.btnCameraEl.title = this.currentCameraMode === 'portrait' ? 'Switch to Full Body' : 'Switch to Portrait';
     });
 
-    // Action chips (animations)
-    document.querySelectorAll('[data-action]').forEach((el) => {
-      el.addEventListener('click', (e) => {
-        const action = el.getAttribute('data-action');
-        this.animationEngine.playAnimation(action);
-      });
-    });
 
     // Emotion chips
     document.querySelectorAll('[data-emotion]').forEach((el) => {

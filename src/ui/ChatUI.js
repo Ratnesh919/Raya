@@ -97,7 +97,6 @@ export class ChatUI {
 
     if (isCodingRequest) {
       const declineMsg = "I'm strictly your companion for casual chats and company, not for writing code or programming! Tell me how your day went, what games or anime you love, or anything on your mind instead! ✨";
-      this.animationEngine.playAnimation('no');
       this.expressionManager.setEmotionWithAutoReset('happy', 4500);
       this.voiceService.speak(declineMsg);
       this.addMessageToDrawer('assistant', declineMsg);
@@ -114,18 +113,9 @@ export class ChatUI {
 
       // Analyze conversational sentiment across user query and assistant response
       const sentiment = this.analyzeChatSentiment(text, response.speechText);
-
       const finalEmotion = response.emotion || sentiment.emotion || 'happy';
-      const finalAction = response.action || sentiment.action || null;
 
-      // Trigger physical animation if present or contextually appropriate
-      if (finalAction) {
-        this.animationEngine.playAnimation(finalAction);
-      } else if (finalEmotion === 'happy') {
-        this.animationEngine.playAnimation('happy');
-      }
-
-      // Trigger facial emotion with smooth auto-reset
+      // Trigger facial emotion with smooth auto-reset (avatar stays in natural fluid idle)
       this.expressionManager.setEmotionWithAutoReset(finalEmotion, 5500);
 
       // Clean speech text

@@ -72,14 +72,7 @@ export class VRMManager {
     // 2. Scene
     this.scene = new THREE.Scene();
 
-    // 3. 3D Antique Chair for Sitting Animations and Room Setting
-    this.chairGroup = new THREE.Group();
-    this.chairGroup.name = 'RayaChairGroup';
-    this.chairGroup.visible = true;
-    this.scene.add(this.chairGroup);
-    this.loadAntiqueChair('/models/antique_chair.glb');
-
-    // 4. Camera with responsive mobile framing
+    // 3. Camera with responsive mobile framing
     this.camera = new THREE.PerspectiveCamera(
       28,
       window.innerWidth / window.innerHeight,
@@ -454,108 +447,10 @@ export class VRMManager {
     this.renderer.setSize(window.innerWidth, window.innerHeight);
   }
 
-  /**
-   * Loads and accurately positions the 3D Antique Chair for sitting animations
-   */
-  loadAntiqueChair(url = '/models/antique_chair.glb') {
-    const gltfLoader = new GLTFLoader();
-    gltfLoader.load(
-      url,
-      (gltf) => {
-        const chairModel = gltf.scene;
-        chairModel.name = 'RayaAntiqueChairModel';
-
-        // Traverse to enable shadows and optimize materials
-        chairModel.traverse((node) => {
-          if (node.isMesh) {
-            node.castShadow = true;
-            node.receiveShadow = true;
-            if (node.material) {
-              // Calibrate materials: Sketchfab 1.0 metalness renders pitch black without HDR;
-              // 0.12 metalness and 0.55 roughness brings out gorgeous antique mahogany wood, gold trim, and red velvet cushion
-              node.material.metalness = 0.12;
-              node.material.roughness = 0.55;
-              node.material.needsUpdate = true;
-            }
-          }
-        });
-
-        // Compute raw bounds to normalize scale and ground floor contact
-        const rawBox = new THREE.Box3().setFromObject(chairModel);
-        const rawSize = new THREE.Vector3();
-        rawBox.getSize(rawSize);
-
-        console.log('[VRMManager] Loaded Antique Chair GLB. Raw dimensions:', rawSize);
-
-        // Ergonomic human scale: seat height at 0.48m, total backrest height ~1.27m
-        const scale = 0.55;
-        chairModel.scale.set(scale, scale, scale);
-
-        // Ground feet at Y = 0 and center seat cushion at origin (X=0, Z=0)
-        chairModel.position.set(
-          -0.06 * scale,
-          1.3108 * scale,
-          -0.562 * scale
-        );
-
-        // Clear existing children in chairGroup and append calibrated model
-        while (this.chairGroup.children.length > 0) {
-          this.chairGroup.remove(this.chairGroup.children[0]);
-        }
-        this.chairGroup.add(chairModel);
-
-        // Position chair in scene: aligned behind avatar for seamless sit transition
-        this.chairGroup.position.set(0, 0, -0.18);
-        console.log('[VRMManager] Antique Chair successfully grounded and calibrated.');
-      },
-      undefined,
-      (err) => {
-        console.warn('[VRMManager] Could not load antique chair GLB, using fallback chair:', err);
-        const fallback = this.createFallbackChair();
-        this.chairGroup.add(fallback);
-      }
-    );
-  }
-
-  createFallbackChair() {
-    const chair = new THREE.Group();
-    chair.name = 'RayaFallbackChair';
-
-    const cushionMat = new THREE.MeshStandardMaterial({
-      color: 0x18102e,
-      roughness: 0.42,
-      metalness: 0.15
-    });
-
-    const chromeMat = new THREE.MeshStandardMaterial({
-      color: 0xd8b4fe,
-      metalness: 0.88,
-      roughness: 0.18
-    });
-
-    const seatGeo = new THREE.CylinderGeometry(0.32, 0.30, 0.09, 32);
-    const seatMesh = new THREE.Mesh(seatGeo, cushionMat);
-    seatMesh.position.set(0, 0.46, 0);
-    seatMesh.castShadow = true;
-    seatMesh.receiveShadow = true;
-    chair.add(seatMesh);
-
-    const backGeo = new THREE.BoxGeometry(0.46, 0.36, 0.05);
-    const backMesh = new THREE.Mesh(backGeo, cushionMat);
-    backMesh.position.set(0, 0.72, -0.22);
-    chair.add(backMesh);
-
-    chair.position.set(0, 0, -0.06);
-    return chair;
-  }
-
   setChairVisible(isSitting) {
-    if (this.chairGroup) {
-      this.chairGroup.visible = true;
-    }
-    // Smooth camera framing: lower camera target slightly when seated to center character
+    // Chair has been removed; camera remains focused at default height
     if (this.cameraTarget) {
-      this.cameraTarget.set(0, isSitting ? 1.02 : 1.15, 0);
+      this.cameraTarget.set(0, 1.15, 0);
     }
     if (this.camera) {
       this.camera.lookAt(this.cameraTarget);

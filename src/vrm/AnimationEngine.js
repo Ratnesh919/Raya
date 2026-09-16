@@ -386,15 +386,9 @@ export class AnimationEngine {
         this.targetFingerPose = { ...FINGER_POSES.idle };
       }
 
-      // Root elevation & depth alignment: settle avatar down into chair cushion and backrest
-      const isSitting = animName === 'sitting' || animName === 'sitting2';
-      this.targetRootY = isSitting ? -0.36 : 0.0;
-      this.targetRootZ = isSitting ? -0.18 : 0.0;
-
-      // Toggle 3D antique chair visibility and camera framing
-      if (this.vrmManager?.setChairVisible) {
-        this.vrmManager.setChairVisible(isSitting);
-      }
+      // Avatar remains naturally grounded at origin
+      this.targetRootY = 0.0;
+      this.targetRootZ = 0.0;
 
       if (this.currentAction === action) return;
 

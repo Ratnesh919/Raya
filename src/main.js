@@ -88,14 +88,27 @@ async function bootstrap() {
     const defaultModelUrl = '/models/changli.vrm';
     await vrmManager.loadModel(defaultModelUrl);
 
-    // After 1 second, play gentle wave greeting and speak introduction
-    setTimeout(() => {
-      animationEngine.playAnimation('wave');
-      expressionManager.setEmotionWithAutoReset('happy', 6000);
-      const greeting = "Hello! I am Raya, your AI companion. I'm ready to talk online whenever you are. Let's chat!";
-      chatUI.addMessageToDrawer('assistant', greeting);
-      voiceService.speak(greeting);
-    }, 1200);
+    // Add welcoming greeting to chat drawer with happy expression (no jarring wave animation)
+    const greeting = "Hello! I am Raya, your AI companion. I'm ready to talk online whenever you are. Let's chat!";
+    chatUI.addMessageToDrawer('assistant', greeting);
+    expressionManager.setEmotionWithAutoReset('happy', 6000);
+
+    // Speak introductory greeting upon the user's first interaction (satisfies browser autoplay policies)
+    let hasGreeted = false;
+    const triggerInitialGreeting = () => {
+      if (hasGreeted) return;
+      hasGreeted = true;
+      ['pointerdown', 'keydown', 'touchstart'].forEach((evt) => {
+        window.removeEventListener(evt, triggerInitialGreeting);
+      });
+      const drawerList = document.getElementById('messages-list');
+      if (drawerList && drawerList.children.length <= 1) {
+        voiceService.speak(greeting);
+      }
+    };
+    ['pointerdown', 'keydown', 'touchstart'].forEach((evt) => {
+      window.addEventListener(evt, triggerInitialGreeting, { once: true });
+    });
   } catch (err) {
     controlsHUD.hideLoading();
     console.error('Failed to load initial avatar:', err);
