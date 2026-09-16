@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#090614" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <title>Raya AI Assistant — 3D Interactive VRM Chatbot</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23a855f7'><path d='M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z'/></svg>" />
+    <link rel="stylesheet" href="/src/styles/main.css" />
+  </head>
+  <body>
+    <!-- 3D Three.js VRM Viewport -->
+    <canvas id="vrm-canvas"></canvas>
+
+    <!-- Floating Application Overlay -->
+    <div id="app-overlay">
+      <!-- TOP NAVIGATION BAR -->
+      <header class="top-bar">
+        <div class="brand-badge glass-card interactive">
+          <div class="brand-avatar">R</div>
+          <div>
+            <div class="brand-title">Raya AI</div>
+            <div style="display: flex; align-items: center; gap: 6px; font-size: 0.72rem; color: #a1a1aa; margin-top: 1px;">
+              <span class="status-dot"></span> Online Companion
+            </div>
+          </div>
+        </div>
+
+        <div class="top-actions interactive">
+          <!-- Character Model Selector -->
+          <select id="model-select" class="glass-card chip" style="outline: none; padding-right: 1.5rem; cursor: pointer;">
+            <option value="/models/changli.vrm">Changli (Default)</option>
+            <option value="/models/CamellyaV1.vrm">Camellya</option>
+            <option value="/models/yangyang.vrm">Yangyang</option>
+            <option value="/models/yinlin.vrm">Yinlin</option>
+            <option value="custom">+ Load Custom VRM...</option>
+          </select>
+
+          <input type="file" id="file-input-vrm" accept=".vrm,.glb" style="display: none;" />
+
+          <button id="btn-upload-vrm" class="btn-icon glass-card" title="Upload Custom VRM Model">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </button>
+
+          <!-- Character Appearance Adjustments (Skin & Hair Brightness) -->
+          <button id="btn-appearance-toggle" class="btn-icon glass-card" title="Character Appearance (Skin/Hair Brightness)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="13.5" cy="6.5" r=".5" fill="currentColor"></circle>
+              <circle cx="17.5" cy="10.5" r=".5" fill="currentColor"></circle>
+              <circle cx="8.5" cy="7.5" r=".5" fill="currentColor"></circle>
+              <circle cx="6.5" cy="12.5" r=".5" fill="currentColor"></circle>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"></path>
+            </svg>
+          </button>
+
+          <!-- Camera View Switcher (Portrait / Full Body) -->
+          <button id="btn-camera-toggle" class="btn-icon glass-card" title="Toggle Portrait / Full-Body View">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+              <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+          </button>
+
+          <!-- Chat History Drawer Toggle -->
+          <button id="btn-toggle-drawer" class="btn-icon glass-card" title="Chat History">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </button>
+
+          <!-- Settings Cog -->
+          <button id="btn-open-settings" class="btn-icon glass-card" title="Settings & API Key">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- FLOATING APPEARANCE ADJUSTMENT POPOVER -->
+        <div id="appearance-popover" class="appearance-popover glass-card interactive" style="display: none;">
+          <div style="font-weight: 700; font-size: 0.95rem; margin-bottom: 0.85rem; display: flex; align-items: center; justify-content: space-between;">
+            <span>🎨 Appearance Tuning</span>
+            <button id="btn-close-appearance" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem;">×</button>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+              <span>Skin Brightness</span>
+              <span id="pop-skin-val" style="color: var(--accent-cyan); font-weight: bold;">70%</span>
+            </div>
+            <input type="range" id="pop-skin-brightness" min="0.3" max="1.8" step="0.05" value="0.70" style="width: 100%; accent-color: var(--accent-cyan);" />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+              <span>Hair Brightness</span>
+              <span id="pop-hair-val" style="color: var(--primary-neon); font-weight: bold;">50%</span>
+            </div>
+            <input type="range" id="pop-hair-brightness" min="0.3" max="1.8" step="0.05" value="0.50" style="width: 100%; accent-color: var(--primary-neon);" />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+              <span>Overall Lighting</span>
+              <span id="pop-light-val" style="color: #f59e0b; font-weight: bold;">55%</span>
+            </div>
+            <input type="range" id="pop-overall-brightness" min="0.3" max="2.0" step="0.05" value="0.55" style="width: 100%; accent-color: #f59e0b;" />
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+              <span>Graphics Performance</span>
+              <span id="pop-quality-tag" style="color: #10b981; font-weight: bold;">High / GPU</span>
+            </div>
+            <select id="pop-graphics-quality" class="form-select" style="font-size: 0.78rem; padding: 0.35rem 0.5rem; width: 100%;">
+              <option value="high" selected>High Performance (PC / Dedicated GPU)</option>
+              <option value="balanced">Balanced (Standard Laptops & Phones)</option>
+              <option value="low">Low-End / Battery Saver (Ultra Smooth)</option>
+            </select>
+          </div>
+
+          <button id="btn-reset-appearance" style="width: 100%; padding: 0.45rem; border-radius: 0.5rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.78rem; cursor: pointer;">
+            Reset to Defaults
+          </button>
+        </div>
+      </header>
+
+      <!-- BOTTOM CONTROL HUD & CHAT DOCK -->
+      <footer class="bottom-controls">
+        <!-- QUICK ANIMATION CHIPS -->
+        <div class="action-chips glass-card interactive">
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-right: 4px;">Animate:</span>
+          <button class="chip" data-action="wave">Wave 👋</button>
+          <button class="chip" data-action="happy">Happy ✨</button>
+          <button class="chip" data-action="excited">Excited 🤩</button>
+          <button class="chip" data-action="yawn">Yawn 🥱</button>
+          <button class="chip" data-action="angry">Angry 💢</button>
+          <button class="chip" data-action="sitting">Sit 🪑</button>
+
+          <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; margin-left: 8px; margin-right: 4px;">Mood:</span>
+          <button class="chip" data-emotion="happy">Smile 😊</button>
+          <button class="chip" data-emotion="surprised">Surprised 😮</button>
+          <button class="chip" data-emotion="think">Think 🤔</button>
+          <button class="chip" data-emotion="wink">Wink 😉</button>
+          <button class="chip" data-emotion="neutral">Neutral 😐</button>
+        </div>
+
+        <!-- CHAT INPUT DOCK -->
+        <div class="chat-dock glass-card interactive">
+          <input
+            type="text"
+            id="chat-input"
+            class="input-field"
+            placeholder="Talk with Raya... (casual & friendly chat only)"
+            autocomplete="off"
+          />
+
+          <!-- Microphone Button -->
+          <button id="btn-mic" class="btn-mic" title="Click to Speak (Microphone)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"></path>
+              <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+              <line x1="12" y1="19" x2="12" y2="22"></line>
+            </svg>
+          </button>
+
+          <!-- Send Button -->
+          <button id="btn-send" class="btn-send" title="Send Message">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+      </footer>
+    </div>
+
+    <!-- CHAT HISTORY DRAWER -->
+    <aside id="chat-drawer" class="chat-drawer">
+      <div class="drawer-header">
+        <h3 style="font-weight: 700; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+          <span>💬 Conversation</span>
+        </h3>
+        <button id="btn-close-drawer" class="btn-icon" style="width: 2.25rem; height: 2.25rem;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div id="messages-list" class="messages-list">
+        <!-- Dynamic message history rendered here -->
+      </div>
+    </aside>
+
+    <!-- SETTINGS MODAL -->
+    <div id="settings-modal" class="modal-overlay">
+      <div class="modal-content glass-card">
+        <div class="modal-header">
+          <h2 style="font-size: 1.35rem; font-weight: 700; color: white;">⚙️ Raya Assistant Settings</h2>
+          <button id="btn-close-settings" class="btn-icon" style="width: 2.25rem; height: 2.25rem;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- AI Provider Selection -->
+        <div class="form-group">
+          <label class="form-label">AI Provider</label>
+          <select id="setting-provider" class="form-select">
+            <option value="nvidia">NVIDIA NIM (Ultra-fast Enterprise Inference)</option>
+            <option value="gemini">Google Gemini (Free Tier & Fast)</option>
+            <option value="groq">Groq (Ultra-low Latency Llama 3.3)</option>
+            <option value="openai">OpenAI (GPT-4o Mini / GPT-4o)</option>
+            <option value="openrouter">OpenRouter (Any open/commercial model)</option>
+          </select>
+        </div>
+
+        <!-- Model Selection -->
+        <div class="form-group">
+          <label class="form-label">Model Name</label>
+          <input type="text" id="setting-model" class="form-input" placeholder="e.g. gemini-2.0-flash" />
+        </div>
+
+        <!-- Voice Settings -->
+        <div class="form-group">
+          <label class="form-label">Text-to-Speech Voice (Realistic AI Voices)</label>
+          <select id="setting-voice" class="form-select"></select>
+          <small style="display: block; margin-top: 4px; color: var(--accent-cyan); font-size: 0.74rem;">
+            Auto-Detect dynamically picks realistic native voices for Hindi, Bengali, Indian English, & Global English.
+          </small>
+        </div>
+
+        <!-- Microphone Input Language -->
+        <div class="form-group">
+          <label class="form-label">Microphone Input Language (Speech Recognition)</label>
+          <select id="setting-stt-lang" class="form-select">
+            <option value="en-IN" selected>Indian English / Hinglish (en-IN) — Recommended</option>
+            <option value="hi-IN">Hindi / हिन्दी (hi-IN)</option>
+            <option value="bn-IN">Bengali / বাংলা (bn-IN)</option>
+            <option value="bn-BD">Bengali / বাংলাদেশ (bn-BD)</option>
+            <option value="en-US">English — United States (en-US)</option>
+            <option value="en-GB">English — United Kingdom (en-GB)</option>
+            <option value="ja-JP">Japanese / 日本語 (ja-JP)</option>
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+          <div class="form-group">
+            <label class="form-label">Voice Pitch (<span id="pitch-val">1.25</span>)</label>
+            <input type="range" id="setting-pitch" min="0.8" max="1.6" step="0.05" value="1.25" style="width: 100%;" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Voice Speed (<span id="rate-val">1.05</span>)</label>
+            <input type="range" id="setting-rate" min="0.8" max="1.4" step="0.05" value="1.05" style="width: 100%;" />
+          </div>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 5px;">
+          <input type="checkbox" id="setting-auto-speak" checked style="width: 18px; height: 18px; accent-color: var(--primary-neon);" />
+          <label for="setting-auto-speak" class="form-label" style="margin-bottom: 0; cursor: pointer;">Speak responses out loud automatically</label>
+        </div>
+
+        <!-- System Prompt Customization -->
+        <div class="form-group" style="margin-top: 1rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+            <label class="form-label" style="margin-bottom: 0;">System Persona Prompt</label>
+            <button id="btn-reset-prompt" style="background: none; border: none; color: var(--accent-cyan); font-size: 0.75rem; cursor: pointer;">Reset to Default</button>
+          </div>
+          <textarea id="setting-system-prompt" class="form-input" rows="4" style="resize: vertical; font-size: 0.85rem;"></textarea>
+        </div>
+
+        <button id="btn-clear-chat" style="background: none; border: 1px dashed rgba(255,255,255,0.2); color: #f87171; padding: 0.5rem; border-radius: 0.5rem; width: 100%; font-size: 0.85rem; cursor: pointer; margin-bottom: 0.75rem;">
+          🗑️ Clear Conversation History
+        </button>
+
+        <button id="btn-save-settings" class="btn-primary">Save Settings</button>
+      </div>
+    </div>
+
+    <!-- 3D HOLOGRAPHIC CYBERPUNK LOADING SCREEN -->
+    <div id="loading-overlay" class="loading-overlay active">
+      <div class="loader-backdrop-fx">
+        <div class="loader-glow-orb orb-1"></div>
+        <div class="loader-glow-orb orb-2"></div>
+      </div>
+
+      <div class="loader-card glass-card">
+        <!-- TOP HUD TELEMETRY BADGES -->
+        <div class="loader-hud-header">
+          <div class="hud-status-badge">
+            <span class="hud-pulse-dot"></span>
+            <span class="hud-status-label">VRM NEURAL LINK</span>
+          </div>
+          <div class="hud-tech-badge">GPU 4X MSAA</div>
+        </div>
+
+        <!-- HOLOGRAPHIC GYRO REACTOR -->
+        <div class="loader-gyro-container">
+          <div class="gyro-ring gyro-ring-outer"></div>
+          <div class="gyro-ring gyro-ring-middle">
+            <span class="gyro-satellite-node sat-1"></span>
+            <span class="gyro-satellite-node sat-2"></span>
+          </div>
+          <div class="gyro-ring gyro-ring-inner"></div>
+          <div class="gyro-core-crystal">
+            <svg class="gyro-core-icon" viewBox="0 0 40 40" fill="none">
+              <path d="M20 3L35 12V28L20 37L5 28V12L20 3Z" stroke="url(#core-grad)" stroke-width="2" fill="rgba(168, 85, 247, 0.15)"/>
+              <path d="M20 10L28 15V25L20 30L12 25V15L20 10Z" fill="url(#core-grad-inner)"/>
+              <defs>
+                <linearGradient id="core-grad" x1="5" y1="3" x2="35" y2="37">
+                  <stop stop-color="#00f2fe"/>
+                  <stop offset="0.5" stop-color="#a855f7"/>
+                  <stop offset="1" stop-color="#ff2d55"/>
+                </linearGradient>
+                <linearGradient id="core-grad-inner" x1="12" y1="10" x2="28" y2="30">
+                  <stop stop-color="#ffffff"/>
+                  <stop offset="1" stop-color="#a855f7"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+        </div>
+
+        <!-- BRAND TITLE -->
+        <div class="loader-brand-title">RAYA NEURAL CORE</div>
+        <div class="loader-subtext">3D Interactive Anime AI Companion</div>
+
+        <!-- DIAGNOSTIC STAGE TRACKER -->
+        <div class="loader-step-track">
+          <span id="loader-step-badge" class="loader-step-badge">STAGE 01 // NEURAL INIT</span>
+        </div>
+
+        <!-- HIGH-TECH PROGRESS BAR WITH LASER SPARK HEAD -->
+        <div class="loader-bar-wrapper">
+          <div id="loader-bar-fill" class="loader-bar-fill" style="width: 8%;">
+            <div class="loader-bar-spark"></div>
+          </div>
+        </div>
+
+        <!-- STATUS ROW -->
+        <div class="loader-status-row">
+          <span id="loading-text" class="loader-status-text">Synchronizing 3D Neural Viewport...</span>
+          <span id="loading-pct" class="loader-pct-badge">8%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN BOOTSTRAPPER -->
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
