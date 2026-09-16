@@ -182,6 +182,8 @@ export class AnimationEngine {
     this.vrm = vrm;
     this.targetRootY = 0.0;
     this.currentRootY = 0.0;
+    this.targetRootZ = 0.0;
+    this.currentRootZ = 0.0;
     this.requestedAnimName = 'idle';
     if (this.vrmManager?.setChairVisible) {
       this.vrmManager.setChairVisible(false);
@@ -384,11 +386,12 @@ export class AnimationEngine {
         this.targetFingerPose = { ...FINGER_POSES.idle };
       }
 
-      // Root elevation: avatar remains grounded at 0.0 so Mixamo sitting bone tracks settle naturally onto chair
+      // Root elevation & depth alignment: settle avatar down into chair cushion and backrest
       const isSitting = animName === 'sitting' || animName === 'sitting2';
-      this.targetRootY = 0.0;
+      this.targetRootY = isSitting ? -0.36 : 0.0;
+      this.targetRootZ = isSitting ? -0.18 : 0.0;
 
-      // Toggle 3D antique chair visibility
+      // Toggle 3D antique chair visibility and camera framing
       if (this.vrmManager?.setChairVisible) {
         this.vrmManager.setChairVisible(isSitting);
       }
@@ -470,14 +473,21 @@ export class AnimationEngine {
     }
     this.applyFingerPose(delta);
 
-    // Smoothly elevate or return avatar root position for sitting animations
+    // Smoothly elevate and position avatar root for sitting & standing transitions
     if (this.vrm?.scene) {
+      const lerpSpeed = Math.min(delta * 4.5, 1);
       this.currentRootY = THREE.MathUtils.lerp(
         this.currentRootY ?? 0,
         this.targetRootY ?? 0,
-        Math.min(delta * 4, 1)
+        lerpSpeed
+      );
+      this.currentRootZ = THREE.MathUtils.lerp(
+        this.currentRootZ ?? 0,
+        this.targetRootZ ?? 0,
+        lerpSpeed
       );
       this.vrm.scene.position.y = this.currentRootY;
+      this.vrm.scene.position.z = this.currentRootZ;
     }
   }
 }

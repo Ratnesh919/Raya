@@ -48,6 +48,15 @@ async function bootstrap() {
     voiceService
   });
 
+  // Attach to window for diagnostics and runtime access
+  window.Raya = {
+    vrmManager,
+    animationEngine,
+    expressionManager,
+    chatUI,
+    controlsHUD
+  };
+
   // 4. Main Render Loop
   const clock = new THREE.Clock();
 

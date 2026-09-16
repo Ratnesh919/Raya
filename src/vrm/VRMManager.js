@@ -487,8 +487,8 @@ export class VRMManager {
 
         console.log('[VRMManager] Loaded Antique Chair GLB. Raw dimensions:', rawSize);
 
-        // Ergonomic human scale: seat height at 0.46m, total backrest height ~1.21m
-        const scale = 0.5234;
+        // Ergonomic human scale: seat height at 0.48m, total backrest height ~1.27m
+        const scale = 0.55;
         chairModel.scale.set(scale, scale, scale);
 
         // Ground feet at Y = 0 and center seat cushion at origin (X=0, Z=0)
@@ -504,8 +504,8 @@ export class VRMManager {
         }
         this.chairGroup.add(chairModel);
 
-        // Position chair in scene: comfortably behind avatar's standing space
-        this.chairGroup.position.set(0, 0, -0.22);
+        // Position chair in scene: aligned behind avatar for seamless sit transition
+        this.chairGroup.position.set(0, 0, -0.18);
         console.log('[VRMManager] Antique Chair successfully grounded and calibrated.');
       },
       undefined,
