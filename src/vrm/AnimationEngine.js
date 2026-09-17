@@ -342,49 +342,36 @@ export class AnimationEngine {
     return clip;
   }
 
-  async playAnimation(animName, fadeDuration = 0.4) {
+  async playAnimation(animName = 'idle', fadeDuration = 0.4) {
     if (!this.vrm || !this.mixer) return;
-    const url = this.animations[animName] || this.animations.idle;
-    this.requestedAnimName = animName;
+    // Strict requirement: use only idle animation
+    const targetAnim = 'idle';
+    const url = this.animations.idle;
+    this.requestedAnimName = 'idle';
 
     try {
-      let action = this.actions.get(animName);
+      let action = this.actions.get(targetAnim);
 
       if (!action) {
         // Enqueue sequential non-blocking download (never hangs or freezes site)
-        const { asset, rawClip, url: clipUrl } = await this.enqueueLoadMixamoClip(animName, url);
+        const { asset, rawClip, url: clipUrl } = await this.enqueueLoadMixamoClip(targetAnim, url);
         if (!this.vrm || !this.mixer) return;
 
-        const retargetedClip = this.retargetClip(asset, rawClip, clipUrl, animName);
+        const retargetedClip = this.retargetClip(asset, rawClip, clipUrl, targetAnim);
         if (!retargetedClip) {
-          console.warn(`[AnimationEngine] Failed to retarget clip ${animName}`);
+          console.warn(`[AnimationEngine] Failed to retarget clip ${targetAnim}`);
           return;
         }
 
         action = this.mixer.clipAction(retargetedClip);
+        action.setLoop(THREE.LoopRepeat, Infinity);
+        action.clampWhenFinished = false;
 
-        const isLoop =
-          animName === 'idle' ||
-          animName === 'happyIdle' ||
-          animName === 'sitting' ||
-          animName === 'sitting2';
-        action.setLoop(isLoop ? THREE.LoopRepeat : THREE.LoopOnce, isLoop ? Infinity : 1);
-        action.clampWhenFinished = !isLoop;
-
-        this.actions.set(animName, action);
-      }
-
-      // If user requested a newer animation while this one was downloading, honor the latest
-      if (this.requestedAnimName !== animName) {
-        return;
+        this.actions.set(targetAnim, action);
       }
 
       // Update finger pose target
-      if (FINGER_POSES[animName]) {
-        this.targetFingerPose = { ...FINGER_POSES[animName] };
-      } else {
-        this.targetFingerPose = { ...FINGER_POSES.idle };
-      }
+      this.targetFingerPose = { ...FINGER_POSES.idle };
 
       // Avatar remains naturally grounded at origin
       this.targetRootY = 0.0;
@@ -401,9 +388,9 @@ export class AnimationEngine {
       }
 
       this.currentAction = action;
-      this.currentAnimName = animName;
+      this.currentAnimName = targetAnim;
     } catch (err) {
-      console.warn(`[AnimationEngine] Could not play ${animName}:`, err);
+      console.warn(`[AnimationEngine] Could not play ${targetAnim}:`, err);
     }
   }
 

@@ -28,8 +28,8 @@ export class SettingsModal {
   }
 
   setupListeners() {
-    this.btnOpenEl.addEventListener('click', () => this.open());
-    this.btnCloseEl.addEventListener('click', () => this.close());
+    this.btnOpenEl?.addEventListener('click', () => this.open());
+    this.btnCloseEl?.addEventListener('click', () => this.close());
     this.modalEl.addEventListener('click', (e) => {
       if (e.target === this.modalEl) this.close();
     });

@@ -80,8 +80,8 @@ export class VRMManager {
       50
     );
     this.currentCameraMode = 'portrait';
-    this.cameraPortraitPos = new THREE.Vector3(0, 1.31, 1.48);
-    this.cameraPortraitTarget = new THREE.Vector3(0, 1.27, 0);
+    this.cameraPortraitPos = new THREE.Vector3(0, 1.38, 1.58);
+    this.cameraPortraitTarget = new THREE.Vector3(0, 1.35, 0);
     this.cameraFullBodyPos = new THREE.Vector3(0, 1.25, 3.8);
     this.cameraFullBodyTarget = new THREE.Vector3(0, 1.15, 0);
 
@@ -123,13 +123,13 @@ export class VRMManager {
     if (aspect < 1.0) {
       // Mobile portrait screen framing
       const phoneScale = 1.0 / Math.max(aspect, 0.45);
-      this.cameraPortraitPos.set(0, 1.28, 1.70 * Math.min(phoneScale * 0.65, 1.4));
-      this.cameraPortraitTarget.set(0, 1.23, 0);
+      this.cameraPortraitPos.set(0, 1.34, 1.85 * Math.min(phoneScale * 0.65, 1.4));
+      this.cameraPortraitTarget.set(0, 1.30, 0);
       this.cameraFullBodyPos.set(0, 1.12, 3.8 * Math.min(phoneScale * 0.72, 1.55));
       this.cameraFullBodyTarget.set(0, 1.02, 0);
     } else {
-      this.cameraPortraitPos.set(0, 1.31, 1.48);
-      this.cameraPortraitTarget.set(0, 1.27, 0);
+      this.cameraPortraitPos.set(0, 1.38, 1.58);
+      this.cameraPortraitTarget.set(0, 1.35, 0);
       this.cameraFullBodyPos.set(0, 1.25, 3.8);
       this.cameraFullBodyTarget.set(0, 1.15, 0);
     }
@@ -259,17 +259,7 @@ export class VRMManager {
   }
 
   poseRestingArms(vrmInstance) {
-    if (!vrmInstance?.humanoid) return;
-    const lArm = vrmInstance.humanoid.getNormalizedBoneNode('leftUpperArm');
-    const rArm = vrmInstance.humanoid.getNormalizedBoneNode('rightUpperArm');
-    if (lArm) {
-      lArm.rotation.z = 1.25;
-      lArm.rotation.x = 0.1;
-    }
-    if (rArm) {
-      rArm.rotation.z = -1.25;
-      rArm.rotation.x = 0.1;
-    }
+    // Idle animation drives all humanoid bones naturally
   }
 
   setSkinBrightness(val) {
@@ -454,13 +444,7 @@ export class VRMManager {
   }
 
   setChairVisible(isSitting) {
-    // Chair has been removed; camera remains focused at default height
-    if (this.cameraTarget) {
-      this.cameraTarget.set(0, 1.15, 0);
-    }
-    if (this.camera) {
-      this.camera.lookAt(this.cameraTarget);
-    }
+    // Chair has been removed; no-op safely
   }
 
   /**
