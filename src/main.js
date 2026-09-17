@@ -4,6 +4,7 @@ import { AnimationEngine } from './vrm/AnimationEngine.js';
 import { ExpressionManager } from './vrm/ExpressionManager.js';
 import { LipSyncEngine } from './vrm/LipSyncEngine.js';
 import { LifeSimulator } from './vrm/LifeSimulator.js';
+import { ChestPhysics } from './vrm/ChestPhysics.js';
 
 import { LLMService } from './ai/LLMService.js';
 import { VoiceService } from './ai/VoiceService.js';
@@ -24,6 +25,7 @@ async function bootstrap() {
   const expressionManager = new ExpressionManager(vrmManager);
   const lipSyncEngine = new LipSyncEngine(vrmManager);
   const lifeSimulator = new LifeSimulator(vrmManager);
+  const chestPhysics = new ChestPhysics(vrmManager);
 
   // 2. AI, Voice & Netlify Database Memory Services
   const memoryService = new MemoryService();
@@ -60,6 +62,7 @@ async function bootstrap() {
     vrmManager,
     animationEngine,
     expressionManager,
+    chestPhysics,
     chatUI,
     controlsHUD
   };
@@ -82,6 +85,9 @@ async function bootstrap() {
 
     // Update procedural life simulations (breathing, saccades, gaze, blinking)
     lifeSimulator.update(delta);
+
+    // Update physics-based secondary motion for chest/breast bones
+    chestPhysics.update(delta);
 
     // Render VRM scene
     vrmManager.render(delta);
