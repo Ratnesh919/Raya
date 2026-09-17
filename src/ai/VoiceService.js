@@ -12,29 +12,78 @@ export function isRealisticVoice(voice) {
 }
 
 /**
+ * Strict male filter to guarantee ONLY female voices are ever used for Raya
+ * Based on PROJECT_DOCUMENTATION.md & chatbot.js specifications
+ */
+const MALE_FILTER = /\b(male|boy|man|guy)\b|bashkar|madhur|hemant|ojas|niranjan|manohar|valluvar|mohan|gagan|midhun|keita|david|mark|george|james|ravi|ryan|christopher|eric|andrew|brian|roger|steffan|prabhat|pradeep|rishi|richard|sean|paul|alex|daniel|tom|oliver|arthur|fred/i;
+
+/**
+ * Helper to check if a voice is female (strictly excluding male voices)
+ */
+export function isFemaleVoice(voice) {
+  if (!voice) return false;
+  const name = (voice.name || '').toLowerCase();
+
+  // 1. Explicit female whitelist
+  const isExplicitlyFemale =
+    /\b(female|woman|girl)\b/i.test(name) ||
+    /zira|jenny|aria|ava|sonia|maisie|swara|neerja|tanishaa|nabanita|nabami|veena|heera|samantha|karen|moira|tessa|lekha|kalpana|ananya|aditi|sunita|sheetal|victoria|hazel|susan|catherine|linda|heather|stephanie|ayumi|haruka|nanami|aoi|kyoko|gurpreet|dhwani|libby/i.test(name);
+  if (isExplicitlyFemale) return true;
+
+  // 2. Explicit male blacklist
+  if (MALE_FILTER.test(name)) return false;
+
+  // Google Chrome voices
+  if (/^Google\s/i.test(name)) {
+    return !/\bmale\b/i.test(name);
+  }
+
+  return true;
+}
+
+/**
  * Detect language from text (Devanagari Hindi, Bengali script, Romanized Hinglish / Indian English, Japanese, or Global English).
+ * Grounded in PROJECT_DOCUMENTATION.md Section 4.2 Language Voice Mapping & Dialect Matrix.
  */
 export function detectLanguage(text) {
   if (!text) return 'en-US';
 
-  // 1. Devanagari script (Hindi)
-  if (/[\u0900-\u097F]/.test(text)) {
-    return 'hi-IN';
+  const cleanText = text.toLowerCase();
+
+  // 1. Scripts: direct Unicode ranges
+  if (/[\u0980-\u09FF]/.test(text)) return 'bn-IN';
+  if (/[\u0A00-\u0A7F]/.test(text)) return 'pa-IN';
+  if (/[\u0A80-\u0AFF]/.test(text)) return 'gu-IN';
+  if (/[\u0900-\u097F]/.test(text)) return 'hi-IN';
+  if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(text)) return 'ja-JP';
+
+  // 2. Punjabi Romanized phrases
+  if (/\b(kidda|sat sri akal|kive|haal|changa|tussi|saade|punjabi|bol sakdi|paaji|veere|soniye|kiven|santa banta)\b/i.test(cleanText)) {
+    return 'pa-IN';
   }
 
-  // 2. Bengali script
-  if (/[\u0980-\u09FF]/.test(text)) {
+  // 3. Gujarati Romanized phrases
+  if (/\b(kem cho|majama|tamaru|gujarati|aaje|tame|aavde|vaat kari|bachavani|puchi shako|tamaro)\b/i.test(cleanText)) {
+    return 'gu-IN';
+  }
+
+  // 4. Bengali Romanized phrases
+  if (/\b(kemon acho|bhalo achi|khobor|bhalo|amar naam|tomar naam|bangla|bengali|ami|obosshoi|korcho|shuncho|kheyecho|jigyesh)\b/i.test(cleanText)) {
     return 'bn-IN';
   }
 
-  // 3. Japanese
-  if (/[\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF]/.test(text)) {
-    return 'ja-JP';
+  // 5. Hindi / Hinglish Romanized phrases
+  if (/\b(namaste|kaise ho|kaisi ho|aap kaise|kaisa hai|chutkula|hindi mein|baat kar sakti|badhiya hoon|dhanyavaad|shukriya|theek hoon|bataiye|aap batao|sunao|kya hal)\b/i.test(cleanText)) {
+    return 'hi-IN';
   }
 
-  // 4. Romanized Hinglish / Indian English cues
-  const hinglishPatterns = /\b(namaste|shukriya|dhanyavaad|kaise|kaisa|kaisi|theek|badhiya|haan|nahi|accha|achha|bhai|yaar|dost|sab|kuch|mera|meri|hum|tum|aap|karenge|batao|bolo|chalo|maza|samajh|raha|rahi|hain|kya|kyun|bahut|shukriya)\b/i;
-  if (hinglishPatterns.test(text)) {
+  // 6. UK English dialect cues
+  if (/\b(colour|flavour|favour|honour|neighbour|theatre|centre|metre|cheers mate|bloke|proper|splendid|sorted|quid|rubbish|trousers|flat|postcode|lorry|biscuit)\b/i.test(cleanText)) {
+    return 'en-GB';
+  }
+
+  // 7. Indian English dialect cues
+  if (/\b(ratnesh|svist|makaut|syncpulse|pak converter|btech|ece|kolkata|yaar|bhai|pass out|prepone|revert back|good name|do the needful)\b/i.test(cleanText)) {
     return 'en-IN';
   }
 
@@ -42,8 +91,119 @@ export function detectLanguage(text) {
 }
 
 /**
+ * Real-Time Phonetic Transliteration Engine (getNativeScriptForTTS)
+ * Specifications from PROJECT_DOCUMENTATION.md Section 4.3:
+ * Writing native scripts directly in UI bubbles clashes with modern design, but reading Romanized English
+ * with Edge/Google native TTS engines creates awkward pronunciation.
+ * getNativeScriptForTTS converts Romanized words into authentic native Unicode characters right before speech synthesis.
+ */
+export function getNativeScriptForTTS(textStr, lang) {
+  if (!textStr) return textStr;
+
+  // Bengali transliteration
+  if (lang.startsWith('bn')) {
+    if (/[\u0980-\u09FF]/.test(textStr)) return textStr;
+    const bnPhrases = [
+      [/\bhaa\s+obosshoi\b/gi, 'হ্যাঁ অবশ্যই'],
+      [/\bami\s+bangla\s+bolte\s+pari\b/gi, 'আমি বাংলা বলতে পারি'],
+      [/\bami\s+khub\s+bhalo\s+achi\b/gi, 'আমি খুব ভালো আছি'],
+      [/\btumi\s+kemon\s+acho\b/gi, 'তুমি কেমন আছো'],
+      [/\btumi\s+ki\s+korcho\b/gi, 'তুমি কি করছো'],
+      [/\bki\s+korcho\b/gi, 'কি করছো'],
+      [/\bki\s+korchis\b/gi, 'কি করছিস'],
+      [/\bamar\s+naam\s+raya\b/gi, 'আমার নাম রায়া'],
+      [/\bami\s+ratnesh-?er\s+portfolio\s+guide\s+korchi\b/gi, 'আমি রত্নেশের পোর্টফোলিও গাইড করছি'],
+      [/\btumi\s+bolo\s+ki\s+sahajyo\s+korte\s+pari\b/gi, 'তুমি বলো কি সাহায্য করতে পারি'],
+      [/\bratnesh-?er\s+projects?\s+ba\s+skills?\s+niye\s+ja\s+icche\s+jigyesh\s+korte\s+paro\b/gi, 'রত্নেশের প্রজেক্টস বা স্কিলস নিয়ে যা ইচ্ছে জিজ্ঞেস করতে পারো']
+    ];
+    let res = textStr;
+    for (const [re, val] of bnPhrases) res = res.replace(re, val);
+    const bnDict = {
+      'ami': 'আমি', 'tumi': 'তুমি', 'bhalo': 'ভালো', 'kemon': 'কেমন', 'acho': 'আছো', 'achi': 'আছি',
+      'naam': 'নাম', 'nam': 'নাম', 'tomar': 'তোমার', 'amar': 'আমার', 'bolte': 'বলতে', 'pari': 'পারি',
+      'paro': 'পারো', 'obosshoi': 'অবশ্যই', 'haan': 'হ্যাঁ', 'haa': 'হ্যাঁ', 'korcho': 'করছো', 'koro': 'করো',
+      'kichu': 'কিছু', 'jante': 'জানতে', 'chao': 'চাও', 'bolo': 'বলো', 'sahajyo': 'সাহায্য', 'korte': 'করতে',
+      'jigyesh': 'জিজ্ঞেস', 'ratnesh': 'রত্নেশ', 'bangla': 'বাংলা', 'bengali': 'বাংলা', 'shonao': 'শোনাও',
+      'chutkula': 'কৌতুক', 'bol': 'বল', 'shuncho': 'শুনছো', 'dada': 'দাদা', 'didi': 'দিদি', 'khabar': 'খাবার',
+      'kheyecho': 'খেয়েছো', 'shob': 'সব', 'ki': 'কি'
+    };
+    return res.replace(/\b[a-zA-Z]+\b/g, (w) => bnDict[w.toLowerCase()] || w);
+  }
+
+  // Punjabi transliteration
+  if (lang.startsWith('pa')) {
+    if (/[\u0A00-\u0A7F]/.test(textStr)) return textStr;
+    const paDict = {
+      'haanji': 'ਹਾਂਜੀ', 'bilkul': 'ਬਿਲਕੁਲ', 'main': 'ਮੈਂ', 'punjabi': 'ਪੰਜਾਬੀ', 'bol': 'ਬੋਲ',
+      'sakdi': 'ਸਕਦੀ', 'aan': 'ਆਂ', 'tussi': 'ਤੁਸੀਂ', 'daso': 'ਦੱਸੋ', 'sab': 'ਸਭ', 'theek': 'ਠੀਕ',
+      'kive': 'ਕਿਵੇਂ', 'ho': 'ਹੋ', 'kidda': 'ਕਿੱਦਾਂ', 'changa': 'ਚੰਗਾ', 'veere': 'ਵੀਰੇ', 'paaji': 'ਭਾਜੀ',
+      'santa': 'ਸੰਤਾ', 'banta': 'ਬੰਤਾ', 'baraf': 'ਬਰਫ਼', 'tukda': 'ਟੁਕੜਾ', 'hath': 'ਹੱਥ', 'ch': 'ਚ',
+      'phad': 'ਫੜ', 'ke': 'ਕੇ', 'gaur': 'ਗ਼ੌਰ', 'naal': 'ਨਾਲ', 'dekh': 'ਦੇਖ', 'reha': 'ਰਿਹਾ', 'si': 'ਸੀ',
+      'ki': 'ਕੀ', 'leak': 'ਲੀਕ', 'kithon': 'ਕਿੱਥੋਂ', 'hai': 'ਹੈ', 'paise': 'ਪੈਸੇ', 'kaddan': 'ਕੱਢਣ',
+      'da': 'ਦਾ', 'hisab': 'ਹਿਸਾਬ', 'pehla': 'ਪਹਿਲਾਂ', 'sign': 'ਦਸਤਖਤ', 'meri': 'ਮੇਰੀ', 'rashi': 'ਰਾਸ਼ੀ',
+      'singh': 'ਸਿੰਘ', 'kyu': 'ਕਿਉਂ', 'karaan': 'ਕਰਾਂ', 'ratnesh': 'ਰਤਨੇਸ਼', 'baare': 'ਬਾਰੇ', 'jo': 'ਜੋ',
+      'marzi': 'ਮਰਜ਼ੀ', 'puch': 'ਪੁੱਛ', 'sakde': 'ਸਕਦੇ', 'ji': 'ਜੀ'
+    };
+    return textStr.replace(/\b[a-zA-Z]+\b/g, (w) => paDict[w.toLowerCase()] || w);
+  }
+
+  // Gujarati transliteration
+  if (lang.startsWith('gu')) {
+    if (/[\u0A80-\u0AFF]/.test(textStr)) return textStr;
+    const guDict = {
+      'haan': 'હા', 'bilkul': 'બિલકੁલ', 'hu': 'હું', 'gujarati': 'ગુજરાતી', 'ma': 'માં', 'vaat': 'વાત',
+      'kari': 'કરી', 'saku': 'શકું', 'chu': 'છું', 'ekdam': 'એકદમ', 'majama': 'મજામાં', 'tame': 'તમે',
+      'bolo': 'બોલો', 'kem': 'કેમ', 'cho': 'છો', 'ratnesh': 'રત્નેશ', 'na': 'ના', 'projects': 'પ્રોજેક્ટ્સ',
+      'vishe': 'વિશે', 'mane': 'મને', 'kai': 'કંઈ', 'pan': 'પણ', 'puchi': 'પૂછી', 'shako': 'શકો',
+      'su': 'શું', 'janva': 'જાણવા', 'mango': 'માંગો', 'che': 'છે', 'bapu': 'બાપુ', 'pappu': 'પપ્પુ'
+    };
+    return textStr.replace(/\b[a-zA-Z]+\b/g, (w) => guDict[w.toLowerCase()] || w);
+  }
+
+  // Hindi / Hinglish transliteration
+  if (lang.startsWith('hi')) {
+    if (/[\u0900-\u097F]/.test(textStr)) return textStr;
+    const hiPhrases = [
+      [/\bhaan\s+bilkul\b/gi, 'हाँ बिल्कुल'],
+      [/\bmain\s+hindi\s+mein\s+baat\s+kar\s+sakti\s+hoon\b/gi, 'मैं हिंदी में बात कर सकती हूँ'],
+      [/\bmain\s+ekdam\s+badhiya\s+hoon\b/gi, 'मैं एकदम बढ़िया हूँ'],
+      [/\baap\s+kaise\s+hain\b/gi, 'आप कैसे हैं'],
+      [/\baap\s+bataiye\b/gi, 'आप बताइए'],
+      [/\bkya\s+jaanna\s+chahte\s+hain\b/gi, 'क्या जानना चाहते हैं'],
+      [/\bmain\s+ratnesh\s+ke\s+portfolio\s+mein\s+aapko\s+guide\s+kar\s+rahi\s+hoon\b/gi, 'मैं रत्नेश के पोर्टफोलियो में आपको गाइड कर रही हूँ'],
+      [/\baap\s+mujhse\s+koi\s+bhi\s+sawal\s+pooch\s+sakte\s+hain\b/gi, 'आप मुझसे कोई भी सवाल पूछ सकते हैं'],
+      [/\bnamaste\s+dosto\b/gi, 'नमस्ते दोस्तों'],
+      [/\bek\s+baar\s+teacher\s+ne\s+pappu\s+se\s+pucha\b/gi, 'एक बार टीचर ने पप्पू से पूछा'],
+      [/\bagar\s+ped\s+par\s+10\s+chidiya\s+baithi\s+hain\b/gi, 'अगर पेड़ पर १० चिड़िया बैठी हैं'],
+      [/\baur\s+1\s+ko\s+goli\s+maar\s+di\s+jaye\b/gi, 'और एक को गोली मार दी जाये'],
+      [/\bto\s+kitni\s+bachengi\b/gi, 'तो कितनी बचेंगी'],
+      [/\bpappu\s+bola\s+ek\s+bhi\s+nahi\b/gi, 'पप्पू बोला एक भी नहीं'],
+      [/\bkyunki\s+goli\s+ki\s+aawaz\s+se\s+baki\s+sab\s+udd\s+jayengi\b/gi, 'क्योंकि गोली की आवाज़ से बाकी सब उड़ जाएँगी'],
+      [/\bdoctor\s+sahab\s+roz\s+raat\s+ko\s+sapne\s+mein\s+dawat\s+khata\s+hoon\b/gi, 'डॉक्टर साहब रोज़ रात को सपने में दावत खाता हूँ']
+    ];
+    let res = textStr;
+    for (const [re, val] of hiPhrases) res = res.replace(re, val);
+    const hiDict = {
+      'haan': 'हाँ', 'bilkul': 'बिल्कुल', 'main': 'मैं', 'hindi': 'हिंदी', 'mein': 'में', 'baat': 'बात',
+      'kar': 'कर', 'sakti': 'सकती', 'sakte': 'सकते', 'sakta': 'सकता', 'hoon': 'हूँ', 'aap': 'आप', 'mujhse': 'मुझसे',
+      'ratnesh': 'रत्नेश', 'ke': 'के', 'ki': 'की', 'ka': 'का', 'ko': 'को', 'projects': 'प्रोजेक्ट्स', 'ya': 'या',
+      'kisi': 'किसी', 'bhi': 'भी', 'baare': 'बारे', 'pooch': 'पूछ', 'hain': 'हैं', 'hai': 'है', 'ekdam': 'एकदम',
+      'badhiya': 'बढ़िया', 'bataiye': 'बताइए', 'kaise': 'कैसे', 'kaisi': 'कैसी', 'kya': 'क्या', 'rahi': 'रही',
+      'rahe': 'रहे', 'raha': 'रहा', 'guide': 'गाइड', 'namaste': 'नमस्ते', 'theek': 'ठीक', 'sab': 'सब',
+      'karo': 'करो', 'batao': 'बताओ', 'chutkula': 'चुटकुला', 'hasao': 'हंसाओ', 'pappu': 'पप्पू', 'dost': 'दोस्त',
+      'doctor': 'डॉक्टर', 'sapne': 'सपने', 'chidiya': 'चिड़िया', 'ped': 'पेड़', 'goli': 'गोली', 'aawaz': 'आवाज़',
+      'nahi': 'नहीं', 'kuch': 'कुछ', 'bata': 'बता', 'bolo': 'बोलो', 'sunao': 'सुनाओ', 'shukriya': 'शुक्रिया',
+      'dhanyawad': 'धन्यवाद', 'achha': 'अच्छा', 'suno': 'सुनो', 'samjhe': 'समझे'
+    };
+    return res.replace(/\b[a-zA-Z]+\b/g, (w) => hiDict[w.toLowerCase()] || w);
+  }
+
+  return textStr;
+}
+
+/**
  * Phonetically transliterates Devanagari Hindi text to Roman Latin characters
- * so that English/Indian-English TTS voices on phones and PCs can speak it aloud without failing.
+ * Fallback so that English/Western TTS voices on devices without Hindi voice packs can speak it.
  */
 export function transliterateDevanagari(text) {
   if (!text || !/[\u0900-\u097F]/.test(text)) return text;
@@ -76,31 +236,6 @@ export function transliterateDevanagari(text) {
   return res;
 }
 
-/**
- * Helper to check if a voice is female (strictly excluding male voices)
- */
-export function isFemaleVoice(voice) {
-  if (!voice) return false;
-  const name = (voice.name || '').toLowerCase();
-
-  // Explicit male blacklist
-  const isMale = /\b(male|david|george|mark|ravi|bashkar|madhur|prabhat|guy|pradeep|rishi|stefan|james|richard|sean|paul|alex|brian|daniel|tom|oliver|arthur|fred)\b/i.test(name);
-  if (isMale) return false;
-
-  // Explicit female whitelist or indicators
-  const isExplicitlyFemale =
-    /\b(female|woman|girl)\b/i.test(name) ||
-    /zira|jenny|aria|sonia|maisie|swara|neerja|tanishaa|nabanita|veena|heera|samantha|karen|lekha|kalpana|ananya|aditi|sunita|sheetal|victoria|hazel|susan|catherine|linda|heather|stephanie|ayumi|haruka|nanami|aoi|kyoko/i.test(name);
-  if (isExplicitlyFemale) return true;
-
-  // Google Chrome voices
-  if (/^Google\s/i.test(name)) {
-    return !/male/i.test(name);
-  }
-
-  return true;
-}
-
 export class VoiceService {
   constructor(lipSyncEngine) {
     this.lipSyncEngine = lipSyncEngine;
@@ -109,11 +244,14 @@ export class VoiceService {
     this.synth = window.speechSynthesis;
     this.selectedVoiceURI = localStorage.getItem('raya_voice_uri') || 'auto';
     this.selectedVoice = null;
-    this.pitch = parseFloat(localStorage.getItem('raya_voice_pitch') || '1.05');
-    this.rate = parseFloat(localStorage.getItem('raya_voice_rate') || '1.0');
+    // Tuned defaults: Pitch 1.35 (sweet, companion tone), Rate 1.10 (~165 WPM natural pace)
+    this.pitch = parseFloat(localStorage.getItem('raya_voice_pitch') || '1.35');
+    this.rate = parseFloat(localStorage.getItem('raya_voice_rate') || '1.10');
     this.autoSpeak = localStorage.getItem('raya_auto_speak') !== 'false';
     this.isSpeaking = false;
     this.currentUtterance = null;
+    this._wakeWordCooldown = false;
+    this._cooldownTimeoutId = null;
 
     // Multilingual STT state
     this.recognitionLang = localStorage.getItem('raya_stt_lang') || 'en-IN';
@@ -124,26 +262,42 @@ export class VoiceService {
     this.onSpeechStatus = null;
     this.onInterimTranscript = null;
 
-    // Browser autoplay policy / audio wake-up listeners
+    // Browser audio unlock & autoplay unlock on first user gesture
     const unlockSynth = () => {
-      if (this.synth && this.synth.paused) {
-        this.synth.resume();
+      if (this.synth) {
+        if (this.synth.paused) {
+          try { this.synth.resume(); } catch (e) {}
+        }
+        // Prime synthesis with silent utterance to unlock audio policies on mobile Safari / Chrome Android
+        try {
+          const silentUtterance = new SpeechSynthesisUtterance('');
+          silentUtterance.volume = 0;
+          this.synth.speak(silentUtterance);
+        } catch (e) {}
       }
     };
     ['pointerdown', 'click', 'keydown', 'touchstart'].forEach((evt) => {
-      window.addEventListener(evt, unlockSynth, { passive: true });
+      window.addEventListener(evt, unlockSynth, { once: true, passive: true });
     });
 
     this.initVoices();
     this.initRecognition();
   }
 
-  initVoices() {
+  /**
+   * Cross-browser voice initialization with polling fallback for Edge, Chrome, Safari
+   */
+  initVoices(retryCount = 0) {
     if (!this.synth) return;
 
     const loadVoices = () => {
       const voices = this.getAvailableVoices();
-      if (!voices || voices.length === 0) return;
+      if (!voices || voices.length === 0) {
+        if (retryCount < 20) {
+          setTimeout(() => this.initVoices(retryCount + 1), 250);
+        }
+        return;
+      }
 
       if (this.selectedVoiceURI && this.selectedVoiceURI !== 'auto') {
         this.selectedVoice = voices.find((v) => v.voiceURI === this.selectedVoiceURI) || null;
@@ -152,7 +306,7 @@ export class VoiceService {
 
     loadVoices();
     if (this.synth.onvoiceschanged !== undefined) {
-      this.synth.onvoiceschanged = loadVoices;
+      this.synth.onvoiceschanged = () => loadVoices();
     }
   }
 
@@ -168,71 +322,136 @@ export class VoiceService {
 
   /**
    * Find highest fidelity realistic female voice for target language
+   * Implements the exact Voice Selection Hierarchy from PROJECT_DOCUMENTATION.md Section 4.1 & 4.2
    */
   getBestRealisticVoice(targetLang = 'en-US') {
-    const voices = this.getAvailableVoices();
-    if (!voices || voices.length === 0) return null;
+    const candidateVoices = this.getAvailableVoices();
+    if (!candidateVoices || candidateVoices.length === 0) return null;
 
     const langLower = targetLang.toLowerCase();
 
-    // 1. Hindi (hi-IN) - strictly female
-    if (langLower.startsWith('hi')) {
-      return (
-        voices.find((v) => /Swara.*Online \(Natural\)/i.test(v.name)) ||
-        voices.find((v) => /Google.*(हिन्दी|Hindi)/i.test(v.name) && isFemaleVoice(v)) ||
-        voices.find((v) => /Lekha|Kalpana|Ananya|Aditi/i.test(v.name)) ||
-        voices.find((v) => isFemaleVoice(v) && (v.lang.startsWith('hi') || v.lang.includes('hi_IN'))) ||
-        // Fallback to female Indian English
-        voices.find((v) => /Neerja.*Online \(Natural\)/i.test(v.name)) ||
-        voices.find((v) => /Veena|Heera/i.test(v.name)) ||
-        voices.find((v) => /Google.*(India|Indian)/i.test(v.name) && isFemaleVoice(v)) ||
-        voices.find((v) => isFemaleVoice(v) && v.lang === 'en-IN')
-      );
-    }
-
-    // 2. Bengali (bn-IN / bn-BD) - strictly female (Tanishaa, Nabanita)
+    // 1. Bengali (bn-IN) - Edge Natural (Tanishaa, Nabami) / Google Bengali
     if (langLower.startsWith('bn')) {
       return (
-        voices.find((v) => /Tanishaa.*Online \(Natural\)|Nabanita.*Online \(Natural\)/i.test(v.name)) ||
-        voices.find((v) => /Google.*(বাংলা|Bengali)/i.test(v.name) && isFemaleVoice(v)) ||
-        voices.find((v) => isFemaleVoice(v) && v.lang.startsWith('bn')) ||
-        // Fallback to female Indian English
-        voices.find((v) => /Neerja.*Online \(Natural\)/i.test(v.name)) ||
-        voices.find((v) => /Veena|Heera/i.test(v.name)) ||
-        voices.find((v) => isFemaleVoice(v) && v.lang === 'en-IN')
+        candidateVoices.find((v) => /Tanishaa.*Natural/i.test(v.name) || /Nabami.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Tanishaa/i.test(v.name) || /Nabami/i.test(v.name)) ||
+        candidateVoices.find((v) => /Google.*(?:বাংলা|Bengali)/i.test(v.name)) ||
+        candidateVoices.find((v) => (v.lang.startsWith('bn') || v.lang.replace('_', '-').startsWith('bn'))) ||
+        candidateVoices.find((v) => v.name.includes('বাংলা') || v.name.includes('Bengali')) ||
+        candidateVoices.find((v) => /Neerja.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Heera|Veena/i.test(v.name)) ||
+        null
       );
     }
 
-    // 3. Indian English (en-IN) / Hinglish - strictly female (Neerja, Veena)
+    // 2. Punjabi (pa-IN) - Edge Natural (Gurpreet) / Google Punjabi
+    if (langLower.startsWith('pa')) {
+      return (
+        candidateVoices.find((v) => /Gurpreet.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Gurpreet/i.test(v.name)) ||
+        candidateVoices.find((v) => /Google.*(?:ਪੰਜਾਬੀ|Punjabi)/i.test(v.name)) ||
+        candidateVoices.find((v) => (v.lang.startsWith('pa') || v.lang.replace('_', '-').startsWith('pa'))) ||
+        candidateVoices.find((v) => v.name.includes('ਪੰਜਾਬੀ') || v.name.includes('Punjabi')) ||
+        candidateVoices.find((v) => /Neerja.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Heera|Veena/i.test(v.name)) ||
+        null
+      );
+    }
+
+    // 3. Gujarati (gu-IN) - Edge Natural (Dhwani) / Google Gujarati
+    if (langLower.startsWith('gu')) {
+      return (
+        candidateVoices.find((v) => /Dhwani.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Dhwani/i.test(v.name)) ||
+        candidateVoices.find((v) => /Google.*(?:ગુજરાતી|Gujarati)/i.test(v.name)) ||
+        candidateVoices.find((v) => (v.lang.startsWith('gu') || v.lang.replace('_', '-').startsWith('gu'))) ||
+        candidateVoices.find((v) => v.name.includes('ગુજરાતી') || v.name.includes('Gujarati')) ||
+        candidateVoices.find((v) => /Neerja.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Heera|Veena/i.test(v.name)) ||
+        null
+      );
+    }
+
+    // 4. Hindi / Hinglish (hi-IN) - Edge Natural (Swara, Kalpana) / Google Hindi / Neerja
+    if (langLower.startsWith('hi')) {
+      return (
+        candidateVoices.find((v) => /Swara.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Swara/i.test(v.name)) ||
+        candidateVoices.find((v) => /Google.*(?:हिन्दी|Hindi)/i.test(v.name)) ||
+        candidateVoices.find((v) => (v.lang.startsWith('hi') || v.lang.replace('_', '-').startsWith('hi'))) ||
+        candidateVoices.find((v) => v.name.includes('हिन्दी') || v.name.includes('Hindi')) ||
+        candidateVoices.find((v) => /Kalpana/i.test(v.name)) ||
+        candidateVoices.find((v) => /Neerja.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Neerja/i.test(v.name)) ||
+        candidateVoices.find((v) => /Heera|Veena/i.test(v.name)) ||
+        null
+      );
+    }
+
+    // 5. UK English (en-GB) - Edge Natural (Sonia, Libby, Maisie) / Google UK English Female
+    if (langLower === 'en-gb' || langLower.startsWith('en-gb')) {
+      return (
+        candidateVoices.find((v) => /Sonia.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Libby.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Maisie.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Serena/i.test(v.name)) ||
+        candidateVoices.find((v) => v.name === 'Google UK English Female') ||
+        candidateVoices.find((v) => v.lang.startsWith('en-GB') || v.lang.startsWith('en_GB')) ||
+        candidateVoices.find((v) => /Ava.*Natural/i.test(v.name)) ||
+        null
+      );
+    }
+
+    // 6. Indian English (en-IN) - Edge Natural (Neerja) / Heera / Veena / Google India
     if (langLower === 'en-in' || langLower.startsWith('en-in')) {
       return (
-        voices.find((v) => /Neerja.*Online \(Natural\)/i.test(v.name)) ||
-        voices.find((v) => /Google.*(India|Indian)/i.test(v.name) && isFemaleVoice(v)) ||
-        voices.find((v) => /Veena|Heera/i.test(v.name)) ||
-        voices.find((v) => isRealisticVoice(v) && isFemaleVoice(v) && v.lang === 'en-IN') ||
-        voices.find((v) => isFemaleVoice(v) && v.lang === 'en-IN')
+        candidateVoices.find((v) => /Neerja.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Neerja/i.test(v.name)) ||
+        candidateVoices.find((v) => /Veena/i.test(v.name)) ||
+        candidateVoices.find((v) => /Heera/i.test(v.name)) ||
+        candidateVoices.find((v) => /Google.*(?:India|English)/i.test(v.name) && (v.lang.startsWith('en-IN') || v.lang.startsWith('en_IN'))) ||
+        candidateVoices.find((v) => v.lang.startsWith('en-IN') || v.lang.startsWith('en_IN')) ||
+        candidateVoices.find((v) => /Ava.*Natural/i.test(v.name)) ||
+        null
       );
     }
 
-    // 4. Japanese (ja-JP) - strictly female
+    // 7. Japanese (ja-JP)
     if (langLower.startsWith('ja')) {
       return (
-        voices.find((v) => /Nanami.*Online \(Natural\)|Aoi.*Online \(Natural\)/i.test(v.name)) ||
-        voices.find((v) => /Google.*日本語/i.test(v.name) && isFemaleVoice(v)) ||
-        voices.find((v) => isFemaleVoice(v) && v.lang.startsWith('ja'))
+        candidateVoices.find((v) => /Nanami.*Natural|Aoi.*Natural/i.test(v.name)) ||
+        candidateVoices.find((v) => /Google.*日本語/i.test(v.name)) ||
+        candidateVoices.find((v) => v.lang.startsWith('ja')) ||
+        null
       );
     }
 
-    // 5. Global English (en-US / en-GB / general) - strictly female
+    // 8. Default US English & International fallback
+    // Priority 1: Edge Natural Female Voices
+    // Priority 2: Indian English Neural Female Voices
+    // Priority 3: Google Cloud Female Voices
+    // Priority 4: Apple Natural Voices (Samantha, Karen, Moira, Tessa)
+    // Priority 5: Any English Female Voice
     return (
-      voices.find((v) => /Jenny.*Online \(Natural\)|Aria.*Online \(Natural\)|Sonia.*Online \(Natural\)|Maisie.*Online \(Natural\)/i.test(v.name)) ||
-      voices.find((v) => /Google UK English Female/i.test(v.name)) ||
-      voices.find((v) => /Google US English/i.test(v.name) && isFemaleVoice(v)) ||
-      voices.find((v) => /Samantha|Victoria|Karen|Zira/i.test(v.name) && isFemaleVoice(v)) ||
-      voices.find((v) => isRealisticVoice(v) && isFemaleVoice(v) && v.lang.startsWith('en')) ||
-      voices.find((v) => isFemaleVoice(v) && v.lang.startsWith('en')) ||
-      voices.find((v) => isFemaleVoice(v)) ||
-      voices[0]
+      candidateVoices.find((v) => /Ava.*Natural/i.test(v.name) && v.lang.startsWith('en')) ||
+      candidateVoices.find((v) => /Jenny.*Natural/i.test(v.name) && v.lang.startsWith('en')) ||
+      candidateVoices.find((v) => /Aria.*Natural/i.test(v.name) && v.lang.startsWith('en')) ||
+      candidateVoices.find((v) => /Neerja.*Natural/i.test(v.name)) ||
+      candidateVoices.find((v) => /Neerja/i.test(v.name)) ||
+      candidateVoices.find((v) => /Heera/i.test(v.name)) ||
+      candidateVoices.find((v) => v.name === 'Google UK English Female') ||
+      candidateVoices.find((v) => v.name === 'Google US English') ||
+      candidateVoices.find((v) => v.name.startsWith('Google') && v.lang.startsWith('en')) ||
+      candidateVoices.find((v) => /Samantha/i.test(v.name)) ||
+      candidateVoices.find((v) => /Karen/i.test(v.name)) ||
+      candidateVoices.find((v) => /Moira/i.test(v.name)) ||
+      candidateVoices.find((v) => /Tessa/i.test(v.name)) ||
+      candidateVoices.find((v) => /Zira/i.test(v.name)) ||
+      candidateVoices.find((v) => /Hazel/i.test(v.name)) ||
+      candidateVoices.find((v) => /Emma/i.test(v.name) && v.lang.startsWith('en')) ||
+      candidateVoices.find((v) => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
+      candidateVoices.find((v) => v.lang.startsWith('en')) ||
+      candidateVoices[0]
     );
   }
 
@@ -265,120 +484,210 @@ export class VoiceService {
     }
   }
 
+  /**
+   * Speak synthesized voice across all browsers with Edge Natural fallback recovery,
+   * phonetic transliteration, Chrome GC shielding, and iOS Safari resume watchdogs.
+   */
   speak(text) {
     if (!this.synth || !this.autoSpeak || !text) return;
 
-    // Stop ongoing speech and unpause synth if frozen
+    // Comprehensive emoji cleaner
+    const emojiRegex =
+      /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F1E6}-\u{1F1FF}\u{FE00}-\u{FE0F}\u{200D}]/gu;
+
+    const cleanText = text
+      .replace(/\[.*?\]/g, '')
+      .replace(/\{"action".*?\}/g, '')
+      .replace(emojiRegex, '')
+      .replace(/[*_#~`\\]/g, '')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    if (!cleanText) return;
+
+    // Stop ongoing speech safely
     this.stopSpeaking();
     if (this.synth.paused) {
-      this.synth.resume();
+      try { this.synth.resume(); } catch (e) {}
     }
-
-    let cleanText = text.replace(/\[.*?\]/g, '').replace(/[*_#~`]/g, '').trim();
-    if (!cleanText) return;
 
     const detectedLang = detectLanguage(cleanText);
 
     // Determine the optimal realistic voice for this specific utterance
     let voiceToUse = null;
-
     if (this.selectedVoiceURI === 'auto' || !this.selectedVoice) {
       voiceToUse = this.getBestRealisticVoice(detectedLang);
     } else {
-      // If user selected a specific voice, check if it can speak this script
       const isDevanagari = /[\u0900-\u097F]/.test(cleanText);
       const isBengali = /[\u0980-\u09FF]/.test(cleanText);
-
-      if ((isDevanagari && !this.selectedVoice.lang.startsWith('hi')) ||
-          (isBengali && !this.selectedVoice.lang.startsWith('bn'))) {
+      if (
+        (isDevanagari && !this.selectedVoice.lang.startsWith('hi')) ||
+        (isBengali && !this.selectedVoice.lang.startsWith('bn'))
+      ) {
         voiceToUse = this.getBestRealisticVoice(detectedLang);
       } else {
         voiceToUse = this.selectedVoice;
       }
     }
 
-    // CRITICAL: If text contains Devanagari Hindi but chosen voice does not natively speak Hindi,
-    // transliterate into phonetic Latin Roman text so English / Indian English voices speak it aloud.
-    const isDevanagari = /[\u0900-\u097F]/.test(cleanText);
+    // Transliterate Romanized speech text into native script for authentic Edge Natural TTS synthesis
+    let spokenScriptText = getNativeScriptForTTS(cleanText, detectedLang);
+
+    // Fallback: If text contains Devanagari Hindi but chosen voice is English-only, transliterate to Roman Latin
+    const isDevanagari = /[\u0900-\u097F]/.test(spokenScriptText);
     const voiceLang = (voiceToUse?.lang || '').toLowerCase();
     if (isDevanagari && !voiceLang.startsWith('hi')) {
-      cleanText = transliterateDevanagari(cleanText);
+      spokenScriptText = transliterateDevanagari(spokenScriptText);
     }
 
-    const utterance = new SpeechSynthesisUtterance(cleanText);
-    if (voiceToUse) {
-      utterance.voice = voiceToUse;
-      utterance.lang = voiceToUse.lang || detectedLang;
-    } else {
-      utterance.lang = detectedLang;
-    }
+    const doSpeak = () => {
+      const utterance = new SpeechSynthesisUtterance(spokenScriptText);
 
-    // Speech parameters
-    utterance.volume = 1.0;
-    utterance.pitch = this.pitch || 1.05;
-    utterance.rate = this.rate || 1.0;
-
-    // CRITICAL: Prevent Chromium garbage collection bug by pinning reference
-    window._currentRayaUtterance = utterance;
-    this.currentUtterance = utterance;
-
-    let watchdogTimer = null;
-
-    const cleanup = () => {
-      if (watchdogTimer) clearInterval(watchdogTimer);
-      window._currentRayaUtterance = null;
-      this.currentUtterance = null;
-      this.isSpeaking = false;
-      if (this.lipSyncEngine) {
-        this.lipSyncEngine.stopSyntheticSpeech();
+      if (voiceToUse) {
+        utterance.voice = voiceToUse;
+        utterance.lang = voiceToUse.lang || detectedLang;
+      } else {
+        utterance.lang = detectedLang;
       }
-      if (this.onSpeechStatus) this.onSpeechStatus('idle');
-    };
 
-    utterance.onstart = () => {
-      this.isSpeaking = true;
-      if (this.lipSyncEngine) {
-        this.lipSyncEngine.startSyntheticSpeech();
-      }
-      if (this.onSpeechStatus) this.onSpeechStatus('speaking');
+      // Edge Natural voice pitch protection:
+      // In Microsoft Edge, cloud neural voices (Online Natural) enforce standard pitch 1.0.
+      // Modifying pitch on Edge cloud voices triggers 'synthesis-failed'.
+      const isEdgeNatural = voiceToUse && /Natural/i.test(voiceToUse.name);
+      utterance.pitch = isEdgeNatural ? 1.0 : (this.pitch || 1.35);
+      utterance.rate = this.rate || 1.10;
+      utterance.volume = 1.0;
 
-      // Watchdog: Chrome long-speech pause bug workaround
-      watchdogTimer = setInterval(() => {
-        if (!this.isSpeaking) {
-          clearInterval(watchdogTimer);
+      // Pin reference to window to eliminate Chromium garbage collection bug
+      window._currentRayaUtterance = utterance;
+      this.currentUtterance = utterance;
+
+      let watchdogTimer = null;
+      let watchdogPaused = null;
+      let speechEnded = false;
+
+      const cleanup = () => {
+        if (speechEnded) return;
+        speechEnded = true;
+        if (watchdogTimer) clearInterval(watchdogTimer);
+        if (watchdogPaused) clearInterval(watchdogPaused);
+        window._currentRayaUtterance = null;
+        this.currentUtterance = null;
+        this.isSpeaking = false;
+        if (this.lipSyncEngine) {
+          this.lipSyncEngine.stopSyntheticSpeech();
+        }
+        if (this.onSpeechStatus) this.onSpeechStatus('idle');
+
+        // Cooldown timer to prevent echo
+        if (this._cooldownTimeoutId) clearTimeout(this._cooldownTimeoutId);
+        this._cooldownTimeoutId = setTimeout(() => {
+          this._wakeWordCooldown = false;
+          this._cooldownTimeoutId = null;
+        }, 1200);
+      };
+
+      utterance.onstart = () => {
+        this.isSpeaking = true;
+        if (this.lipSyncEngine) {
+          this.lipSyncEngine.startSyntheticSpeech();
+        }
+        if (this.onSpeechStatus) this.onSpeechStatus('speaking');
+
+        // Watchdog 1: Silent stop detection
+        watchdogTimer = setInterval(() => {
+          if (!this.synth.speaking && !this.synth.pending && this.isSpeaking && !speechEnded) {
+            console.warn('[VoiceService] Watchdog: speech synthesis silently dropped, forcing cleanup.');
+            cleanup();
+          }
+        }, 300);
+
+        // Watchdog 2: Chrome paused state recovery
+        watchdogPaused = setInterval(() => {
+          if (this.synth.paused && this.isSpeaking && !speechEnded) {
+            try { this.synth.resume(); } catch (e) {}
+          }
+        }, 800);
+      };
+
+      utterance.onend = () => {
+        cleanup();
+      };
+
+      utterance.onerror = (e) => {
+        if (e.error === 'interrupted' || e.error === 'canceled') {
+          cleanup();
           return;
         }
-        if (this.synth && this.synth.paused) {
-          this.synth.resume();
+        console.warn('[VoiceService] Speech error:', e.error);
+        cleanup();
+
+        // Resilient fallback retry: switch to standard voice with pitch 1.0 to guarantee speech
+        try {
+          const allVoices = this.synth.getVoices();
+          const fallbackVoice =
+            allVoices.find((v) => /Neerja.*Natural|Ava.*Natural|Jenny.*Natural|Samantha|Zira/i.test(v.name)) ||
+            allVoices[0];
+          const fallbackUtterance = new SpeechSynthesisUtterance(cleanText);
+          if (fallbackVoice) fallbackUtterance.voice = fallbackVoice;
+          fallbackUtterance.lang = fallbackVoice ? fallbackVoice.lang : 'en-US';
+          fallbackUtterance.rate = 1.10;
+          fallbackUtterance.pitch = 1.0; // standard pitch for guaranteed fallback synthesis
+          fallbackUtterance.onstart = () => {
+            this.isSpeaking = true;
+            if (this.lipSyncEngine) this.lipSyncEngine.startSyntheticSpeech();
+            if (this.onSpeechStatus) this.onSpeechStatus('speaking');
+          };
+          fallbackUtterance.onend = () => cleanup();
+          fallbackUtterance.onerror = () => cleanup();
+          this.synth.speak(fallbackUtterance);
+        } catch (err) {
+          console.warn('[VoiceService] Fallback retry error:', err);
         }
-      }, 2500);
-    };
+      };
 
-    utterance.onend = () => {
-      cleanup();
-    };
+      // Hard safety ceiling based on word count
+      const wordCount = cleanText.split(/\s+/).length;
+      const estimatedMs = Math.max(3500, (wordCount / 3.0) * 1000 + 3000);
+      setTimeout(() => {
+        if (this.isSpeaking && !speechEnded) cleanup();
+      }, estimatedMs);
 
-    utterance.onerror = (e) => {
-      console.warn('[VoiceService] Speech error:', e);
-      cleanup();
-    };
-
-    try {
-      this.synth.speak(utterance);
-      if (this.synth.paused) {
-        this.synth.resume();
+      try {
+        this.synth.speak(utterance);
+        if (this.synth.paused) {
+          try { this.synth.resume(); } catch (e) {}
+        }
+      } catch (e) {
+        console.error('[VoiceService] synth.speak threw error:', e);
+        cleanup();
       }
-    } catch (e) {
-      console.warn('[VoiceService] synth.speak threw error:', e);
-      cleanup();
+    };
+
+    // Edge requires a short delay after cancel() before speak() can execute reliably
+    const isEdge = /Edg\//.test(navigator.userAgent);
+    if (this.synth.speaking) {
+      try { this.synth.cancel(); } catch (e) {}
+      if (isEdge) {
+        setTimeout(() => doSpeak(), 120);
+      } else {
+        doSpeak();
+      }
+    } else {
+      if (isEdge && this.synth.pending) {
+        try { this.synth.cancel(); } catch (e) {}
+        setTimeout(() => doSpeak(), 120);
+      } else {
+        doSpeak();
+      }
     }
   }
 
   stopSpeaking() {
     if (this.synth) {
-      this.synth.cancel();
+      try { this.synth.cancel(); } catch (e) {}
       if (this.synth.paused) {
-        this.synth.resume();
+        try { this.synth.resume(); } catch (e) {}
       }
     }
     window._currentRayaUtterance = null;

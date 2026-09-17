@@ -1029,11 +1029,20 @@ select option:hover, select option:focus, select option:checked {
     min-height: 1.8rem;
   }
 
-  /* Action & Mood Chips */
+  /* Action & Mood Chips & Chat Bar (Elevated for phones only to prevent Netlify watermark overlap) */
   .bottom-controls {
     width: 100%;
     gap: 0.5rem;
-    margin-bottom: 0.2rem;
+    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 3.85rem);
+    position: relative;
+    z-index: 50;
+  }
+
+  /* Keep Netlify badge below interactive UI elements */
+  .netlify-badge,
+  [data-netlify-badge],
+  #netlify-badge {
+    z-index: 10 !important;
   }
 
   .action-chips {
