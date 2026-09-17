@@ -72,21 +72,22 @@ export class VRMManager {
     // 2. Scene
     this.scene = new THREE.Scene();
 
-    // 3. Camera with responsive mobile framing
+    // 3. Camera with responsive mobile framing (Default is Portrait close-up matching user preference)
     this.camera = new THREE.PerspectiveCamera(
       28,
       window.innerWidth / window.innerHeight,
       0.1,
       50
     );
-    this.cameraDefaultPos = new THREE.Vector3(0, 1.25, 3.8);
-    this.cameraClosePos = new THREE.Vector3(0, 1.35, 1.9); // Portrait talking focus
-    this.cameraTarget = new THREE.Vector3(0, 1.15, 0);
-    this.currentCameraMode = 'default';
+    this.currentCameraMode = 'portrait';
+    this.cameraPortraitPos = new THREE.Vector3(0, 1.31, 1.48);
+    this.cameraPortraitTarget = new THREE.Vector3(0, 1.27, 0);
+    this.cameraFullBodyPos = new THREE.Vector3(0, 1.25, 3.8);
+    this.cameraFullBodyTarget = new THREE.Vector3(0, 1.15, 0);
 
     this.updateCameraForScreen();
-    this.camera.position.copy(this.cameraDefaultPos);
-    this.camera.lookAt(this.cameraTarget);
+    this.camera.position.copy(this.cameraPortraitPos);
+    this.camera.lookAt(this.cameraPortraitTarget);
 
     // 5. Lighting
     this.setupLighting();
@@ -122,17 +123,22 @@ export class VRMManager {
     if (aspect < 1.0) {
       // Mobile portrait screen framing
       const phoneScale = 1.0 / Math.max(aspect, 0.45);
-      this.cameraDefaultPos.set(0, 1.12, 3.8 * Math.min(phoneScale * 0.72, 1.55));
-      this.cameraClosePos.set(0, 1.28, 2.2 * Math.min(phoneScale * 0.65, 1.4));
-      this.cameraTarget.set(0, 1.02, 0);
+      this.cameraPortraitPos.set(0, 1.28, 1.70 * Math.min(phoneScale * 0.65, 1.4));
+      this.cameraPortraitTarget.set(0, 1.23, 0);
+      this.cameraFullBodyPos.set(0, 1.12, 3.8 * Math.min(phoneScale * 0.72, 1.55));
+      this.cameraFullBodyTarget.set(0, 1.02, 0);
     } else {
-      this.cameraDefaultPos.set(0, 1.25, 3.8);
-      this.cameraClosePos.set(0, 1.35, 1.9);
-      this.cameraTarget.set(0, 1.15, 0);
+      this.cameraPortraitPos.set(0, 1.31, 1.48);
+      this.cameraPortraitTarget.set(0, 1.27, 0);
+      this.cameraFullBodyPos.set(0, 1.25, 3.8);
+      this.cameraFullBodyTarget.set(0, 1.15, 0);
     }
 
     this.camera.updateProjectionMatrix();
-    this.camera.lookAt(this.cameraTarget);
+    const targetPos = this.currentCameraMode === 'full' ? this.cameraFullBodyPos : this.cameraPortraitPos;
+    const targetLook = this.currentCameraMode === 'full' ? this.cameraFullBodyTarget : this.cameraPortraitTarget;
+    this.camera.position.copy(targetPos);
+    this.camera.lookAt(targetLook);
   }
 
   setupLighting() {
@@ -228,10 +234,10 @@ export class VRMManager {
     }, { passive: true });
   }
 
-  setCameraMode(mode = 'default') {
+  setCameraMode(mode = 'portrait') {
     this.currentCameraMode = mode;
-    const targetPos = mode === 'portrait' ? this.cameraClosePos : this.cameraDefaultPos;
-    const targetLook = mode === 'portrait' ? new THREE.Vector3(0, 1.30, 0) : this.cameraTarget;
+    const targetPos = mode === 'full' ? this.cameraFullBodyPos : this.cameraPortraitPos;
+    const targetLook = mode === 'full' ? this.cameraFullBodyTarget : this.cameraPortraitTarget;
 
     const startPos = this.camera.position.clone();
     const startTime = performance.now();

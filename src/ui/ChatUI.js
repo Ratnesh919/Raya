@@ -50,6 +50,9 @@ export class ChatUI {
     this.drawerToggleBtn?.addEventListener('click', () => {
       const isOpen = this.chatDrawerEl?.classList.toggle('open');
       updateDrawerState(!!isOpen);
+      if (isOpen) {
+        this.drawerToggleBtn?.classList.remove('has-unread');
+      }
     });
     this.drawerCloseBtn?.addEventListener('click', () => {
       this.chatDrawerEl?.classList.remove('open');
@@ -94,13 +97,8 @@ export class ChatUI {
       this.memoryService.detectAndStoreLearnedFacts(text);
     }
 
-    // Append to chat drawer and ensure drawer is open to view dialogue
+    // Append to chat drawer history (drawer remains closed unless message icon is clicked)
     this.addMessageToDrawer('user', text);
-    if (this.chatDrawerEl && !this.chatDrawerEl.classList.contains('open')) {
-      this.chatDrawerEl.classList.add('open');
-      document.body.classList.add('drawer-open');
-      document.getElementById('app-overlay')?.classList.add('drawer-open');
-    }
 
     // Strict chat-only guard: prevent coding requests
     const isCodingRequest =
@@ -137,12 +135,18 @@ export class ChatUI {
       this.removeThinkingIndicator();
       this.voiceService.speak(cleanSpeech);
       this.addMessageToDrawer('assistant', cleanSpeech);
+      if (!this.chatDrawerEl?.classList.contains('open')) {
+        this.drawerToggleBtn?.classList.add('has-unread');
+      }
     } catch (err) {
       console.error('[ChatUI] Message error:', err);
       this.removeThinkingIndicator();
       const errMsg = err.message || 'Something went wrong.';
       this.expressionManager.setEmotionWithAutoReset('sad', 4000);
       this.addMessageToDrawer('assistant', `⚠️ ${errMsg}`);
+      if (!this.chatDrawerEl?.classList.contains('open')) {
+        this.drawerToggleBtn?.classList.add('has-unread');
+      }
     } finally {
       this.isProcessing = false;
     }

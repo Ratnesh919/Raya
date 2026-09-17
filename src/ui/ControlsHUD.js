@@ -13,7 +13,7 @@ export class ControlsHUD {
     this.loaderBarFillEl = document.getElementById('loader-bar-fill');
     this.loadingPctEl = document.getElementById('loading-pct');
 
-    this.currentCameraMode = 'default';
+    this.currentCameraMode = 'portrait';
     this.hideTimeout = null;
 
     // Connect avatar loading progress directly to the visual site loader
@@ -48,12 +48,15 @@ export class ControlsHUD {
       }
     });
 
-    // Camera mode toggle
-    this.btnCameraEl.addEventListener('click', () => {
-      this.currentCameraMode = this.currentCameraMode === 'default' ? 'portrait' : 'default';
-      this.vrmManager.setCameraMode(this.currentCameraMode);
-      this.btnCameraEl.title = this.currentCameraMode === 'portrait' ? 'Switch to Full Body' : 'Switch to Portrait';
-    });
+    // Camera mode toggle (default is Portrait close-up matching user preference)
+    if (this.btnCameraEl) {
+      this.btnCameraEl.title = 'Switch to Full Body';
+      this.btnCameraEl.addEventListener('click', () => {
+        this.currentCameraMode = this.currentCameraMode === 'portrait' ? 'full' : 'portrait';
+        this.vrmManager.setCameraMode(this.currentCameraMode);
+        this.btnCameraEl.title = this.currentCameraMode === 'portrait' ? 'Switch to Full Body' : 'Switch to Portrait';
+      });
+    }
 
 
     // Emotion chips

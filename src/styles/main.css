@@ -154,6 +154,25 @@ html, body {
   transform: translateY(-1px);
 }
 
+.btn-icon.has-unread {
+  position: relative;
+  border-color: var(--primary-neon);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.4);
+}
+
+.btn-icon.has-unread::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--primary-neon);
+  box-shadow: 0 0 8px var(--primary-neon);
+  animation: pulse-glow 1.5s infinite;
+}
+
 /* ─── CHARACTER SPEECH BUBBLE (HIDDEN AS REQUESTED) ───────────────────────── */
 .speech-bubble-container {
   display: none !important;
