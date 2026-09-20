@@ -1,3 +1,5 @@
+import { KokoroService, KOKORO_VOICES, KOKORO_SUPPORTED_LANGS } from './KokoroService.js';
+
 /**
  * Helper to identify high-fidelity / realistic cloud & neural voices
  * Supported across Microsoft Edge (Azure Natural), Google Chrome (Cloud TTS), and Apple (Enhanced Siri).
@@ -240,6 +242,10 @@ export class VoiceService {
   constructor(lipSyncEngine) {
     this.lipSyncEngine = lipSyncEngine;
 
+    // TTS Engine state: 'kokoro' (default local neural AI voice) or 'webspeech' (cloud/browser voice)
+    this.ttsEngine = localStorage.getItem('raya_tts_engine') || 'kokoro';
+    this.kokoroService = new KokoroService(lipSyncEngine);
+
     // TTS state
     this.synth = window.speechSynthesis;
     this.selectedVoiceURI = localStorage.getItem('raya_voice_uri') || 'auto';
@@ -262,8 +268,8 @@ export class VoiceService {
     this.onSpeechStatus = null;
     this.onInterimTranscript = null;
 
-    // Browser audio unlock & autoplay unlock on first user gesture
-    const unlockSynth = () => {
+    // Browser audio unlock & Kokoro background preload on first user gesture
+    const unlockAndPreload = () => {
       if (this.synth) {
         if (this.synth.paused) {
           try { this.synth.resume(); } catch (e) {}
@@ -275,9 +281,15 @@ export class VoiceService {
           this.synth.speak(silentUtterance);
         } catch (e) {}
       }
+      // Preload Kokoro-82M in the background
+      if (this.ttsEngine === 'kokoro' && this.kokoroService.status === 'idle') {
+        this.kokoroService.init().catch((err) => {
+          console.warn('[VoiceService] Kokoro background preload deferred:', err);
+        });
+      }
     };
     ['pointerdown', 'click', 'keydown', 'touchstart'].forEach((evt) => {
-      window.addEventListener(evt, unlockSynth, { once: true, passive: true });
+      window.addEventListener(evt, unlockAndPreload, { once: true, passive: true });
     });
 
     this.initVoices();
@@ -455,6 +467,20 @@ export class VoiceService {
     );
   }
 
+  setTTSEngine(engine) {
+    this.ttsEngine = engine;
+    localStorage.setItem('raya_tts_engine', engine);
+    if (engine === 'kokoro' && this.kokoroService && this.kokoroService.status === 'idle') {
+      this.kokoroService.init().catch(() => {});
+    }
+  }
+
+  setKokoroVoice(voiceId) {
+    if (this.kokoroService) {
+      this.kokoroService.setVoice(voiceId);
+    }
+  }
+
   setVoice(voiceURI) {
     this.selectedVoiceURI = voiceURI;
     localStorage.setItem('raya_voice_uri', voiceURI);
@@ -485,11 +511,13 @@ export class VoiceService {
   }
 
   /**
-   * Speak synthesized voice across all browsers with Edge Natural fallback recovery,
-   * phonetic transliteration, Chrome GC shielding, and iOS Safari resume watchdogs.
+   * Primary Speech Entrypoint
+   * Seamlessly routes between Kokoro Neural AI (studio-grade default for English)
+   * and Web Speech API (Edge Natural / Chrome Cloud / Safari Enhanced) for
+   * Bengali, Hindi, Punjabi, Gujarati, etc., with zero-latency fallback during loading.
    */
   speak(text) {
-    if (!this.synth || !this.autoSpeak || !text) return;
+    if (!this.autoSpeak || !text) return;
 
     // Comprehensive emoji cleaner
     const emojiRegex =
@@ -505,13 +533,72 @@ export class VoiceService {
 
     if (!cleanText) return;
 
-    // Stop ongoing speech safely
+    // Stop ongoing speech across both Kokoro and Web Speech
     this.stopSpeaking();
+
+    const detectedLang = detectLanguage(cleanText);
+
+    // KOKORO ROUTING & RESILIENT FALLBACK:
+    // 1. If engine is 'kokoro' (default), check if Kokoro can speak this language.
+    //    Kokoro 82M supports English ('en-US', 'en-GB', 'en-IN').
+    // 2. If language is Bengali, Hindi, Punjabi, Gujarati:
+    //    Kokoro cannot pronounce these authentically. The system automatically
+    //    routes to the authentic Web Speech Natural Voice (Tanishaa, Swara, Gurpreet, Dhwani).
+    // 3. If language is English:
+    //    - If Kokoro is ready: speaks with Kokoro. If an error occurs, instantly falls back to Web Speech.
+    //    - If Kokoro is loading or idle: kicks off init() in background, and speaks via Web Speech
+    //      immediately so user never experiences silence!
+    const shouldUseKokoro =
+      this.ttsEngine === 'kokoro' &&
+      this.kokoroService &&
+      this.kokoroService.isSupported() &&
+      this.kokoroService.isLanguageSupported(detectedLang);
+
+    if (shouldUseKokoro) {
+      if (this.kokoroService.status === 'ready') {
+        this.isSpeaking = true;
+        if (this.onSpeechStatus) this.onSpeechStatus('speaking');
+
+        this.kokoroService
+          .speak(
+            cleanText,
+            detectedLang,
+            () => {
+              this.isSpeaking = true;
+              if (this.onSpeechStatus) this.onSpeechStatus('speaking');
+            },
+            () => {
+              this.isSpeaking = false;
+              if (this.onSpeechStatus) this.onSpeechStatus('idle');
+            }
+          )
+          .catch((err) => {
+            console.warn('[VoiceService] Kokoro playback failed, falling back to Web Speech:', err);
+            this.speakWebSpeech(cleanText, detectedLang);
+          });
+        return;
+      } else {
+        console.log('[VoiceService] Kokoro is loading in background, falling back to Web Speech for zero-delay response...');
+        this.kokoroService.init().catch(() => {});
+        this.speakWebSpeech(cleanText, detectedLang);
+        return;
+      }
+    }
+
+    // Default Web Speech API for Hindi, Bengali, Punjabi, Gujarati or when Web Speech is chosen
+    this.speakWebSpeech(cleanText, detectedLang);
+  }
+
+  /**
+   * Speak synthesized voice via Web Speech API across all browsers with Edge Natural fallback recovery,
+   * phonetic transliteration, Chrome GC shielding, and iOS Safari resume watchdogs.
+   */
+  speakWebSpeech(cleanText, detectedLang) {
+    if (!this.synth) return;
+
     if (this.synth.paused) {
       try { this.synth.resume(); } catch (e) {}
     }
-
-    const detectedLang = detectLanguage(cleanText);
 
     // Determine the optimal realistic voice for this specific utterance
     let voiceToUse = null;
@@ -550,9 +637,7 @@ export class VoiceService {
         utterance.lang = detectedLang;
       }
 
-      // Edge Natural voice pitch protection:
-      // In Microsoft Edge, cloud neural voices (Online Natural) enforce standard pitch 1.0.
-      // Modifying pitch on Edge cloud voices triggers 'synthesis-failed'.
+      // Edge Natural voice pitch protection
       const isEdgeNatural = voiceToUse && /Natural/i.test(voiceToUse.name);
       utterance.pitch = isEdgeNatural ? 1.0 : (this.pitch || 1.35);
       utterance.rate = this.rate || 1.10;
@@ -622,7 +707,7 @@ export class VoiceService {
         console.warn('[VoiceService] Speech error:', e.error);
         cleanup();
 
-        // Resilient fallback retry: switch to standard voice with pitch 1.0 to guarantee speech
+        // Resilient fallback retry
         try {
           const allVoices = this.synth.getVoices();
           const fallbackVoice =
@@ -632,7 +717,7 @@ export class VoiceService {
           if (fallbackVoice) fallbackUtterance.voice = fallbackVoice;
           fallbackUtterance.lang = fallbackVoice ? fallbackVoice.lang : 'en-US';
           fallbackUtterance.rate = 1.10;
-          fallbackUtterance.pitch = 1.0; // standard pitch for guaranteed fallback synthesis
+          fallbackUtterance.pitch = 1.0;
           fallbackUtterance.onstart = () => {
             this.isSpeaking = true;
             if (this.lipSyncEngine) this.lipSyncEngine.startSyntheticSpeech();
@@ -684,6 +769,9 @@ export class VoiceService {
   }
 
   stopSpeaking() {
+    if (this.kokoroService) {
+      try { this.kokoroService.stop(); } catch (e) {}
+    }
     if (this.synth) {
       try { this.synth.cancel(); } catch (e) {}
       if (this.synth.paused) {

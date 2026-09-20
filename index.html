@@ -225,10 +225,33 @@
 
         <!-- Voice Settings -->
         <div class="form-group">
-          <label class="form-label">Text-to-Speech Voice (Realistic AI Voices)</label>
+          <label class="form-label">TTS Voice Engine</label>
+          <select id="setting-tts-engine" class="form-select">
+            <option value="kokoro" selected>🚀 Kokoro-82M Local Neural AI (Studio Quality — Default)</option>
+            <option value="webspeech">🌐 Web Speech API (Edge Natural / Browser Cloud)</option>
+          </select>
+          <small style="display: block; margin-top: 4px; color: var(--accent-cyan); font-size: 0.74rem;">
+            Kokoro-82M delivers studio-grade human voice locally. Non-English speech (Bengali, Hindi, etc.) automatically routes to authentic native voices.
+          </small>
+        </div>
+
+        <div class="form-group" id="kokoro-voice-group">
+          <label class="form-label">Kokoro Neural Voice</label>
+          <select id="setting-kokoro-voice" class="form-select">
+            <option value="af_heart" selected>Heart (American Warm & Lively — Grade A Studio Quality)</option>
+            <option value="af_bella">Bella (American Energetic — Grade A-)</option>
+            <option value="af_sarah">Sarah (American Natural Soft)</option>
+            <option value="af_nicole">Nicole (American Expressive)</option>
+            <option value="bf_emma">Emma (British Natural)</option>
+            <option value="bf_isabella">Isabella (British Soft)</option>
+          </select>
+        </div>
+
+        <div class="form-group" id="webspeech-voice-group">
+          <label class="form-label">Web Speech Voice (Fallback / Browser Engine)</label>
           <select id="setting-voice" class="form-select"></select>
           <small style="display: block; margin-top: 4px; color: var(--accent-cyan); font-size: 0.74rem;">
-            Auto-Detect dynamically picks realistic native voices for Hindi, Bengali, Indian English, & Global English.
+            Auto-Detect dynamically picks realistic native voices for Hindi (Swara), Bengali (Tanishaa), Indian English, & Global English.
           </small>
         </div>
 

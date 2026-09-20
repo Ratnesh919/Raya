@@ -15,6 +15,10 @@ export class SettingsModal {
     this.providerSelectEl = document.getElementById('setting-provider');
     this.apiKeyInputEl = document.getElementById('setting-api-key');
     this.modelInputEl = document.getElementById('setting-model');
+    this.ttsEngineSelectEl = document.getElementById('setting-tts-engine');
+    this.kokoroVoiceSelectEl = document.getElementById('setting-kokoro-voice');
+    this.kokoroVoiceGroupEl = document.getElementById('kokoro-voice-group');
+    this.webspeechVoiceGroupEl = document.getElementById('webspeech-voice-group');
     this.voiceSelectEl = document.getElementById('setting-voice');
     this.sttLangSelectEl = document.getElementById('setting-stt-lang');
     this.pitchSliderEl = document.getElementById('setting-pitch');
@@ -32,6 +36,12 @@ export class SettingsModal {
     this.btnCloseEl?.addEventListener('click', () => this.close());
     this.modalEl.addEventListener('click', (e) => {
       if (e.target === this.modalEl) this.close();
+    });
+
+    this.ttsEngineSelectEl?.addEventListener('change', (e) => {
+      const eng = e.target.value;
+      if (this.kokoroVoiceGroupEl) this.kokoroVoiceGroupEl.style.display = eng === 'kokoro' ? 'block' : 'none';
+      if (this.webspeechVoiceGroupEl) this.webspeechVoiceGroupEl.style.display = eng === 'webspeech' ? 'block' : 'none';
     });
 
     this.providerSelectEl.addEventListener('change', (e) => {
@@ -66,6 +76,21 @@ export class SettingsModal {
       this.apiKeyInputEl.value = this.llmService.getApiKey(currentProv);
     }
     this.modelInputEl.value = this.llmService.model;
+
+    // TTS Engine & Voice configuration
+    const currentEngine = this.voiceService.ttsEngine || 'kokoro';
+    if (this.ttsEngineSelectEl) {
+      this.ttsEngineSelectEl.value = currentEngine;
+    }
+    if (this.kokoroVoiceSelectEl && this.voiceService.kokoroService) {
+      this.kokoroVoiceSelectEl.value = this.voiceService.kokoroService.selectedVoice || 'af_heart';
+    }
+    if (this.kokoroVoiceGroupEl) {
+      this.kokoroVoiceGroupEl.style.display = currentEngine === 'kokoro' ? 'block' : 'none';
+    }
+    if (this.webspeechVoiceGroupEl) {
+      this.webspeechVoiceGroupEl.style.display = currentEngine === 'webspeech' ? 'block' : 'none';
+    }
 
     // Populate voices with Auto-Detect as top option, realistic voices highlighted
     this.voiceSelectEl.innerHTML = '';
@@ -126,6 +151,13 @@ export class SettingsModal {
     this.llmService.setModel(model, prov);
     this.llmService.setSystemPrompt(this.systemPromptEl.value);
 
+    // Save TTS Engine & Voice configuration
+    if (this.ttsEngineSelectEl) {
+      this.voiceService.setTTSEngine(this.ttsEngineSelectEl.value);
+    }
+    if (this.kokoroVoiceSelectEl) {
+      this.voiceService.setKokoroVoice(this.kokoroVoiceSelectEl.value);
+    }
     this.voiceService.setVoice(this.voiceSelectEl.value);
     if (this.sttLangSelectEl) {
       this.voiceService.setRecognitionLanguage(this.sttLangSelectEl.value);

@@ -13,6 +13,7 @@
     "@netlify/functions": "^6.0.0",
     "@pixiv/three-vrm": "^3.3.6",
     "@pixiv/three-vrm-animation": "^3.3.6",
+    "kokoro-js": "^1.2.1",
     "three": "^0.163.0"
   },
   "devDependencies": {

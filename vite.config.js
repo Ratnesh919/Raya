@@ -12,5 +12,8 @@ export default defineConfig({
       }
     }
   },
-  assetsInclude: ['**/*.vrm', '**/*.fbx']
+  assetsInclude: ['**/*.vrm', '**/*.fbx'],
+  build: {
+    target: 'esnext'
+  }
 });
