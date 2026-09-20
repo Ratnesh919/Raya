@@ -1,20 +1,21 @@
 import * as THREE from 'three';
 
 const EXPR_ALIASES = {
-  happy: ['happy', 'joy', 'Joy', 'HAPPY', 'JOY'],
-  surprised: ['surprised', 'fun', 'Fun', 'SURPRISED'],
-  sad: ['sad', 'sorrow', 'Sorrow', 'SAD', 'SORROW'],
+  happy: ['happy', 'Joy', 'joy', 'HAPPY', 'JOY'],
+  surprised: ['surprised', 'Surprised', 'SURPRISED'],
+  sad: ['sad', 'Sorrow', 'sorrow', 'SAD', 'SORROW'],
   angry: ['angry', 'Angry', 'ANGRY'],
-  relaxed: ['relaxed', 'fun', 'Fun', 'RELAXED'],
-  think: ['neutral', 'Neutral', 'NEUTRAL'],
-  wink: ['blinkLeft', 'blink_l', 'Blink_L', 'BLINK_L'],
+  relaxed: ['relaxed', 'Fun', 'fun', 'RELAXED'],
+  think: ['neutral', 'Neutral', 'NEUTRAL', 'confused'],
+  wink: ['blinkLeft', 'blink_l', 'Blink_L', 'BLINK_L', 'blinkRight'],
   blink: ['blink', 'Blink', 'BLINK'],
   neutral: ['neutral', 'Neutral', 'NEUTRAL'],
-  aa: ['aa', 'a', 'A', 'AA'],
-  ee: ['ee', 'e', 'E', 'EE'],
-  ih: ['ih', 'i', 'I', 'IH'],
-  oh: ['oh', 'o', 'O', 'OH'],
-  ou: ['ou', 'u', 'U', 'OU']
+  blush: ['blush', 'Blush', 'heart eyes'],
+  aa: ['aa', 'A', 'a', 'AA'],
+  ee: ['ee', 'E', 'e', 'EE'],
+  ih: ['ih', 'I', 'i', 'IH'],
+  oh: ['oh', 'O', 'o', 'OH'],
+  ou: ['ou', 'U', 'u', 'OU']
 };
 
 export class ExpressionManager {
@@ -25,54 +26,37 @@ export class ExpressionManager {
     this.currentEmotion = 'neutral';
     this.isTransitioning = false;
     this.transitionProgress = 0;
-    this.blendDuration = 0.3; // seconds
+    this.blendDuration = 0.35; // smooth natural transition in seconds
 
     this.currentValues = new Map();
     this.targetValues = new Map();
     this.resetTimer = null;
 
     this.emotionPresets = {
-      // Core base emotions
+      // Core companion emotions (Pure facial emotions; mouth blendshapes left free for LipSync)
       neutral: {},
-      happy: { happy: 0.95, relaxed: 0.25, aa: 0.06 },
-      surprised: { surprised: 0.88, oh: 0.25 },
-      sad: { sad: 0.82, oh: 0.08 },
-      angry: { angry: 0.85, ee: 0.15 },
-      relaxed: { relaxed: 0.85, happy: 0.35 },
-      think: { relaxed: 0.35, surprised: 0.18, wink: 0.15 },
-      wink: { wink: 1.0, happy: 0.75, relaxed: 0.25 },
-
-      // SillyTavern Extension-VRM 28-Emotion Taxonomy:
-      joy: { happy: 1.0, relaxed: 0.3, aa: 0.1 },
-      amusement: { happy: 0.85, relaxed: 0.4, aa: 0.08 },
+      happy: { happy: 0.85, relaxed: 0.3 },
+      joy: { happy: 1.0, relaxed: 0.35 },
+      caring: { relaxed: 0.75, happy: 0.35, sad: 0.1 },
+      console: { sad: 0.25, relaxed: 0.75, happy: 0.15 },
+      empathy: { sad: 0.35, relaxed: 0.65, happy: 0.1 },
+      advice: { relaxed: 0.65, happy: 0.3, surprised: 0.1 },
+      surprised: { surprised: 0.85 },
+      sad: { sad: 0.85 },
+      angry: { angry: 0.85 },
+      relaxed: { relaxed: 0.85, happy: 0.25 },
+      think: { relaxed: 0.35, surprised: 0.18 },
+      wink: { wink: 1.0, happy: 0.7, relaxed: 0.2 },
+      blush: { blush: 0.95, happy: 0.65, wink: 0.2 },
+      curiosity: { surprised: 0.4, relaxed: 0.3 },
+      amusement: { happy: 0.85, relaxed: 0.4 },
       admiration: { relaxed: 0.75, happy: 0.45, surprised: 0.15 },
-      approval: { happy: 0.65, relaxed: 0.45 },
-      caring: { relaxed: 0.85, happy: 0.4 },
-      love: { relaxed: 0.9, happy: 0.55, aa: 0.05 },
+      love: { relaxed: 0.85, happy: 0.55, blush: 0.8 },
       gratitude: { relaxed: 0.8, happy: 0.5 },
       optimism: { happy: 0.8, relaxed: 0.3 },
-      pride: { happy: 0.7, relaxed: 0.2 },
-      relief: { relaxed: 0.95, happy: 0.2 },
-
-      curiosity: { surprised: 0.35, relaxed: 0.25, wink: 0.1 },
-      confusion: { surprised: 0.5, angry: 0.15 },
-      realization: { surprised: 0.75, oh: 0.2 },
-      excitement: { surprised: 0.8, happy: 0.85, aa: 0.15 },
-      surprise: { surprised: 0.95, oh: 0.3 },
-
-      desire: { wink: 0.65, relaxed: 0.5, happy: 0.4 },
-      embarrassment: { wink: 0.45, happy: 0.5, relaxed: 0.2 },
-      nervousness: { sad: 0.4, surprised: 0.25 },
-
-      disappointment: { sad: 0.65, angry: 0.25 },
-      disapproval: { angry: 0.6, sad: 0.2 },
-      annoyance: { angry: 0.75, ee: 0.1 },
-      disgust: { angry: 0.8, sad: 0.3, ee: 0.2 },
-      anger: { angry: 0.95, ee: 0.25 },
-      fear: { sad: 0.7, surprised: 0.55, oh: 0.15 },
-      grief: { sad: 0.95, oh: 0.12 },
-      remorse: { sad: 0.8, relaxed: 0.1 },
-      sadness: { sad: 0.85, oh: 0.08 }
+      embarrassment: { blush: 0.85, wink: 0.4, happy: 0.45 },
+      disappointment: { sad: 0.65, angry: 0.2 },
+      confusion: { surprised: 0.45, angry: 0.1 }
     };
 
     // Listen to model loaded event
@@ -174,7 +158,7 @@ export class ExpressionManager {
     this.currentValues.clear();
     this.targetValues.clear();
 
-    const allKeys = ['happy', 'sad', 'angry', 'surprised', 'relaxed', 'wink', 'aa', 'oh', 'ee'];
+    const allKeys = ['happy', 'sad', 'angry', 'surprised', 'relaxed', 'wink', 'blush'];
 
     allKeys.forEach((key) => {
       const currentVal = this.getExpressionValue(key);

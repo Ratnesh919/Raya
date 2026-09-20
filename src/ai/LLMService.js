@@ -28,8 +28,8 @@ export class LLMService {
     this.apiKey = this.getApiKey(this.provider);
     this.model = localStorage.getItem(`raya_model_${this.provider}`) || DEFAULT_MODELS[this.provider];
     const savedPrompt = localStorage.getItem('raya_system_prompt');
-    if (!savedPrompt || !localStorage.getItem('raya_prompt_v2')) {
-      localStorage.setItem('raya_prompt_v2', 'true');
+    if (!savedPrompt || !localStorage.getItem('raya_prompt_v3')) {
+      localStorage.setItem('raya_prompt_v3', 'true');
       localStorage.setItem('raya_system_prompt', DEFAULT_SYSTEM_PROMPT);
       this.systemPrompt = DEFAULT_SYSTEM_PROMPT;
     } else {

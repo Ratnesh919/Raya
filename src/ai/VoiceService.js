@@ -17,7 +17,7 @@ export function isRealisticVoice(voice) {
  * Strict male filter to guarantee ONLY female voices are ever used for Raya
  * Based on PROJECT_DOCUMENTATION.md & chatbot.js specifications
  */
-const MALE_FILTER = /\b(male|boy|man|guy)\b|bashkar|madhur|hemant|ojas|niranjan|manohar|valluvar|mohan|gagan|midhun|keita|david|mark|george|james|ravi|ryan|christopher|eric|andrew|brian|roger|steffan|prabhat|pradeep|rishi|richard|sean|paul|alex|daniel|tom|oliver|arthur|fred/i;
+const MALE_FILTER = /\b(male|boy|man|guy|masculine|homme|hombre|mann)\b|bashkar|madhur|hemant|ojas|niranjan|manohar|valluvar|mohan|gagan|midhun|keita|david|mark|george|james|ravi|ryan|christopher|eric|andrew|brian|roger|steffan|prabhat|pradeep|rishi|richard|sean|paul|alex|daniel|tom|oliver|arthur|fred|adam|echo|liam|michael|onyx|puck|santa|lewis|fable|yunxi|yunjian|yunyang|yunxia|kumo|nicola|omega|psi/i;
 
 /**
  * Helper to check if a voice is female (strictly excluding male voices)
@@ -26,21 +26,22 @@ export function isFemaleVoice(voice) {
   if (!voice) return false;
   const name = (voice.name || '').toLowerCase();
 
-  // 1. Explicit female whitelist
-  const isExplicitlyFemale =
-    /\b(female|woman|girl)\b/i.test(name) ||
-    /zira|jenny|aria|ava|sonia|maisie|swara|neerja|tanishaa|nabanita|nabami|veena|heera|samantha|karen|moira|tessa|lekha|kalpana|ananya|aditi|sunita|sheetal|victoria|hazel|susan|catherine|linda|heather|stephanie|ayumi|haruka|nanami|aoi|kyoko|gurpreet|dhwani|libby/i.test(name);
-  if (isExplicitlyFemale) return true;
-
-  // 2. Explicit male blacklist
+  // 1. Explicit male blacklist: if male filter matches, reject immediately
   if (MALE_FILTER.test(name)) return false;
 
-  // Google Chrome voices
+  // 2. Explicit female whitelist
+  const isExplicitlyFemale =
+    /\b(female|woman|girl|feminine|femme|mujer|frau)\b/i.test(name) ||
+    /zira|jenny|aria|ava|sonia|maisie|swara|neerja|tanishaa|nabanita|nabami|veena|heera|samantha|karen|moira|tessa|lekha|kalpana|ananya|aditi|sunita|sheetal|victoria|hazel|susan|catherine|linda|heather|stephanie|ayumi|haruka|nanami|aoi|kyoko|gurpreet|dhwani|libby|alice|emma|isabella|sarah|nicole|bella|heart/i.test(name);
+  if (isExplicitlyFemale) return true;
+
+  // 3. Google Chrome voices
   if (/^Google\s/i.test(name)) {
     return !/\bmale\b/i.test(name);
   }
 
-  return true;
+  // 4. Fallback: only accept if not matching any male filter
+  return !MALE_FILTER.test(name);
 }
 
 /**
@@ -329,7 +330,7 @@ export class VoiceService {
     if (!this.synth) return [];
     const all = this.synth.getVoices();
     const femaleOnly = all.filter((v) => isFemaleVoice(v));
-    return femaleOnly.length > 0 ? femaleOnly : all;
+    return femaleOnly;
   }
 
   /**
@@ -461,9 +462,9 @@ export class VoiceService {
       candidateVoices.find((v) => /Zira/i.test(v.name)) ||
       candidateVoices.find((v) => /Hazel/i.test(v.name)) ||
       candidateVoices.find((v) => /Emma/i.test(v.name) && v.lang.startsWith('en')) ||
-      candidateVoices.find((v) => v.lang.startsWith('en') && v.name.toLowerCase().includes('female')) ||
-      candidateVoices.find((v) => v.lang.startsWith('en')) ||
-      candidateVoices[0]
+      candidateVoices.find((v) => v.lang.startsWith('en') && isFemaleVoice(v)) ||
+      candidateVoices.find((v) => isFemaleVoice(v)) ||
+      null
     );
   }
 
@@ -711,8 +712,9 @@ export class VoiceService {
         try {
           const allVoices = this.synth.getVoices();
           const fallbackVoice =
-            allVoices.find((v) => /Neerja.*Natural|Ava.*Natural|Jenny.*Natural|Samantha|Zira/i.test(v.name)) ||
-            allVoices[0];
+            allVoices.find((v) => isFemaleVoice(v) && /Neerja.*Natural|Ava.*Natural|Jenny.*Natural|Samantha|Zira/i.test(v.name)) ||
+            allVoices.find((v) => isFemaleVoice(v)) ||
+            null;
           const fallbackUtterance = new SpeechSynthesisUtterance(cleanText);
           if (fallbackVoice) fallbackUtterance.voice = fallbackVoice;
           fallbackUtterance.lang = fallbackVoice ? fallbackVoice.lang : 'en-US';

@@ -116,20 +116,27 @@ export class ChatUI {
 
     // Show thinking indicator in drawer
     this.showThinkingIndicator();
-    this.expressionManager.setEmotion('think', 0.8);
+
+    // Instant empathetic facial reaction to the user's message tone while waiting for LLM
+    const userIntent = this.analyzeUserIntentEmotion(text);
+    this.expressionManager.setEmotion(userIntent.emotion, userIntent.intensity || 0.8);
 
     try {
       const response = await this.llmService.sendMessage(text);
 
       // Analyze conversational sentiment across user query and assistant response
       const sentiment = this.analyzeChatSentiment(text, response.speechText);
-      const finalEmotion = response.emotion || sentiment.emotion || 'happy';
-
-      // Trigger facial emotion with smooth auto-reset (avatar stays in natural fluid idle)
-      this.expressionManager.setEmotionWithAutoReset(finalEmotion, 5500);
+      const finalEmotion = response.emotion || sentiment.emotion || 'caring';
 
       // Clean speech text
       const cleanSpeech = (response.speechText || '').replace(/\[.*?\]/g, '').replace(/[*_#~`]/g, '').trim();
+
+      // Dynamically calculate speech duration for smooth auto-reset matching the spoken duration
+      const wordCount = cleanSpeech.split(/\s+/).length;
+      const speechDurationMs = Math.max(5000, (wordCount / 2.6) * 1000 + 2500);
+
+      // Trigger facial emotion with smooth auto-reset
+      this.expressionManager.setEmotionWithAutoReset(finalEmotion, speechDurationMs);
 
       // Remove thinking indicator, speak voice synthesis, and display in drawer
       this.removeThinkingIndicator();
@@ -153,6 +160,45 @@ export class ChatUI {
   }
 
   /**
+   * Instantly detect user's emotional state from their message so Raya reacts before LLM generation
+   */
+  analyzeUserIntentEmotion(userText = '') {
+    const text = userText.toLowerCase();
+
+    // 1. Distress / Sadness / Loneliness / Venting (Instant Caring / Empathy)
+    if (/\b(sad|depressed|cry|crying|tears|unhappy|lonely|alone|heartbreak|heartbroken|died|loss|hurt|pain|tired|exhausted|burnout|overwhelmed|failed|fail|lost|bad day|terrible|horrible|hopeless|anxious|anxiety|scared|scary|dar|dukh|dard|pareshan|rona|udas|thak gaya)\b/i.test(text)) {
+      return { emotion: 'caring', intensity: 0.9 };
+    }
+
+    // 2. Flirting / Compliments / Sweetness (Instant Blush)
+    if (/\b(cute|pretty|beautiful|gorgeous|attractive|marry|love you|pyar|pyaar|sundar|sweetheart|babe|darling|crush|hot|sexy|blush|kiss)\b/i.test(text)) {
+      return { emotion: 'blush', intensity: 0.95 };
+    }
+
+    // 3. Seeking Advice / Help / Decision (Thoughtful & Attentive)
+    if (/\b(advice|suggest|suggestion|help me|what should i do|confused|decide|decision|guidance|opinion|what do you think|kaise karu|kya karu|salaah|upay)\b/i.test(text)) {
+      return { emotion: 'advice', intensity: 0.85 };
+    }
+
+    // 4. Excitement / Joy / Good News / Win (Radiant Joy)
+    if (/\b(yay|hurray|awesome|won|passed|promoted|success|great news|good news|celebrate|happy|excited|omg|wow|badhiya|maza|party)\b/i.test(text)) {
+      return { emotion: 'joy', intensity: 0.95 };
+    }
+
+    // 5. Questions / Curiosity
+    if (/\?|\b(why|how|what|tell me|who|when|where|kyun|kaise|kya)\b/i.test(text)) {
+      return { emotion: 'curiosity', intensity: 0.8 };
+    }
+
+    // 6. Bedtime / Calming
+    if (/\b(sleep|sleepy|yawn|good night|so jao|neend|shubh ratri)\b/i.test(text)) {
+      return { emotion: 'relaxed', intensity: 0.85 };
+    }
+
+    return { emotion: 'think', intensity: 0.75 };
+  }
+
+  /**
    * Intelligently deduce facial expression and body gesture from conversational sentiment
    */
   analyzeChatSentiment(userText = '', assistantText = '') {
@@ -163,42 +209,52 @@ export class ChatUI {
       return { emotion: 'relaxed', action: 'sitting' };
     }
 
-    // 2. Greetings & Warmth
+    // 2. Consoling & Comforting
+    if (/\b(here for you|it will be okay|it's okay|take a deep breath|don't worry|i'm so sorry|gentle hug|so sorry|be alright|i understand|proud of you|you're strong|with you|chinta mat|sab theek|mat ro|main hoon na)\b/i.test(combined)) {
+      return { emotion: 'console', action: null };
+    }
+
+    // 3. Caring / Deep Empathy / Listening
+    if (/\b(feel you|hear you|listening|care about you|exhausting|overwhelming|difficult|tough|vent|let it out|safe with me|take your time|meri jaan|dost)\b/i.test(combined)) {
+      return { emotion: 'caring', action: null };
+    }
+
+    // 4. Giving Advice / Suggestions / Perspective
+    if (/\b(suggest|recommend|advice|try this|first step|step by step|focus on|break it down|perspective|start by|consider|solution|salaah|upay|raasta)\b/i.test(combined)) {
+      return { emotion: 'advice', action: null };
+    }
+
+    // 5. Compliments / Flirting / Blushing
+    if (/\b(blush|flattered|thank you so much|sweet of you|you're sweet|making me blush|shy|flirt|giggle|aww|awww|sharma)\b/i.test(combined)) {
+      return { emotion: 'blush', action: 'happy' };
+    }
+
+    // 6. Greetings & Warmth
     if (/\b(namaste|pranam|hello|hi|hey|greet|welcome|kemon acho|kaise ho|kaisi ho)\b/i.test(combined)) {
-      return { emotion: 'relaxed', action: 'wave' };
+      return { emotion: 'happy', action: 'wave' };
     }
 
-    // 3. Playful / Flirty / Tease / Wink
-    if (/\b(cute|pretty|beautiful|flirt|wink|tease|smart|gorgeous|sweetheart|sundar|shh|secret|chalo|naughty)\b/i.test(combined)) {
-      return { emotion: 'wink', action: 'happy' };
-    }
-
-    // 4. Surprise / Wonder / Amazement
+    // 7. Surprise / Wonder / Amazement
     if (/\b(wow|whoa|omg|really\?|unbelievable|astonishing|incredible|shocking|amazing|no way|sach|sach mein)\b/i.test(combined)) {
       return { emotion: 'surprised', action: 'excited' };
     }
 
-    // 5. Joy / Laughter / Excitement
+    // 8. Joy / Laughter / Excitement
     if (/\b(haha|lmao|lol|funny|yay|hurray|awesome|great|super|fantastic|party|excited|khushi|badhiya|maza|dhamaka)\b/i.test(combined)) {
-      return { emotion: 'happy', action: 'happy' };
+      return { emotion: 'joy', action: 'happy' };
     }
 
-    // 6. Deep Thought / Curious / Inquiry
+    // 9. Deep Thought / Curiosity / Inquiry
     if (/\b(\?|why|how|what if|reason|wonder|ponder|think|curious|kyun|kaise|kya|socho|batao)\b/i.test(combined)) {
-      return { emotion: 'think', action: null };
+      return { emotion: 'curiosity', action: null };
     }
 
-    // 7. Sadness / Comfort / Empathy
-    if (/\b(sad|sorry|cry|crying|upset|heartbroken|lonely|alone|exhausted|tired|depressed|dukh|dard|pareshan|thak gaya)\b/i.test(combined)) {
-      return { emotion: 'sad', action: 'sad' };
-    }
-
-    // 8. Sleepy / Night / Yawn
+    // 10. Sleepy / Night / Yawn
     if (/\b(sleep|sleepy|yawn|good night|so jao|neend|shubh ratri)\b/i.test(combined)) {
       return { emotion: 'relaxed', action: 'yawn' };
     }
 
-    // 9. Anger / Refusal
+    // 11. Anger / Refusal
     if (/\b(no|never|stop|hate|angry|mad|gussa|nahi|mat karo)\b/i.test(combined)) {
       return { emotion: 'angry', action: 'no' };
     }
