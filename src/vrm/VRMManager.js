@@ -42,20 +42,31 @@ export class VRMManager {
   }
 
   initScene() {
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) || window.innerWidth < 768;
+    const isMobile = /iPhone|iPad|iPod|Android|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
     const isLowEnd = (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
                      (navigator.deviceMemory && navigator.deviceMemory <= 4);
 
+    this.isMobile = isMobile;
     this.graphicsQuality = localStorage.getItem('raya_graphics_quality') || (isLowEnd ? 'low' : (isMobile ? 'balanced' : 'high'));
-    this.currentDpr = this.graphicsQuality === 'high' ? Math.min(window.devicePixelRatio, 2.0) : (this.graphicsQuality === 'balanced' ? Math.min(window.devicePixelRatio, 1.5) : 1.0);
 
-    // 1. High Performance WebGL Renderer with hardware antialiasing (MSAA)
+    // On mobile devices, cap DPR to prevent extreme fill-rate overhead (e.g. 1080x2400 screen with DPR 3x is 9 million pixels)
+    if (this.isMobile) {
+      this.currentDpr = this.graphicsQuality === 'high'
+        ? Math.min(window.devicePixelRatio, 1.25)
+        : (this.graphicsQuality === 'balanced' ? Math.min(window.devicePixelRatio, 1.10) : 1.0);
+    } else {
+      this.currentDpr = this.graphicsQuality === 'high'
+        ? Math.min(window.devicePixelRatio, 2.0)
+        : (this.graphicsQuality === 'balanced' ? Math.min(window.devicePixelRatio, 1.5) : 1.0);
+    }
+
+    // 1. High Performance WebGL Renderer with device-adaptive MSAA
     this.renderer = new THREE.WebGLRenderer({
       canvas: this.canvas,
       alpha: true,
-      antialias: true, // Hardware 4x MSAA
+      antialias: !this.isMobile, // Disable heavy 4x MSAA on mobile tile GPUs to save GPU memory & heat
       powerPreference: 'high-performance', // Forces discrete/high-power GPU on PC & mobile
-      precision: this.graphicsQuality === 'low' ? 'mediump' : 'highp',
+      precision: (this.isMobile || this.graphicsQuality === 'low') ? 'mediump' : 'highp',
       stencil: false,
       depth: true
     });
@@ -104,12 +115,22 @@ export class VRMManager {
   setGraphicsQuality(level) {
     this.graphicsQuality = level;
     localStorage.setItem('raya_graphics_quality', level);
-    if (level === 'high') {
-      this.currentDpr = Math.min(window.devicePixelRatio, 2.0);
-    } else if (level === 'balanced') {
-      this.currentDpr = Math.min(window.devicePixelRatio, 1.5);
+    if (this.isMobile) {
+      if (level === 'high') {
+        this.currentDpr = Math.min(window.devicePixelRatio, 1.25);
+      } else if (level === 'balanced') {
+        this.currentDpr = Math.min(window.devicePixelRatio, 1.10);
+      } else {
+        this.currentDpr = 1.0;
+      }
     } else {
-      this.currentDpr = 1.0;
+      if (level === 'high') {
+        this.currentDpr = Math.min(window.devicePixelRatio, 2.0);
+      } else if (level === 'balanced') {
+        this.currentDpr = Math.min(window.devicePixelRatio, 1.5);
+      } else {
+        this.currentDpr = 1.0;
+      }
     }
     this.renderer.setPixelRatio(this.currentDpr);
   }
@@ -405,9 +426,11 @@ export class VRMManager {
       // Enable shadows & render properties on meshes
       vrm.scene.traverse((obj) => {
         if (obj.isMesh) {
-          obj.castShadow = true;
-          obj.receiveShadow = true;
-          if (obj.material) {
+          if (!this.isMobile) {
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+          }
+          if (obj.material && !obj.material.transparent) {
             obj.material.depthWrite = true;
           }
         }
@@ -441,6 +464,7 @@ export class VRMManager {
   onWindowResize() {
     this.updateCameraForScreen();
     this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.setPixelRatio(this.currentDpr);
   }
 
   setChairVisible(isSitting) {
@@ -478,12 +502,13 @@ export class VRMManager {
 
   render(deltaTime) {
     if (this.currentVrm) {
-      this.currentVrm.update(deltaTime);
-      // Soft real-time breeze physics for hair and cloth
+      // 1. Real-time breeze physics vectors (modifies spring bone joint forces)
       if (this.graphicsQuality !== 'low' && this.currentVrm.springBoneManager) {
         this.updateBreeze(deltaTime);
-        this.currentVrm.springBoneManager.update(deltaTime);
       }
+      // 2. VRM update: @pixiv/three-vrm already updates humanoid, lookAt, and springBoneManager
+      // (Redundant second springBoneManager.update call eliminated to save 50% physics CPU)
+      this.currentVrm.update(deltaTime);
     }
 
     // Adaptive FPS watchdog: dynamically optimize pixel ratio if low-end device is dropping frames
@@ -491,8 +516,9 @@ export class VRMManager {
     this.frameTimeAccum += deltaTime;
     if (this.frameTimeAccum >= 2.0) {
       const avgFps = this.frameCount / this.frameTimeAccum;
-      if (avgFps < 22 && this.currentDpr > 0.75) {
-        this.currentDpr = Math.max(0.75, this.currentDpr - 0.1);
+      const minDpr = this.isMobile ? 0.75 : 1.0;
+      if (avgFps < 22 && this.currentDpr > minDpr) {
+        this.currentDpr = Math.max(minDpr, this.currentDpr - 0.1);
         this.renderer.setPixelRatio(this.currentDpr);
       }
       this.frameCount = 0;

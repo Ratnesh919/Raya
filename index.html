@@ -227,11 +227,11 @@
         <div class="form-group">
           <label class="form-label">TTS Voice Engine</label>
           <select id="setting-tts-engine" class="form-select">
-            <option value="kokoro" selected>🚀 Kokoro-82M Local Neural AI (Studio Quality — Default)</option>
-            <option value="webspeech">🌐 Web Speech API (Edge Natural / Browser Cloud)</option>
+            <option value="webspeech" selected>🌐 Web Speech API (Fast & Smooth — Recommended for Mobile)</option>
+            <option value="kokoro">🚀 Kokoro-82M Neural AI (Studio Quality — PC / GPU)</option>
           </select>
-          <small style="display: block; margin-top: 4px; color: var(--accent-cyan); font-size: 0.74rem;">
-            Kokoro-82M delivers studio-grade human voice locally. Non-English speech (Bengali, Hindi, etc.) automatically routes to authentic native voices.
+          <small id="tts-engine-hint" style="display: block; margin-top: 4px; color: var(--accent-cyan); font-size: 0.74rem;">
+            Web Speech uses native device synthesis with 0 MB RAM overhead. Kokoro-82M delivers studio neural quality on desktop.
           </small>
         </div>
 

@@ -78,7 +78,7 @@ export class SettingsModal {
     this.modelInputEl.value = this.llmService.model;
 
     // TTS Engine & Voice configuration
-    const currentEngine = this.voiceService.ttsEngine || 'kokoro';
+    const currentEngine = this.voiceService.ttsEngine || 'webspeech';
     if (this.ttsEngineSelectEl) {
       this.ttsEngineSelectEl.value = currentEngine;
     }

@@ -14,6 +14,14 @@ export function isRealisticVoice(voice) {
 }
 
 /**
+ * Helper to detect mobile devices (phones & tablets)
+ */
+export function isMobileDevice() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false;
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile/i.test(navigator.userAgent) || window.innerWidth < 768;
+}
+
+/**
  * Strict male filter to guarantee ONLY female voices are ever used for Raya
  * Based on PROJECT_DOCUMENTATION.md & chatbot.js specifications
  */
@@ -243,8 +251,17 @@ export class VoiceService {
   constructor(lipSyncEngine) {
     this.lipSyncEngine = lipSyncEngine;
 
-    // TTS Engine state: 'kokoro' (default local neural AI voice) or 'webspeech' (cloud/browser voice)
-    this.ttsEngine = localStorage.getItem('raya_tts_engine') || 'kokoro';
+    // Automatic mobile performance migration (ensures phones previously set to kokoro default to webspeech)
+    const isMobile = isMobileDevice();
+    if (isMobile && !localStorage.getItem('raya_mobile_perf_v2')) {
+      localStorage.setItem('raya_mobile_perf_v2', 'true');
+      localStorage.setItem('raya_tts_engine', 'webspeech');
+    }
+
+    // TTS Engine state: on mobile phones default to 'webspeech' (zero RAM, instant native OS speech),
+    // on desktop default to 'kokoro' (studio neural AI voice)
+    const defaultEngine = isMobile ? 'webspeech' : 'kokoro';
+    this.ttsEngine = localStorage.getItem('raya_tts_engine') || defaultEngine;
     this.kokoroService = new KokoroService(lipSyncEngine);
 
     // TTS state
@@ -269,7 +286,7 @@ export class VoiceService {
     this.onSpeechStatus = null;
     this.onInterimTranscript = null;
 
-    // Browser audio unlock & Kokoro background preload on first user gesture
+    // Browser audio unlock & selective Kokoro background preload on first user gesture
     const unlockAndPreload = () => {
       if (this.synth) {
         if (this.synth.paused) {
@@ -282,8 +299,9 @@ export class VoiceService {
           this.synth.speak(silentUtterance);
         } catch (e) {}
       }
-      // Preload Kokoro-82M in the background
-      if (this.ttsEngine === 'kokoro' && this.kokoroService.status === 'idle') {
+      // Preload Kokoro-82M in the background ONLY on desktop devices when kokoro engine is active.
+      // On mobile devices, avoid allocating 80MB+ WASM memory on touch gestures to prevent thread lag.
+      if (!isMobileDevice() && this.ttsEngine === 'kokoro' && this.kokoroService.status === 'idle') {
         this.kokoroService.init().catch((err) => {
           console.warn('[VoiceService] Kokoro background preload deferred:', err);
         });
@@ -580,7 +598,9 @@ export class VoiceService {
         return;
       } else {
         console.log('[VoiceService] Kokoro is loading in background, falling back to Web Speech for zero-delay response...');
-        this.kokoroService.init().catch(() => {});
+        if (!isMobileDevice()) {
+          this.kokoroService.init().catch(() => {});
+        }
         this.speakWebSpeech(cleanText, detectedLang);
         return;
       }

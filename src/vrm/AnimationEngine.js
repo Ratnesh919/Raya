@@ -210,6 +210,18 @@ export class AnimationEngine {
       }
     });
 
+    // Cache finger bone node references for fast per-frame access
+    this.fingerNodes = {
+      leftChains: FINGER_CHAINS_L.map((chain) =>
+        chain.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name))
+      ),
+      leftThumb: THUMB_L.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name)),
+      rightChains: FINGER_CHAINS_R.map((chain) =>
+        chain.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name))
+      ),
+      rightThumb: THUMB_R.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name))
+    };
+
     // Start with idle animation immediately on-demand
     await this.playAnimation('idle', 0.2);
   }
@@ -395,7 +407,7 @@ export class AnimationEngine {
   }
 
   applyFingerPose(delta) {
-    if (!this.vrm?.humanoid) return;
+    if (!this.vrm?.humanoid || !this.fingerNodes) return;
 
     const t = THREE.MathUtils.clamp(delta * 8, 0, 1);
     for (const k in this.targetFingerPose) {
@@ -414,38 +426,38 @@ export class AnimationEngine {
         const spreadOffset = (fIdx - 1.5) * pose.spread * spreadSign;
         const indexMult = fIdx === 0 && pose.indexMult !== undefined ? pose.indexMult : 1.0;
 
-        const pNode = this.vrm.humanoid.getNormalizedBoneNode(chain[0]);
+        const pNode = chain[0];
         if (pNode) {
           pNode.rotation.x = pose.proximal * indexMult;
           pNode.rotation.y = spreadOffset;
         }
-        const iNode = this.vrm.humanoid.getNormalizedBoneNode(chain[1]);
+        const iNode = chain[1];
         if (iNode) {
           iNode.rotation.x = pose.intermediate * indexMult;
         }
-        const dNode = this.vrm.humanoid.getNormalizedBoneNode(chain[2]);
+        const dNode = chain[2];
         if (dNode) {
           dNode.rotation.x = pose.distal * indexMult;
         }
       });
 
       // Thumb
-      const t1 = this.vrm.humanoid.getNormalizedBoneNode(thumb[0]);
+      const t1 = thumb[0];
       if (t1) {
         t1.rotation.y = pose.thumbSpread * spreadSign;
       }
-      const t2 = this.vrm.humanoid.getNormalizedBoneNode(thumb[1]);
+      const t2 = thumb[1];
       if (t2) {
         t2.rotation.x = pose.thumbCurl;
       }
-      const t3 = this.vrm.humanoid.getNormalizedBoneNode(thumb[2]);
+      const t3 = thumb[2];
       if (t3) {
         t3.rotation.x = pose.thumbCurl * 0.8;
       }
     };
 
-    applyHand(FINGER_CHAINS_L, THUMB_L, true);
-    applyHand(FINGER_CHAINS_R, THUMB_R, false);
+    applyHand(this.fingerNodes.leftChains, this.fingerNodes.leftThumb, true);
+    applyHand(this.fingerNodes.rightChains, this.fingerNodes.rightThumb, false);
   }
 
   update(delta) {

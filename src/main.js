@@ -72,7 +72,13 @@ async function bootstrap() {
 
   function animate() {
     requestAnimationFrame(animate);
-    const delta = clock.getDelta();
+
+    // Pause rendering when tab is inactive to save battery and prevent mobile overheating
+    if (document.hidden) return;
+
+    // Clamp delta to max 0.05s (20fps step) to prevent physics explosion/spiral of death on mobile
+    const rawDelta = clock.getDelta();
+    const delta = Math.min(rawDelta, 0.05);
 
     // Update animations & retargeted bones
     animationEngine.update(delta);
