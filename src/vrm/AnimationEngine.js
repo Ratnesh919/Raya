@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+import { FingerController, FINGER_PRESETS } from './FingerController.js';
 
 // Mixamo to VRM normalized bone mapping
 const MIXAMO_VRM_RIG_MAP = {
@@ -203,6 +204,8 @@ export class AnimationEngine {
     this.currentAction = null;
     this.currentAnimName = null;
 
+    // Realtime Interactive Finger Controller
+    this.fingerController = new FingerController(null);
     this.currentFingerPose = { ...FINGER_POSES.idle };
     this.targetFingerPose = { ...FINGER_POSES.idle };
 
@@ -272,17 +275,8 @@ export class AnimationEngine {
       }
     });
 
-    // Cache finger bone node references for fast per-frame access
-    this.fingerNodes = {
-      leftChains: FINGER_CHAINS_L.map((chain) =>
-        chain.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name))
-      ),
-      leftThumb: THUMB_L.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name)),
-      rightChains: FINGER_CHAINS_R.map((chain) =>
-        chain.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name))
-      ),
-      rightThumb: THUMB_R.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name))
-    };
+    // Initialize Realtime Finger Controller on humanoid rig
+    this.fingerController.initBones(this.vrm);
 
     // Immediately start idle animation and force first frame calculation so bones lock into idle
     // posture BEFORE the loading overlay disappears (100% eliminates the 2-second T-pose glitch)
@@ -519,62 +513,29 @@ export class AnimationEngine {
     }
   }
 
-  applyFingerPose(delta) {
-    if (!this.vrm?.humanoid || !this.fingerNodes) return;
-
-    // Check which finger bones are actively driven by the retargeted animation keyframes
-    const animatedBones = this.currentAction?.getClip()?.userData?.animatedBones;
-    if (animatedBones && animatedBones.size >= 10) return;
-
-    const t = THREE.MathUtils.clamp(delta * 8, 0, 1);
-    for (const k in this.targetFingerPose) {
-      this.currentFingerPose[k] = THREE.MathUtils.lerp(
-        this.currentFingerPose[k],
-        this.targetFingerPose[k],
-        t
-      );
+  setFingerPose(presetName, hand = 'both', speed = 10.0) {
+    if (this.fingerController) {
+      return this.fingerController.setPose(presetName, hand, speed);
     }
+    return false;
+  }
 
-    const pose = this.currentFingerPose;
+  setFingerCurl(hand, finger, amount) {
+    if (this.fingerController) {
+      this.fingerController.setFingerCurl(hand, finger, amount);
+    }
+  }
 
-    const applyHand = (chains, thumb, isLeft) => {
-      const spreadSign = isLeft ? 1 : -1;
-      chains.forEach((chain, fIdx) => {
-        const spreadOffset = (fIdx - 1.5) * pose.spread * spreadSign;
-        const indexMult = fIdx === 0 && pose.indexMult !== undefined ? pose.indexMult : 1.0;
+  setFingerSpread(hand, amount) {
+    if (this.fingerController) {
+      this.fingerController.setSpread(hand, amount);
+    }
+  }
 
-        const pNode = chain[0];
-        if (pNode && (!animatedBones || !animatedBones.has(pNode.name))) {
-          pNode.rotation.x = pose.proximal * indexMult;
-          pNode.rotation.y = spreadOffset;
-        }
-        const iNode = chain[1];
-        if (iNode && (!animatedBones || !animatedBones.has(iNode.name))) {
-          iNode.rotation.x = pose.intermediate * indexMult;
-        }
-        const dNode = chain[2];
-        if (dNode && (!animatedBones || !animatedBones.has(dNode.name))) {
-          dNode.rotation.x = pose.distal * indexMult;
-        }
-      });
-
-      // Thumb
-      const t1 = thumb[0];
-      if (t1 && (!animatedBones || !animatedBones.has(t1.name))) {
-        t1.rotation.y = pose.thumbSpread * spreadSign;
-      }
-      const t2 = thumb[1];
-      if (t2 && (!animatedBones || !animatedBones.has(t2.name))) {
-        t2.rotation.x = pose.thumbCurl;
-      }
-      const t3 = thumb[2];
-      if (t3 && (!animatedBones || !animatedBones.has(t3.name))) {
-        t3.rotation.x = pose.thumbCurl * 0.8;
-      }
-    };
-
-    applyHand(this.fingerNodes.leftChains, this.fingerNodes.leftThumb, true);
-    applyHand(this.fingerNodes.rightChains, this.fingerNodes.rightThumb, false);
+  applyFingerPose(delta) {
+    if (this.fingerController) {
+      this.fingerController.update(delta);
+    }
   }
 
   update(delta) {

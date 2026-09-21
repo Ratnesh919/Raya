@@ -118,6 +118,33 @@
             </select>
           </div>
 
+          <!-- REALTIME FINGER GESTURES -->
+          <div class="form-group" style="margin-bottom: 0.85rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
+              <span>🖐️ Realtime Hand Poses</span>
+              <span id="pop-finger-active-label" style="color: var(--accent-cyan); font-weight: bold;">Relaxed</span>
+            </div>
+            <div class="finger-gesture-chips" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;">
+              <button class="finger-chip-btn active" data-finger-pose="relaxed" type="button">🖐️ Relax</button>
+              <button class="finger-chip-btn" data-finger-pose="fist" type="button">✊ Fist</button>
+              <button class="finger-chip-btn" data-finger-pose="peace" type="button">✌️ Peace</button>
+              <button class="finger-chip-btn" data-finger-pose="pointing" type="button">👉 Point</button>
+              <button class="finger-chip-btn" data-finger-pose="thumbsUp" type="button">👍 Thumb</button>
+              <button class="finger-chip-btn" data-finger-pose="rock" type="button">🤟 Rock</button>
+              <button class="finger-chip-btn" data-finger-pose="heart" type="button">🫰 Heart</button>
+              <button class="finger-chip-btn" data-finger-pose="open" type="button">✋ Open</button>
+            </div>
+          </div>
+
+          <!-- REALTIME FINGER CURL SLIDER -->
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 4px;">
+              <span>Finger Curl</span>
+              <span id="pop-finger-curl-val" style="color: var(--primary-neon); font-weight: bold;">22%</span>
+            </div>
+            <input type="range" id="pop-finger-curl-slider" min="0.0" max="1.0" step="0.02" value="0.22" style="width: 100%; accent-color: var(--primary-neon);" />
+          </div>
+
           <button id="btn-reset-appearance" style="width: 100%; padding: 0.45rem; border-radius: 0.5rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.78rem; cursor: pointer;">
             Reset to Defaults
           </button>
