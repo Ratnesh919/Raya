@@ -33,6 +33,12 @@ export class LifeSimulator {
     this.currentHeadPitch = 0;
     this._headWorldPos = new THREE.Vector3();
     this._camTargetPos = new THREE.Vector3();
+    // Zero-allocation scratch math objects for 60fps performance
+    this._toCamWorld = new THREE.Vector3();
+    this._toCamLocal = new THREE.Vector3();
+    this._invSceneQuat = new THREE.Quaternion();
+    this._bodyFwdWorld = new THREE.Vector3();
+    this._eyeTargetWorld = new THREE.Vector3();
 
     this.setupListeners();
 
@@ -149,18 +155,19 @@ export class LifeSimulator {
       this._camTargetPos.x += (this.smoothedGaze.x * 0.28) + this.saccadeOffset.x;
       this._camTargetPos.y += (this.smoothedGaze.y * 0.18) + this.saccadeOffset.y;
 
-      // Direction from head to camera in world space
-      const toCamWorld = this._camTargetPos.clone().sub(this._headWorldPos).normalize();
+      // Direction from head to camera in world space (reusing scratch vector)
+      this._toCamWorld.copy(this._camTargetPos).sub(this._headWorldPos).normalize();
 
-      // Transform to the avatar's body/scene space
-      const toCamLocal = toCamWorld.applyQuaternion(this.vrm.scene.quaternion.clone().invert());
+      // Transform to the avatar's body/scene space (reusing scratch quaternion and vector)
+      this._invSceneQuat.copy(this.vrm.scene.quaternion).invert();
+      this._toCamLocal.copy(this._toCamWorld).applyQuaternion(this._invSceneQuat);
 
       // In avatar's local coordinates, facing direction is -Z.
       // In Three.js bone hierarchy, rotation around +Y rotates local -Z towards -X.
       // Therefore, to rotate towards +X local coordinate, rotation around Y is negative.
-      const localYaw = -Math.atan2(toCamLocal.x, -toCamLocal.z);
-      const horizDist = Math.hypot(toCamLocal.x, toCamLocal.z);
-      const localPitch = Math.atan2(toCamLocal.y, Math.max(horizDist, 0.001));
+      const localYaw = -Math.atan2(this._toCamLocal.x, -this._toCamLocal.z);
+      const horizDist = Math.hypot(this._toCamLocal.x, this._toCamLocal.z);
+      const localPitch = Math.atan2(this._toCamLocal.y, Math.max(horizDist, 0.001));
 
       // Realistic human cervical spine turning limits:
       // Active human neck rotation limit is ~68° (1.187 rad).
@@ -201,16 +208,15 @@ export class LifeSimulator {
 
       // Eye Tracking: keep eyes fixed on the user/camera throughout line of sight
       if (this.vrm.lookAt) {
-        let eyeTargetWorld;
         if (absYaw <= 88 * (Math.PI / 180)) {
           // In view: eyes lock onto the camera target
-          eyeTargetWorld = this._camTargetPos;
+          this.vrm.lookAt.lookAt(this._camTargetPos);
         } else {
-          // Out of view: eyes look naturally forward with the body
-          const bodyFwdWorld = new THREE.Vector3(0, 0, -1).applyQuaternion(this.vrm.scene.quaternion);
-          eyeTargetWorld = this._headWorldPos.clone().add(bodyFwdWorld.multiplyScalar(3.0));
+          // Out of view: eyes look naturally forward with the body (zero-allocation)
+          this._bodyFwdWorld.set(0, 0, -1).applyQuaternion(this.vrm.scene.quaternion).multiplyScalar(3.0);
+          this._eyeTargetWorld.copy(this._headWorldPos).add(this._bodyFwdWorld);
+          this.vrm.lookAt.lookAt(this._eyeTargetWorld);
         }
-        this.vrm.lookAt.lookAt(eyeTargetWorld);
       }
     } else {
       // Fallback if no camera

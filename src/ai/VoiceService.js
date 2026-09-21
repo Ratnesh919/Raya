@@ -251,17 +251,14 @@ export class VoiceService {
   constructor(lipSyncEngine) {
     this.lipSyncEngine = lipSyncEngine;
 
-    // Automatic mobile performance migration (ensures phones previously set to kokoro default to webspeech)
-    const isMobile = isMobileDevice();
-    if (isMobile && !localStorage.getItem('raya_mobile_perf_v2')) {
-      localStorage.setItem('raya_mobile_perf_v2', 'true');
+    // Automatic performance optimization: default to 'webspeech' (zero RAM, instant native OS speech, zero lag)
+    // Kokoro neural voice is available on-demand in Settings without forcing background WASM overhead
+    if (!localStorage.getItem('raya_tts_engine_v3')) {
+      localStorage.setItem('raya_tts_engine_v3', 'true');
       localStorage.setItem('raya_tts_engine', 'webspeech');
     }
 
-    // TTS Engine state: on mobile phones default to 'webspeech' (zero RAM, instant native OS speech),
-    // on desktop default to 'kokoro' (studio neural AI voice)
-    const defaultEngine = isMobile ? 'webspeech' : 'kokoro';
-    this.ttsEngine = localStorage.getItem('raya_tts_engine') || defaultEngine;
+    this.ttsEngine = localStorage.getItem('raya_tts_engine') || 'webspeech';
     this.kokoroService = new KokoroService(lipSyncEngine);
 
     // TTS state

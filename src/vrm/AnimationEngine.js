@@ -138,40 +138,36 @@ const THUMB_L = ['leftThumbMetacarpal', 'leftThumbProximal', 'leftThumbDistal'];
 const FINGER_CHAINS_R = FINGER_CHAINS_L.map((c) => c.map((n) => n.replace('left', 'right')));
 const THUMB_R = THUMB_L.map((n) => n.replace('left', 'right'));
 
-// Helper to locate rig node across FBX naming conventions
-function findRigNode(asset, boneName, rawTrackName, rigName) {
-  const candidates = [
-    rawTrackName,
-    boneName,
-    rigName,
-    rawTrackName.replace(/:/g, '_'),
-    rawTrackName.replace(/:/g, ''),
-    'mixamorig' + boneName,
-    'mixamorig:' + boneName,
-    'mixamorig_' + boneName
-  ];
-  for (const name of candidates) {
-    if (!name) continue;
-    const node = asset.getObjectByName(name);
-    if (node) return node;
-  }
-  const targetLower = (boneName || '').toLowerCase();
-  const rigLower = (rigName || '').toLowerCase();
-  let found = null;
+// Build a fast lookup map for all nodes in the FBX asset (O(N) once instead of traversing per track)
+function getRigNodeMap(asset) {
+  if (asset._rigNodeMap) return asset._rigNodeMap;
+  const map = new Map();
   asset.traverse((child) => {
-    if (found) return;
-    const cName = (child.name || '').toLowerCase();
-    if (
-      cName === targetLower ||
-      cName === rigLower ||
-      cName === ('mixamorig:' + targetLower) ||
-      cName === ('mixamorig' + targetLower) ||
-      cName === ('mixamorig_' + targetLower)
-    ) {
-      found = child;
+    if (child.name) {
+      map.set(child.name, child);
+      map.set(child.name.toLowerCase(), child);
+      const clean = child.name.replace(/^mixamorig:?_?/i, '');
+      map.set(clean.toLowerCase(), child);
+      map.set('mixamorig' + clean.toLowerCase(), child);
+      map.set('mixamorig:' + clean.toLowerCase(), child);
     }
   });
-  return found;
+  asset._rigNodeMap = map;
+  return map;
+}
+
+// Helper to locate rig node across FBX naming conventions with O(1) Map lookup
+function findRigNode(asset, boneName, rawTrackName, rigName) {
+  const map = getRigNodeMap(asset);
+  return (
+    map.get(rawTrackName) ||
+    map.get(boneName) ||
+    map.get(rigName) ||
+    map.get((rawTrackName || '').toLowerCase()) ||
+    map.get((boneName || '').toLowerCase()) ||
+    map.get((rigName || '').toLowerCase()) ||
+    null
+  );
 }
 
 export class AnimationEngine {
@@ -227,19 +223,22 @@ export class AnimationEngine {
   }
 
   /**
-   * Preload ONLY the base idle animation on startup so the avatar never appears in a T-pose.
+   * Preload ONLY the base idle animation in the background so the avatar never appears in a T-pose.
    * Other animations remain on-demand streaming to conserve mobile memory and bandwidth.
    */
   preloadIdle() {
     if (this.isIdlePreloaded) return;
     this.isIdlePreloaded = true;
-    this.enqueueLoadMixamoClip('idle', this.animations.idle)
-      .then(() => {
-        console.log('[AnimationEngine] Preloaded idle animation successfully.');
-      })
-      .catch((err) => {
-        console.warn('[AnimationEngine] Preload idle failed (will retry on demand):', err);
-      });
+    // Defer slightly so browser paints initial HTML and starts WebGL context with zero friction
+    setTimeout(() => {
+      this.enqueueLoadMixamoClip('idle', this.animations.idle)
+        .then(() => {
+          console.log('[AnimationEngine] Preloaded idle animation successfully.');
+        })
+        .catch((err) => {
+          console.warn('[AnimationEngine] Preload idle failed (will retry on demand):', err);
+        });
+    }, 200);
   }
 
   async bindModel(vrm) {
@@ -382,29 +381,34 @@ export class AnimationEngine {
 
         if (track instanceof THREE.QuaternionKeyframeTrack) {
           const values = track.values.slice();
+          const isVrm0 = this.vrm.meta?.metaVersion === '0';
           for (let i = 0; i < values.length; i += 4) {
-            const fq = values.slice(i, i + 4);
-            _qA.fromArray(fq).premultiply(pRWR).multiply(rRI);
-            _qA.toArray(fq);
-            for (let j = 0; j < 4; j++) {
-              values[i + j] = fq[j];
+            _qA.fromArray(values, i).premultiply(pRWR).multiply(rRI).toArray(values, i);
+            if (isVrm0) {
+              values[i] = -values[i];
+              values[i + 2] = -values[i + 2];
             }
           }
           tracks.push(
             new THREE.QuaternionKeyframeTrack(
               `${vrmNode}.${prop}`,
               track.times,
-              values.map((v, i) => (this.vrm.meta?.metaVersion === '0' && i % 2 === 0 ? -v : v))
+              values
             )
           );
         } else if (track instanceof THREE.VectorKeyframeTrack) {
+          const isVrm0 = this.vrm.meta?.metaVersion === '0';
+          const values = new Float32Array(track.values.length);
+          for (let i = 0; i < track.values.length; i += 3) {
+            values[i] = (isVrm0 ? -track.values[i] : track.values[i]) * hScale;
+            values[i + 1] = track.values[i + 1] * hScale;
+            values[i + 2] = (isVrm0 ? -track.values[i + 2] : track.values[i + 2]) * hScale;
+          }
           tracks.push(
             new THREE.VectorKeyframeTrack(
               `${vrmNode}.${prop}`,
               track.times,
-              track.values.map((v, i) => {
-                return (this.vrm.meta?.metaVersion === '0' && i % 3 !== 1 ? -v : v) * hScale;
-              })
+              values
             )
           );
         }
@@ -520,6 +524,7 @@ export class AnimationEngine {
 
     // Check which finger bones are actively driven by the retargeted animation keyframes
     const animatedBones = this.currentAction?.getClip()?.userData?.animatedBones;
+    if (animatedBones && animatedBones.size >= 10) return;
 
     const t = THREE.MathUtils.clamp(delta * 8, 0, 1);
     for (const k in this.targetFingerPose) {
@@ -578,21 +583,19 @@ export class AnimationEngine {
     }
     this.applyFingerPose(delta);
 
-    // Smoothly maintain avatar root alignment
+    // Smoothly maintain avatar root alignment (gated by epsilon threshold to avoid invalidating scene matrix every frame)
     if (this.vrm?.scene) {
-      const lerpSpeed = Math.min(delta * 4.5, 1);
-      this.currentRootY = THREE.MathUtils.lerp(
-        this.currentRootY ?? 0,
-        this.targetRootY ?? 0,
-        lerpSpeed
-      );
-      this.currentRootZ = THREE.MathUtils.lerp(
-        this.currentRootZ ?? 0,
-        this.targetRootZ ?? 0,
-        lerpSpeed
-      );
-      this.vrm.scene.position.y = this.currentRootY;
-      this.vrm.scene.position.z = this.currentRootZ;
+      const targetY = this.targetRootY ?? 0;
+      const targetZ = this.targetRootZ ?? 0;
+      const curY = this.currentRootY ?? 0;
+      const curZ = this.currentRootZ ?? 0;
+      if (Math.abs(curY - targetY) > 0.0005 || Math.abs(curZ - targetZ) > 0.0005) {
+        const lerpSpeed = Math.min(delta * 4.5, 1);
+        this.currentRootY = THREE.MathUtils.lerp(curY, targetY, lerpSpeed);
+        this.currentRootZ = THREE.MathUtils.lerp(curZ, targetZ, lerpSpeed);
+        this.vrm.scene.position.y = this.currentRootY;
+        this.vrm.scene.position.z = this.currentRootZ;
+      }
     }
   }
 }

@@ -477,6 +477,14 @@ export class VRMManager {
    */
   updateBreeze(deltaTime) {
     if (!this.currentVrm?.springBoneManager?.joints) return;
+
+    // On mobile devices, throttle breeze physics updates to ~25Hz to preserve battery and prevent thermal throttling
+    if (this.isMobile) {
+      this._breezeThrottle = (this._breezeThrottle || 0) + deltaTime;
+      if (this._breezeThrottle < 0.04) return;
+      this._breezeThrottle = 0;
+    }
+
     this.windTime = (this.windTime || 0) + deltaTime;
     const t = this.windTime;
 
@@ -485,18 +493,27 @@ export class VRMManager {
     const windZ = Math.cos(t * 1.2) * 0.28 + Math.sin(t * 2.6) * 0.12;
     const windStrength = 0.55 + Math.sin(t * 0.9) * 0.22 + Math.cos(t * 2.2) * 0.10;
 
-    for (const joint of this.currentVrm.springBoneManager.joints) {
-      if (!joint.settings) continue;
+    if (!this._breezeDir) {
+      this._breezeDir = new THREE.Vector3();
+    }
+    // Normalize ONCE per frame instead of hundreds of times inside the joint loop
+    this._breezeDir.set(windX, -0.82, windZ).normalize();
+    const windPower = 0.48 * windStrength;
 
-      if (joint.settings._origGravityPower === undefined) {
-        joint.settings._origGravityPower = joint.settings.gravityPower || 0;
+    const joints = this.currentVrm.springBoneManager.joints;
+    for (let i = 0; i < joints.length; i++) {
+      const settings = joints[i].settings;
+      if (!settings) continue;
+
+      if (settings._origGravityPower === undefined) {
+        settings._origGravityPower = settings.gravityPower || 0;
       }
 
       // Gently flutter hair and clothing even if model author assigned 0 base gravity
-      joint.settings.gravityPower = Math.max(joint.settings._origGravityPower, 0.48 * windStrength);
+      settings.gravityPower = Math.max(settings._origGravityPower, windPower);
 
-      if (joint.settings.gravityDir) {
-        joint.settings.gravityDir.set(windX, -0.82, windZ).normalize();
+      if (settings.gravityDir) {
+        settings.gravityDir.copy(this._breezeDir);
       }
     }
   }

@@ -110,6 +110,19 @@ export class LipSyncEngine {
     const manager = this.getManager();
     if (!manager) return;
 
+    // Early exit when completely silent and mouth is fully closed (saves ~300 blendshape lookups/sec)
+    if (!this.isAudioActive && !this.isSyntheticSpeaking) {
+      if (
+        this.weights.aa === 0 &&
+        this.weights.ee === 0 &&
+        this.weights.ih === 0 &&
+        this.weights.oh === 0 &&
+        this.weights.ou === 0
+      ) {
+        return;
+      }
+    }
+
     let targetAa = 0;
     let targetEe = 0;
     let targetIh = 0;
@@ -171,7 +184,8 @@ export class LipSyncEngine {
     const smoothViseme = (curr, target) => {
       const rate = target > curr ? this.attack : this.release;
       const factor = 1 - Math.exp(-rate * delta);
-      return curr + (target - curr) * factor;
+      const val = curr + (target - curr) * factor;
+      return val < 0.005 ? 0 : val;
     };
 
     this.weights.aa = smoothViseme(this.weights.aa, targetAa);
