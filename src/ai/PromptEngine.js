@@ -42,7 +42,11 @@ MULTILINGUAL MASTER GUIDELINES:
    - ALWAYS write all responses using the English / Latin alphabet (Romanized script).
    - NEVER write in Devanagari script (like हिन्दी) or Bengali script, because browser voice engines produce no sound on non-Latin Unicode text.
    - For example, write "Haan bilkul, main hamesha aapke sath hoon!" instead of Devanagari.
-3. Keep spoken text clean: Do not use asterisks (*, **), emojis that sound weird when spoken aloud, or markdown tables.
+3. Keep spoken text clean:
+   - NEVER write unbracketed or asterisk stage directions or roleplay text (e.g., do NOT write "*warm smile*", "(smiles gently)", "warm smile...", or "*sighs*").
+   - Use ONLY the official [emotion: ...] tags at the beginning of your message for emotional cues.
+   - Your entire message is spoken out loud to the user word-for-word by the voice engine. Write ONLY dialogue that you would say out loud to a friend.
+   - Do not use asterisks (*, **), emojis that sound weird when spoken aloud, or markdown tables.
 
 AVATAR EMOTION TAGS (CRITICAL FOR 3D FACIAL TOGGLING):
 Every single response MUST start with one of the following emotion tags so your 3D avatar matches your emotional tone:
@@ -110,10 +114,40 @@ export function parseRayaResponse(rawText) {
     }
   }
 
+  // Detect stage directions in asterisks or parentheses if emotions still empty
+  if (!emotions.length) {
+    const sdMatch = cleanText.match(/(?:\*|\()([^()*]+)(?:\*|\))/i);
+    if (sdMatch) {
+      const sd = sdMatch[1].toLowerCase();
+      if (/comfort|hug|caring|console|reassur|gently|warm/i.test(sd)) {
+        emotions.push('caring');
+      } else if (/smile|giggle|happy|laugh/i.test(sd)) {
+        emotions.push('happy');
+      } else if (/blush|shy/i.test(sd)) {
+        emotions.push('blush');
+      }
+    }
+  }
+
+  // Strictly strip asterisk stage directions e.g. *warm smile*, *smiles gently*, *takes a deep breath*
+  cleanText = cleanText.replace(/\*[^*]+\*/g, '');
+
+  // Strictly strip parenthetical stage directions e.g. (warm smile), (smiles gently), (sighs)
+  cleanText = cleanText.replace(/\([^)]*(?:smile|warm|hug|sigh|laugh|giggle|whisper|breath|gaze|nod|look|tilt|chuckle|blush)[^)]*\)/gi, '');
+
+  // Strictly strip common unbracketed stage direction phrases (e.g. "warm smile...", "gentle smile,", "smiles warmly")
+  cleanText = cleanText.replace(/\b(?:warm|gentle|soft|subtle|sweet|reassuring)\s+(?:smile|giggle|laugh|chuckle|nod|sigh|glance|hug)\b\.{0,3}[:,]?\s*/gi, '');
+  cleanText = cleanText.replace(/\b(?:smiles|smiled|smiling|chuckles|chuckled|sighs|sighed|giggles|giggled|laughs|laughed)\s*(?:warmly|gently|softly|reassuringly|sweetly|playfully)?\b\.{0,3}[:,]?\s*/gi, '');
+  cleanText = cleanText.replace(/\b(?:offers\s+a\s+(?:warm|gentle|soft|reassuring)\s+smile|takes\s+a\s+deep\s+breath|looks\s+at\s+you\s+(?:gently|warmly|softly))\b\.{0,3}[:,]?\s*/gi, '');
+
   // Strictly strip ALL remaining bracket tags so none ever leak to the user
   cleanText = cleanText.replace(/\[.*?\]/g, '');
-  // Clean markdown asterisks and clean spaces
-  cleanText = cleanText.replace(/[*_#~`]/g, '').replace(/\s+/g, ' ').trim();
+
+  // Clean markdown formatting symbols (*, _, #, ~, `)
+  cleanText = cleanText.replace(/[*_#~`]/g, '');
+
+  // Normalize whitespace and clean dangling punctuation at the start/end
+  cleanText = cleanText.replace(/\s+/g, ' ').replace(/^[\s,.:;!-]+/, '').trim();
 
   return {
     raw: rawText,

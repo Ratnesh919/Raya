@@ -24,9 +24,15 @@ export class LifeSimulator {
     this.saccadeOffset = new THREE.Vector2(0, 0);
     this.saccadeTarget = new THREE.Vector2(0, 0);
 
-    // 4. Cursor / Gaze Tracking
+    // 4. Cursor / Gaze Tracking & Camera Head Tracking
     this.cursorNorm = new THREE.Vector2(0, 0);
     this.smoothedGaze = new THREE.Vector2(0, 0);
+
+    // Anatomical head and eye rotation tracking state
+    this.currentHeadYaw = 0;
+    this.currentHeadPitch = 0;
+    this._headWorldPos = new THREE.Vector3();
+    this._camTargetPos = new THREE.Vector3();
 
     this.setupListeners();
 
@@ -40,6 +46,12 @@ export class LifeSimulator {
       this.cursorNorm.x = (e.clientX / window.innerWidth) * 2 - 1;
       this.cursorNorm.y = -(e.clientY / window.innerHeight) * 2 + 1;
     });
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        this.cursorNorm.x = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+        this.cursorNorm.y = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+      }
+    }, { passive: true });
   }
 
   getManager() {
@@ -119,32 +131,95 @@ export class LifeSimulator {
   }
 
   updateGaze(delta) {
-    if (!this.vrm.humanoid) return;
+    if (!this.vrm?.humanoid) return;
 
+    const head = this.vrm.humanoid.getNormalizedBoneNode('head');
+    const neck = this.vrm.humanoid.getNormalizedBoneNode('neck');
+    if (!head || !neck) return;
+
+    // Smooth cursor/touch gaze tracking
     this.smoothedGaze.lerp(this.cursorNorm, THREE.MathUtils.clamp(delta * 4, 0, 1));
 
-    const headX = THREE.MathUtils.clamp(-this.smoothedGaze.y * 0.22, -0.25, 0.25);
-    const headY = THREE.MathUtils.clamp(-this.smoothedGaze.x * 0.35, -0.35, 0.35);
+    const camera = this.vrmManager?.camera;
+    if (camera && this.vrm.scene) {
+      head.getWorldPosition(this._headWorldPos);
 
-    const neck = this.vrm.humanoid.getNormalizedBoneNode('neck');
-    const head = this.vrm.humanoid.getNormalizedBoneNode('head');
+      // Target position in world space = Camera position + cursor micro-offset + natural saccade jitter
+      this._camTargetPos.copy(camera.position);
+      this._camTargetPos.x += (this.smoothedGaze.x * 0.28) + this.saccadeOffset.x;
+      this._camTargetPos.y += (this.smoothedGaze.y * 0.18) + this.saccadeOffset.y;
 
-    if (neck) {
+      // Direction from head to camera in world space
+      const toCamWorld = this._camTargetPos.clone().sub(this._headWorldPos).normalize();
+
+      // Transform to the avatar's body/scene space
+      const toCamLocal = toCamWorld.applyQuaternion(this.vrm.scene.quaternion.clone().invert());
+
+      // In avatar's local coordinates, facing direction is -Z.
+      // In Three.js bone hierarchy, rotation around +Y rotates local -Z towards -X.
+      // Therefore, to rotate towards +X local coordinate, rotation around Y is negative.
+      const localYaw = -Math.atan2(toCamLocal.x, -toCamLocal.z);
+      const horizDist = Math.hypot(toCamLocal.x, toCamLocal.z);
+      const localPitch = Math.atan2(toCamLocal.y, Math.max(horizDist, 0.001));
+
+      // Realistic human cervical spine turning limits:
+      // Active human neck rotation limit is ~68° (1.187 rad).
+      // Beyond 68°, rotation ceases (stops). Beyond 95°, head relaxes back to body alignment.
+      const MAX_YAW = 68 * (Math.PI / 180); // 68 degrees anatomical limit
+      const CEASE_YAW = 95 * (Math.PI / 180); // 95 degrees cease threshold
+
+      const absYaw = Math.abs(localYaw);
+      const signYaw = Math.sign(localYaw) || 1;
+      let targetYaw = 0;
+
+      if (absYaw <= MAX_YAW) {
+        // Full head tracking within comfortable human range
+        targetYaw = localYaw;
+      } else if (absYaw <= CEASE_YAW) {
+        // Cease/stop head rotation at the anatomical limit
+        targetYaw = signYaw * MAX_YAW;
+      } else {
+        // When character turns away (back to camera), smoothly return to natural forward body pose
+        const returnFactor = Math.max(0, 1 - (absYaw - CEASE_YAW) / (Math.PI - CEASE_YAW));
+        targetYaw = signYaw * MAX_YAW * returnFactor;
+      }
+
+      // Vertical pitch limits (~20° up / down)
+      const targetPitch = THREE.MathUtils.clamp(localPitch, -0.35, 0.35);
+
+      // Smooth interpolation using frame delta
+      const lerpSpeed = THREE.MathUtils.clamp(delta * 5.5, 0, 1);
+      this.currentHeadYaw = THREE.MathUtils.lerp(this.currentHeadYaw, targetYaw, lerpSpeed);
+      this.currentHeadPitch = THREE.MathUtils.lerp(this.currentHeadPitch, targetPitch, lerpSpeed);
+
+      // Biomechanical distribution: 35% cervical neck, 65% head
+      neck.rotation.y = this.currentHeadYaw * 0.35;
+      neck.rotation.x = this.currentHeadPitch * 0.35;
+
+      head.rotation.y = this.currentHeadYaw * 0.65;
+      head.rotation.x = this.currentHeadPitch * 0.65;
+
+      // Eye Tracking: keep eyes fixed on the user/camera throughout line of sight
+      if (this.vrm.lookAt) {
+        let eyeTargetWorld;
+        if (absYaw <= 88 * (Math.PI / 180)) {
+          // In view: eyes lock onto the camera target
+          eyeTargetWorld = this._camTargetPos;
+        } else {
+          // Out of view: eyes look naturally forward with the body
+          const bodyFwdWorld = new THREE.Vector3(0, 0, -1).applyQuaternion(this.vrm.scene.quaternion);
+          eyeTargetWorld = this._headWorldPos.clone().add(bodyFwdWorld.multiplyScalar(3.0));
+        }
+        this.vrm.lookAt.lookAt(eyeTargetWorld);
+      }
+    } else {
+      // Fallback if no camera
+      const headX = THREE.MathUtils.clamp(-this.smoothedGaze.y * 0.22, -0.25, 0.25);
+      const headY = THREE.MathUtils.clamp(-this.smoothedGaze.x * 0.35, -0.35, 0.35);
       neck.rotation.x = THREE.MathUtils.lerp(neck.rotation.x, headX * 0.4, 0.1);
       neck.rotation.y = THREE.MathUtils.lerp(neck.rotation.y, headY * 0.4, 0.1);
-    }
-    if (head) {
       head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, headX * 0.6, 0.1);
       head.rotation.y = THREE.MathUtils.lerp(head.rotation.y, headY * 0.6, 0.1);
-    }
-
-    if (this.vrm.lookAt) {
-      const gazeTarget = new THREE.Vector3(
-        this.smoothedGaze.x * 2 + this.saccadeOffset.x,
-        1.25 + this.smoothedGaze.y * 1.5 + this.saccadeOffset.y,
-        3.0
-      );
-      this.vrm.lookAt.lookAt(gazeTarget);
     }
   }
 }

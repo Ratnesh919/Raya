@@ -126,7 +126,13 @@ export class ChatUI {
 
       // Analyze conversational sentiment across user query and assistant response
       const sentiment = this.analyzeChatSentiment(text, response.speechText);
-      const finalEmotion = response.emotion || sentiment.emotion || 'caring';
+      let finalEmotion = response.emotion || sentiment.emotion || 'caring';
+
+      // Guard against inappropriate happy/joy smiles when the user expresses distress/sadness/upset
+      const isUserDistressed = /\b(upset|sad|depressed|cry|crying|tears|unhappy|lonely|alone|heartbreak|heartbroken|loss|hurt|hurting|pain|painful|tired|exhausted|burnout|overwhelmed|failed|fail|lost|bad day|terrible|horrible|hopeless|anxious|anxiety|scared|dukh|dard|pareshan|rona|udas|heavy heart|miserable)\b/i.test(text);
+      if (isUserDistressed && (finalEmotion === 'happy' || finalEmotion === 'joy' || finalEmotion === 'wink')) {
+        finalEmotion = sentiment.emotion || 'caring';
+      }
 
       // Clean speech text
       const cleanSpeech = (response.speechText || '').replace(/\[.*?\]/g, '').replace(/[*_#~`]/g, '').trim();
@@ -165,9 +171,10 @@ export class ChatUI {
   analyzeUserIntentEmotion(userText = '') {
     const text = userText.toLowerCase();
 
-    // 1. Distress / Sadness / Loneliness / Venting (Instant Caring / Empathy)
-    if (/\b(sad|depressed|cry|crying|tears|unhappy|lonely|alone|heartbreak|heartbroken|died|loss|hurt|pain|tired|exhausted|burnout|overwhelmed|failed|fail|lost|bad day|terrible|horrible|hopeless|anxious|anxiety|scared|scary|dar|dukh|dard|pareshan|rona|udas|thak gaya)\b/i.test(text)) {
-      return { emotion: 'caring', intensity: 0.9 };
+    // 1. Distress / Sadness / Loneliness / Venting / Upset (Instant Caring / Empathy)
+    // Priority: Even if user says "hi i am upset", emotional distress takes precedence over greeting!
+    if (/\b(upset|sad|depressed|cry|crying|tears|unhappy|lonely|alone|heartbreak|heartbroken|died|loss|hurt|hurting|pain|painful|tired|exhausted|burnout|overwhelmed|failed|fail|lost|bad day|terrible|horrible|hopeless|anxious|anxiety|scared|scary|dar|dukh|dard|pareshan|rona|udas|thak gaya|heavy heart|miserable|down|troubled)\b/i.test(text)) {
+      return { emotion: 'caring', intensity: 0.95 };
     }
 
     // 2. Flirting / Compliments / Sweetness (Instant Blush)
@@ -202,36 +209,39 @@ export class ChatUI {
    * Intelligently deduce facial expression and body gesture from conversational sentiment
    */
   analyzeChatSentiment(userText = '', assistantText = '') {
-    const combined = `${userText} ${assistantText}`.toLowerCase();
+    const uText = userText.toLowerCase();
+    const aText = assistantText.toLowerCase();
+    const combined = `${uText} ${aText}`;
 
     // 1. Sitting gesture
     if (/\b(sit|sitting|sit down|chair|baitho|baith ja|relax on chair|sofa)\b/i.test(combined)) {
       return { emotion: 'relaxed', action: 'sitting' };
     }
 
-    // 2. Consoling & Comforting
-    if (/\b(here for you|it will be okay|it's okay|take a deep breath|don't worry|i'm so sorry|gentle hug|so sorry|be alright|i understand|proud of you|you're strong|with you|chinta mat|sab theek|mat ro|main hoon na)\b/i.test(combined)) {
+    // 2. USER DISTRESS / UPSET / SAD (Top Priority over generic greetings)
+    // If the user expressed sadness or distress, always console them with open-eyed caring!
+    if (/\b(upset|sad|depressed|cry|crying|tears|unhappy|lonely|alone|heartbreak|heartbroken|loss|hurt|hurting|pain|painful|tired|exhausted|burnout|overwhelmed|failed|fail|lost|bad day|terrible|horrible|hopeless|anxious|anxiety|scared|dukh|dard|pareshan|rona|udas|heavy heart|miserable)\b/i.test(uText)) {
+      return { emotion: 'caring', action: null };
+    }
+
+    // 3. Consoling & Comforting in Assistant response
+    if (/\b(here for you|it will be okay|it's okay|take a deep breath|don't worry|i'm so sorry|gentle hug|so sorry|be alright|i understand|proud of you|you're strong|right here with you|with you|chinta mat|sab theek|mat ro|main hoon na|weighing heavily|all ears|listen|won't judge)\b/i.test(combined)) {
       return { emotion: 'console', action: null };
     }
 
-    // 3. Caring / Deep Empathy / Listening
+    // 4. Caring / Deep Empathy / Listening
     if (/\b(feel you|hear you|listening|care about you|exhausting|overwhelming|difficult|tough|vent|let it out|safe with me|take your time|meri jaan|dost)\b/i.test(combined)) {
       return { emotion: 'caring', action: null };
     }
 
-    // 4. Giving Advice / Suggestions / Perspective
+    // 5. Giving Advice / Suggestions / Perspective
     if (/\b(suggest|recommend|advice|try this|first step|step by step|focus on|break it down|perspective|start by|consider|solution|salaah|upay|raasta)\b/i.test(combined)) {
       return { emotion: 'advice', action: null };
     }
 
-    // 5. Compliments / Flirting / Blushing
+    // 6. Compliments / Flirting / Blushing
     if (/\b(blush|flattered|thank you so much|sweet of you|you're sweet|making me blush|shy|flirt|giggle|aww|awww|sharma)\b/i.test(combined)) {
       return { emotion: 'blush', action: 'happy' };
-    }
-
-    // 6. Greetings & Warmth
-    if (/\b(namaste|pranam|hello|hi|hey|greet|welcome|kemon acho|kaise ho|kaisi ho)\b/i.test(combined)) {
-      return { emotion: 'happy', action: 'wave' };
     }
 
     // 7. Surprise / Wonder / Amazement
@@ -244,15 +254,22 @@ export class ChatUI {
       return { emotion: 'joy', action: 'happy' };
     }
 
-    // 9. Deep Thought / Curiosity / Inquiry
+    // 9. Greetings & Warmth (Only if NOT in distress)
+    if (/\b(namaste|pranam|hello|hi|hey|greet|welcome|kemon acho|kaise ho|kaisi ho)\b/i.test(combined)) {
+      return { emotion: 'happy', action: 'wave' };
+    }
+
+    // 10. Deep Thought / Curiosity / Inquiry
     if (/\b(\?|why|how|what if|reason|wonder|ponder|think|curious|kyun|kaise|kya|socho|batao)\b/i.test(combined)) {
       return { emotion: 'curiosity', action: null };
     }
 
-    // 10. Sleepy / Night / Yawn
+    // 11. Sleepy / Night / Yawn
     if (/\b(sleep|sleepy|yawn|good night|so jao|neend|shubh ratri)\b/i.test(combined)) {
       return { emotion: 'relaxed', action: 'yawn' };
     }
+
+    return { emotion: 'caring', action: null };
 
     // 11. Anger / Refusal
     if (/\b(no|never|stop|hate|angry|mad|gussa|nahi|mat karo)\b/i.test(combined)) {

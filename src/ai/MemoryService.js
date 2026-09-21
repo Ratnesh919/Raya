@@ -2,6 +2,15 @@
  * MemoryService - Manages persistent data storage for Raya using Netlify Blobs Database
  * with fallback to client-side localStorage for offline resilience.
  */
+const EXCLUDED_NAME_WORDS = [
+  'upset', 'sad', 'happy', 'tired', 'hungry', 'bored', 'fine', 'good', 'sick',
+  'here', 'back', 'ready', 'sorry', 'okay', 'alright', 'busy', 'doing', 'feeling',
+  'getting', 'lonely', 'excited', 'angry', 'confused', 'stressed', 'depressed',
+  'not', 'just', 'still', 'always', 'also', 'really', 'very', 'a', 'an', 'the',
+  'raya', 'crying', 'hurt', 'hurting', 'exhausted', 'hopeless', 'broken', 'lost',
+  'unhappy', 'overwhelmed', 'down', 'dead', 'alive', 'well', 'bad', 'great', 'cool'
+];
+
 export class MemoryService {
   constructor() {
     this.storageKey = 'raya_companion_memory';
@@ -59,6 +68,15 @@ export class MemoryService {
       }
     } catch (err) {
       console.log('[MemoryService] Netlify endpoint unavailable, operating in local-cache mode:', err.message);
+    }
+
+    // Sanitize any false emotion words mistakenly saved as userName (e.g. "upset")
+    if (this.memory.userName && EXCLUDED_NAME_WORDS.includes(this.memory.userName.toLowerCase())) {
+      console.log(`[MemoryService] Purged invalid stored name: "${this.memory.userName}"`);
+      this.memory.userName = '';
+      try {
+        localStorage.setItem(this.storageKey, JSON.stringify(this.memory));
+      } catch (e) {}
     }
 
     this.isLoaded = true;
@@ -177,16 +195,28 @@ export class MemoryService {
 
     const trimmed = userText.trim();
 
-    // 1. Detect User Name: "My name is X", "I'm X", "Mera naam X hai", "Call me X"
-    const nameMatch =
-      trimmed.match(/\b(?:my name is|i am|call me|mera naam|naam)\s+([A-Z][a-zA-Z]{1,15})\b/i) ||
-      trimmed.match(/\b(?:main|mein)\s+([A-Z][a-zA-Z]{1,15})\s+hoon\b/i);
+    // 1. Detect User Name: explicit name introductions ONLY
+    let detectedName = null;
 
-    if (nameMatch && nameMatch[1]) {
-      const detectedName = nameMatch[1];
-      const excludedWords = ['here', 'fine', 'good', 'happy', 'sad', 'ready', 'back', 'raya', 'doing', 'tired', 'bored', 'busy'];
-      if (!excludedWords.includes(detectedName.toLowerCase()) && detectedName !== this.memory.userName) {
-        console.log('[MemoryService] Discovered user name:', detectedName);
+    // Explicit name introduction phrases
+    const explicitMatch =
+      trimmed.match(/\b(?:my name is|call me|you can call me|mera naam|naam hai)\s+([A-Za-z]{2,20})\b/i) ||
+      trimmed.match(/\b(?:main|mein)\s+([A-Za-z]{2,20})\s+hoon\b/i);
+
+    if (explicitMatch && explicitMatch[1]) {
+      detectedName = explicitMatch[1];
+    } else {
+      // Secondary: "I am [Name]" or "I'm [Name]" - only if explicitly capitalized and NOT an emotion/status adjective
+      const iamMatch = trimmed.match(/\b(?:i am|i'm)\s+([A-Z][a-zA-Z]{1,20})\b/);
+      if (iamMatch && iamMatch[1]) {
+        detectedName = iamMatch[1];
+      }
+    }
+
+    if (detectedName) {
+      const lower = detectedName.toLowerCase();
+      if (!EXCLUDED_NAME_WORDS.includes(lower) && detectedName !== this.memory.userName) {
+        console.log('[MemoryService] Discovered valid user name:', detectedName);
         this.setUserName(detectedName);
       }
     }
