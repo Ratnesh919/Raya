@@ -120,6 +120,9 @@ export class ChatUI {
     // Instant empathetic facial reaction to the user's message tone while waiting for LLM
     const userIntent = this.analyzeUserIntentEmotion(text);
     this.expressionManager.setEmotion(userIntent.emotion, userIntent.intensity || 0.8);
+    if (this.animationEngine && (userIntent.emotion === 'curiosity' || userIntent.emotion === 'think' || userIntent.emotion === 'advice')) {
+      this.animationEngine.playAnimation('think', 0.5);
+    }
 
     try {
       const response = await this.llmService.sendMessage(text);
@@ -143,6 +146,26 @@ export class ChatUI {
 
       // Trigger facial emotion with smooth auto-reset
       this.expressionManager.setEmotionWithAutoReset(finalEmotion, speechDurationMs);
+
+      // Trigger communicative gesture animation (avoiding any sitting animation)
+      if (this.animationEngine) {
+        let actionToPlay = response.action || sentiment.action;
+        if (actionToPlay && typeof actionToPlay === 'string' && actionToPlay.toLowerCase().includes('sit')) {
+          actionToPlay = null; // Strictly avoid sitting
+        }
+
+        if (actionToPlay) {
+          this.animationEngine.playAnimation(actionToPlay, 0.4);
+        } else if (finalEmotion === 'think' || finalEmotion === 'advice' || finalEmotion === 'curiosity') {
+          this.animationEngine.playAnimation('think', 0.4);
+        } else if (finalEmotion === 'joy' || finalEmotion === 'excited') {
+          this.animationEngine.playAnimation('happy', 0.4);
+        } else if (finalEmotion === 'sad') {
+          this.animationEngine.playAnimation('sad', 0.4);
+        } else if (finalEmotion === 'angry') {
+          this.animationEngine.playAnimation('angry', 0.4);
+        }
+      }
 
       // Remove thinking indicator, speak voice synthesis, and display in drawer
       this.removeThinkingIndicator();
@@ -213,9 +236,9 @@ export class ChatUI {
     const aText = assistantText.toLowerCase();
     const combined = `${uText} ${aText}`;
 
-    // 1. Sitting gesture
+    // 1. Relax / Calm (Avoiding sitting animation per user instruction)
     if (/\b(sit|sitting|sit down|chair|baitho|baith ja|relax on chair|sofa)\b/i.test(combined)) {
-      return { emotion: 'relaxed', action: 'sitting' };
+      return { emotion: 'relaxed', action: null };
     }
 
     // 2. USER DISTRESS / UPSET / SAD (Top Priority over generic greetings)

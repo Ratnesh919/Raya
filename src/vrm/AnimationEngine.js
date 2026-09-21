@@ -24,7 +24,47 @@ const MIXAMO_VRM_RIG_MAP = {
   mixamorigRightUpLeg: 'rightUpperLeg',
   mixamorigRightLeg: 'rightLowerLeg',
   mixamorigRightFoot: 'rightFoot',
-  mixamorigRightToeBase: 'rightToes'
+  mixamorigRightToeBase: 'rightToes',
+
+  // Left Hand Fingers (Mixamo -> VRM Humanoid)
+  mixamorigLeftHandThumb1: 'leftThumbProximal',
+  mixamorigLeftHandThumb2: 'leftThumbIntermediate',
+  mixamorigLeftHandThumb3: 'leftThumbDistal',
+  mixamorigLeftHandIndex1: 'leftIndexProximal',
+  mixamorigLeftHandIndex2: 'leftIndexIntermediate',
+  mixamorigLeftHandIndex3: 'leftIndexDistal',
+  mixamorigLeftHandMiddle1: 'leftMiddleProximal',
+  mixamorigLeftHandMiddle2: 'leftMiddleIntermediate',
+  mixamorigLeftHandMiddle3: 'leftMiddleDistal',
+  mixamorigLeftHandRing1: 'leftRingProximal',
+  mixamorigLeftHandRing2: 'leftRingIntermediate',
+  mixamorigLeftHandRing3: 'leftRingDistal',
+  mixamorigLeftHandPinky1: 'leftLittleProximal',
+  mixamorigLeftHandPinky2: 'leftLittleIntermediate',
+  mixamorigLeftHandPinky3: 'leftLittleDistal',
+  mixamorigLeftHandLittle1: 'leftLittleProximal',
+  mixamorigLeftHandLittle2: 'leftLittleIntermediate',
+  mixamorigLeftHandLittle3: 'leftLittleDistal',
+
+  // Right Hand Fingers (Mixamo -> VRM Humanoid)
+  mixamorigRightHandThumb1: 'rightThumbProximal',
+  mixamorigRightHandThumb2: 'rightThumbIntermediate',
+  mixamorigRightHandThumb3: 'rightThumbDistal',
+  mixamorigRightHandIndex1: 'rightIndexProximal',
+  mixamorigRightHandIndex2: 'rightIndexIntermediate',
+  mixamorigRightHandIndex3: 'rightIndexDistal',
+  mixamorigRightHandMiddle1: 'rightMiddleProximal',
+  mixamorigRightHandMiddle2: 'rightMiddleIntermediate',
+  mixamorigRightHandMiddle3: 'rightMiddleDistal',
+  mixamorigRightHandRing1: 'rightRingProximal',
+  mixamorigRightHandRing2: 'rightRingIntermediate',
+  mixamorigRightHandRing3: 'rightRingDistal',
+  mixamorigRightHandPinky1: 'rightLittleProximal',
+  mixamorigRightHandPinky2: 'rightLittleIntermediate',
+  mixamorigRightHandPinky3: 'rightLittleDistal',
+  mixamorigRightHandLittle1: 'rightLittleProximal',
+  mixamorigRightHandLittle2: 'rightLittleIntermediate',
+  mixamorigRightHandLittle3: 'rightLittleDistal'
 };
 
 // Procedural finger curls & spreads
@@ -148,12 +188,13 @@ export class AnimationEngine {
       wave2: '/animations/Waving2.fbx',
       happy: '/animations/Happy.fbx',
       excited: '/animations/Excited.fbx',
+      think: '/animations/Thinking.fbx',
+      thinking: '/animations/Thinking.fbx',
       yawn: '/animations/Yawn.fbx',
       angry: '/animations/Angry.fbx',
       no: '/animations/No.fbx',
       sad: '/animations/Sad Idle1.fbx',
-      sitting: '/animations/Sitting1.fbx',
-      sitting2: '/animations/Sitting2.fbx'
+      sad2: '/animations/Sad Idle2.fbx'
     };
 
     this.loadedClips = new Map();
@@ -169,7 +210,7 @@ export class AnimationEngine {
     this.currentFingerPose = { ...FINGER_POSES.idle };
     this.targetFingerPose = { ...FINGER_POSES.idle };
 
-    // Root elevation tracking for sitting animations to keep avatar centered
+    // Root elevation tracking to keep avatar centered
     this.targetRootY = 0.0;
     this.currentRootY = 0.0;
 
@@ -202,9 +243,7 @@ export class AnimationEngine {
       // Loop back to idle when a one-shot animation finishes
       if (
         this.currentAnimName !== 'idle' &&
-        this.currentAnimName !== 'happyIdle' &&
-        this.currentAnimName !== 'sitting' &&
-        this.currentAnimName !== 'sitting2'
+        this.currentAnimName !== 'happyIdle'
       ) {
         this.playAnimation('idle', 0.5);
       }
@@ -290,8 +329,6 @@ export class AnimationEngine {
     const hVRM = this.vrm.humanoid?.normalizedRestPose?.hips?.position?.[1] || 1.0;
     const hScale = hVRM / (hMotion || 100);
 
-    const isSitting = url.toLowerCase().includes('sitting');
-
     rawClip.tracks.forEach((track) => {
       const parts = track.name.split('.');
       let rawBone = parts[0];
@@ -348,6 +385,8 @@ export class AnimationEngine {
     console.log(`[AnimationEngine] Retargeted ${rawClip.name || url}: created ${tracks.length} tracks`);
     if (tracks.length === 0) return null;
     const clip = new THREE.AnimationClip(rawClip.name, rawClip.duration, tracks);
+    const animatedBoneNodes = new Set(tracks.map((t) => t.name.split('.')[0]));
+    clip.userData = { animatedBones: animatedBoneNodes };
     if (name) {
       this.retargetedClipsCache.set(name, clip);
     }
@@ -356,10 +395,23 @@ export class AnimationEngine {
 
   async playAnimation(animName = 'idle', fadeDuration = 0.4) {
     if (!this.vrm || !this.mixer) return;
-    // Strict requirement: use only idle animation
-    const targetAnim = 'idle';
-    const url = this.animations.idle;
-    this.requestedAnimName = 'idle';
+
+    // Strict requirement: Avoid using any sitting animation
+    if (typeof animName === 'string' && animName.toLowerCase().includes('sit')) {
+      console.log('[AnimationEngine] Sitting animation avoided; defaulting to idle.');
+      animName = 'idle';
+    }
+
+    let targetAnim = animName || 'idle';
+    if (targetAnim === 'thinking') targetAnim = 'think';
+    if (targetAnim === 'sadIdle' || targetAnim === 'sad1') targetAnim = 'sad';
+    if (!this.animations[targetAnim]) {
+      console.warn(`[AnimationEngine] Unknown animation "${targetAnim}", falling back to idle`);
+      targetAnim = 'idle';
+    }
+
+    const url = this.animations[targetAnim];
+    this.requestedAnimName = targetAnim;
 
     try {
       let action = this.actions.get(targetAnim);
@@ -376,26 +428,38 @@ export class AnimationEngine {
         }
 
         action = this.mixer.clipAction(retargetedClip);
-        action.setLoop(THREE.LoopRepeat, Infinity);
-        action.clampWhenFinished = false;
+
+        // Continuous ambient idles loop indefinitely; communicative gestures are one-shot
+        const isContinuous = targetAnim === 'idle' || targetAnim === 'happyIdle';
+        if (isContinuous) {
+          action.setLoop(THREE.LoopRepeat, Infinity);
+          action.clampWhenFinished = false;
+        } else {
+          action.setLoop(THREE.LoopOnce, 1);
+          action.clampWhenFinished = true;
+        }
 
         this.actions.set(targetAnim, action);
       }
 
-      // Update finger pose target
-      this.targetFingerPose = { ...FINGER_POSES.idle };
+      // Update procedural finger pose target based on gesture
+      if (FINGER_POSES[targetAnim]) {
+        this.targetFingerPose = { ...FINGER_POSES[targetAnim] };
+      } else {
+        this.targetFingerPose = { ...FINGER_POSES.idle };
+      }
 
       // Avatar remains naturally grounded at origin
       this.targetRootY = 0.0;
       this.targetRootZ = 0.0;
 
-      if (this.currentAction === action) return;
+      if (this.currentAction === action && action.isRunning()) return;
 
       action.reset();
       action.fadeIn(fadeDuration);
       action.play();
 
-      if (this.currentAction) {
+      if (this.currentAction && this.currentAction !== action) {
         this.currentAction.fadeOut(fadeDuration);
       }
 
@@ -408,6 +472,9 @@ export class AnimationEngine {
 
   applyFingerPose(delta) {
     if (!this.vrm?.humanoid || !this.fingerNodes) return;
+
+    // Check which finger bones are actively driven by the retargeted animation keyframes
+    const animatedBones = this.currentAction?.getClip()?.userData?.animatedBones;
 
     const t = THREE.MathUtils.clamp(delta * 8, 0, 1);
     for (const k in this.targetFingerPose) {
@@ -427,31 +494,31 @@ export class AnimationEngine {
         const indexMult = fIdx === 0 && pose.indexMult !== undefined ? pose.indexMult : 1.0;
 
         const pNode = chain[0];
-        if (pNode) {
+        if (pNode && (!animatedBones || !animatedBones.has(pNode.name))) {
           pNode.rotation.x = pose.proximal * indexMult;
           pNode.rotation.y = spreadOffset;
         }
         const iNode = chain[1];
-        if (iNode) {
+        if (iNode && (!animatedBones || !animatedBones.has(iNode.name))) {
           iNode.rotation.x = pose.intermediate * indexMult;
         }
         const dNode = chain[2];
-        if (dNode) {
+        if (dNode && (!animatedBones || !animatedBones.has(dNode.name))) {
           dNode.rotation.x = pose.distal * indexMult;
         }
       });
 
       // Thumb
       const t1 = thumb[0];
-      if (t1) {
+      if (t1 && (!animatedBones || !animatedBones.has(t1.name))) {
         t1.rotation.y = pose.thumbSpread * spreadSign;
       }
       const t2 = thumb[1];
-      if (t2) {
+      if (t2 && (!animatedBones || !animatedBones.has(t2.name))) {
         t2.rotation.x = pose.thumbCurl;
       }
       const t3 = thumb[2];
-      if (t3) {
+      if (t3 && (!animatedBones || !animatedBones.has(t3.name))) {
         t3.rotation.x = pose.thumbCurl * 0.8;
       }
     };
@@ -466,7 +533,7 @@ export class AnimationEngine {
     }
     this.applyFingerPose(delta);
 
-    // Smoothly elevate and position avatar root for sitting & standing transitions
+    // Smoothly maintain avatar root alignment
     if (this.vrm?.scene) {
       const lerpSpeed = Math.min(delta * 4.5, 1);
       this.currentRootY = THREE.MathUtils.lerp(

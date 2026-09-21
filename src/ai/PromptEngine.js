@@ -100,7 +100,7 @@ export function parseRayaResponse(rawText) {
     } else if (/advice|suggest|ponder/.test(token)) {
       if (!emotions.length) emotions.push('advice');
     } else if (/sit|sitting|chair/.test(token)) {
-      if (!actions.length) actions.push('sitting');
+      if (!emotions.length) emotions.push('relaxed');
     } else if (/think|wonder|curious/.test(token)) {
       if (!emotions.length) emotions.push('think');
     } else if (/wink|tease/.test(token)) {
