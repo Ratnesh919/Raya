@@ -14,16 +14,18 @@ export class LipSyncEngine {
     this.vrm = null;
     this._cachedTargets = null;
 
-    // Audio context analyzer state
+    // Audio context analyzer state (for Kokoro / MP3 media playback)
     this.audioContext = null;
     this.analyser = null;
     this.dataArray = null;
     this.isAudioActive = false;
 
-    // Procedural fallback state (for Web Speech API TTS)
+    // Word-synchronized speech state (driven directly by TTS onboundary events)
     this.isSyntheticSpeaking = false;
-    this.syntheticTime = 0;
-    this.syntheticCadence = 14; // syllables speed
+    this.targetVowels = { aa: 0.45, ee: 0.25, ih: 0.15, oh: 0.20, ou: 0.15 };
+    this.speechPhase = 0;
+    this.speechCadence = 19.0; // ~3.0 Hz natural conversational syllable rhythm
+    this.lastWordTime = 0;
 
     // Smoothed blendshape weights
     this.weights = {
@@ -34,9 +36,9 @@ export class LipSyncEngine {
       ou: 0
     };
 
-    // Attack & Release factors
-    this.attack = 40.0;
-    this.release = 22.0;
+    // Soft-tissue lip damping parameters (calm, organic, realistic)
+    this.attack = 18.0;
+    this.release = 14.0;
 
     this.vrmManager.addModelLoadedListener((vrm) => {
       this.vrm = vrm;
@@ -124,24 +126,69 @@ export class LipSyncEngine {
     }
   }
 
+  /**
+   * Called on every spoken word from TTS onboundary events.
+   * Matches mouth vowel shapes and timings directly to the actual words being voiced.
+   */
+  onWord(word = '') {
+    this.isSyntheticSpeaking = true;
+    this.lastWordTime = performance.now();
+
+    const clean = (word || '').toLowerCase();
+    if (!clean) return;
+
+    let aa = 0, ee = 0, ih = 0, oh = 0, ou = 0;
+
+    for (let i = 0; i < clean.length; i++) {
+      const ch = clean[i];
+      // Latin phonetic mapping
+      if (ch === 'a') aa += 1.4;
+      else if (ch === 'e') ee += 1.1;
+      else if (ch === 'i' || ch === 'y') ih += 1.0;
+      else if (ch === 'o') oh += 1.3;
+      else if (ch === 'u' || ch === 'w') ou += 1.2;
+      // Devanagari Hindi phonetic mapping
+      else if (/[\u0905\u0906\u093E]/.test(ch)) aa += 1.5;
+      else if (/[\u090F\u0910\u0947\u0948]/.test(ch)) ee += 1.2;
+      else if (/[\u0907\u0908\u093F\u0940]/.test(ch)) ih += 1.0;
+      else if (/[\u0913\u094B]/.test(ch)) oh += 1.3;
+      else if (/[\u0909\u090A\u0941\u0942\u0914\u094C]/.test(ch)) ou += 1.2;
+    }
+
+    const total = aa + ee + ih + oh + ou;
+    if (total === 0) {
+      // Consonants or short function words: natural open jaw balance
+      this.targetVowels = {
+        aa: 0.40,
+        ee: 0.25,
+        ih: 0.15,
+        oh: 0.15,
+        ou: 0.10
+      };
+    } else {
+      // Normalized vowel weighting tailored to the spoken word
+      this.targetVowels = {
+        aa: (aa / total) * 0.85,
+        ee: (ee / total) * 0.70,
+        ih: (ih / total) * 0.60,
+        oh: (oh / total) * 0.80,
+        ou: (ou / total) * 0.65
+      };
+    }
+  }
+
   startSyntheticSpeech() {
     this.isSyntheticSpeaking = true;
-    this.syntheticTime = 0;
+    this.lastWordTime = performance.now();
+    if (!this.targetVowels) {
+      this.targetVowels = { aa: 0.45, ee: 0.25, ih: 0.15, oh: 0.20, ou: 0.15 };
+    }
   }
 
   stopSyntheticSpeech() {
     this.isSyntheticSpeaking = false;
     this.isAudioActive = false;
-    this.weights.aa = 0;
-    this.weights.ee = 0;
-    this.weights.ih = 0;
-    this.weights.oh = 0;
-    this.weights.ou = 0;
-    ['aa', 'ee', 'ih', 'oh', 'ou'].forEach((k) => this.setBlendshape(k, 0));
-    const manager = this.getManager();
-    if (typeof manager?.update === 'function') {
-      try { manager.update(); } catch (e) {}
-    }
+    this.lastWordTime = 0;
   }
 
   update(delta) {
@@ -168,6 +215,7 @@ export class LipSyncEngine {
     let targetOu = 0;
     let hasAudioVolume = false;
 
+    // 1. Audio Element Analysis (Kokoro / MP3 / Media stream)
     if (this.isAudioActive && this.analyser && this.dataArray) {
       this.analyser.getByteFrequencyData(this.dataArray);
 
@@ -192,37 +240,50 @@ export class LipSyncEngine {
         for (let i = 48; i < 90; i++) highSum += this.dataArray[i];
         const high = highSum / 42 / 255;
 
-        targetAa = Math.min(low * 1.5, 0.95);
-        targetOh = Math.min(low * 0.8 + mid * 0.4, 0.75);
-        targetEe = Math.min(mid * 1.2 + high * 0.5, 0.85);
-        targetIh = Math.min(mid * 0.8, 0.65);
-        targetOu = Math.min(high * 0.9 + low * 0.3, 0.7);
+        targetAa = Math.min(low * 1.4, 0.85);
+        targetOh = Math.min(low * 0.7 + mid * 0.35, 0.70);
+        targetEe = Math.min(mid * 1.0 + high * 0.4, 0.75);
+        targetIh = Math.min(mid * 0.7, 0.55);
+        targetOu = Math.min(high * 0.8 + low * 0.25, 0.60);
       }
     }
 
-    // Procedural synthetic speech runs when active and either Web Speech is speaking or audio volume is low
+    // 2. Synthetic Speech Mode (Web Speech API & continuous phonation fallback)
     if (!hasAudioVolume && this.isSyntheticSpeaking) {
-      this.syntheticTime += delta * this.syntheticCadence;
-      const t = this.syntheticTime;
+      // Advance syllable cadence phase (~3.0 Hz natural human conversational rhythm)
+      this.speechPhase += delta * this.speechCadence;
 
-      // Organic speech wave: continuous dynamic modulation between consonants and open vowels
-      // Guarantees mouth NEVER collapses or freezes mid-speech
-      const rawPulse = Math.sin(t * 1.6);
-      const open = 0.20 + 0.65 * (0.5 + 0.5 * rawPulse) * (0.8 + 0.2 * Math.sin(t * 0.7));
+      // Organic jaw syllable aperture:
+      // Minimum jaw aperture = 0.28 (mouth stays naturally parted during speech, NEVER freezes or closes shut)
+      // Peak jaw aperture = 0.82 (open vowel articulation)
+      const jawCycle = 0.5 + 0.5 * Math.sin(this.speechPhase);
+      const harmonic = 0.10 * Math.sin(this.speechPhase * 0.4 + 0.8);
+      const jawAperture = THREE.MathUtils.clamp(0.28 + 0.52 * jawCycle + harmonic, 0.22, 0.88);
 
-      const cycle = (t * 2.2) % (Math.PI * 2);
-      const wAa = Math.max(0, Math.sin(cycle));
-      const wEe = Math.max(0, Math.sin(cycle + 1.25));
-      const wIh = Math.max(0, Math.sin(cycle + 2.5));
-      const wOh = Math.max(0, Math.sin(cycle + 3.75));
-      const wOu = Math.max(0, Math.sin(cycle + 5.0));
-      const sum = wAa + wEe + wIh + wOh + wOu || 1.0;
+      const timeSinceWord = performance.now() - (this.lastWordTime || 0);
 
-      targetAa = open * (wAa / sum) * 1.1;
-      targetEe = open * (wEe / sum) * 0.95;
-      targetIh = open * (wIh / sum) * 0.75;
-      targetOh = open * (wOh / sum) * 0.85;
-      targetOu = open * (wOu / sum) * 0.75;
+      // If word events are active (received within the last 1.2s), use the word-derived vowels
+      if (this.lastWordTime > 0 && timeSinceWord < 1200 && this.targetVowels) {
+        targetAa = this.targetVowels.aa * jawAperture;
+        targetEe = this.targetVowels.ee * jawAperture;
+        targetIh = this.targetVowels.ih * jawAperture;
+        targetOh = this.targetVowels.oh * jawAperture;
+        targetOu = this.targetVowels.ou * jawAperture;
+      } else {
+        // Fallback procedural cadence when boundary events are delayed, unsupported (Safari/Android), or between sentences
+        // Smoothly cycles through natural conversational vowels without abrupt shifts
+        const cycle = (this.speechPhase * 0.35) % (Math.PI * 2);
+        const wAa = Math.max(0, Math.sin(cycle));
+        const wEe = Math.max(0, Math.sin(cycle + 1.3));
+        const wOh = Math.max(0, Math.sin(cycle + 3.8));
+        const sum = wAa + wEe + wOh || 1.0;
+
+        targetAa = (wAa / sum) * jawAperture * 0.80;
+        targetEe = (wEe / sum) * jawAperture * 0.65;
+        targetOh = (wOh / sum) * jawAperture * 0.70;
+        targetIh = (wEe / sum) * jawAperture * 0.35;
+        targetOu = (wOh / sum) * jawAperture * 0.30;
+      }
     }
 
     const smoothViseme = (curr, target) => {

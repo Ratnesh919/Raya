@@ -711,14 +711,31 @@ export class VoiceService {
         this.isSpeaking = true;
         if (this.lipSyncEngine) {
           this.lipSyncEngine.startSyntheticSpeech();
+          const firstWordMatch = sentenceText.trim().match(/^[^\s,.;:!?]+/);
+          if (firstWordMatch) {
+            this.lipSyncEngine.onWord(firstWordMatch[0]);
+          }
         }
         if (this.onSpeechStatus) this.onSpeechStatus('speaking');
       };
 
       // Built-in boundary hook: word events keep lip-sync synchronized and continuously active
-      utterance.onboundary = () => {
+      utterance.onboundary = (event) => {
         if (sessionId !== this._speechSessionId) return;
-        if (this.lipSyncEngine && !this.lipSyncEngine.isSyntheticSpeaking) {
+        if (!this.lipSyncEngine) return;
+
+        const charIndex = event.charIndex || 0;
+        let word = '';
+        if (event.charLength) {
+          word = sentenceText.substring(charIndex, charIndex + event.charLength);
+        } else {
+          const match = sentenceText.substring(charIndex).match(/^[^\s,.;:!?]+/);
+          word = match ? match[0] : '';
+        }
+
+        if (word) {
+          this.lipSyncEngine.onWord(word);
+        } else {
           this.lipSyncEngine.startSyntheticSpeech();
         }
       };
