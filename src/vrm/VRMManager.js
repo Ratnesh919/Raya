@@ -191,22 +191,58 @@ export class VRMManager {
   setupInteractions() {
     const el = this.canvas;
 
-    // Desktop Pointer Controls
+    // Prevent default context menu so right-click drag is uninterrupted
+    el.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+    });
+
+    // Desktop Pointer Controls (Left-click: avatar rotation, Right-click: camera Y-axis movement)
+    this.dragButton = -1;
+
     el.addEventListener('pointerdown', (e) => {
-      if (e.button === 0) {
+      if (e.button === 0 || e.button === 2) {
         this.isDragging = true;
+        this.dragButton = e.button;
         this.previousMousePosition = { x: e.clientX, y: e.clientY };
+        try {
+          el.setPointerCapture(e.pointerId);
+        } catch (err) {}
       }
     });
 
-    window.addEventListener('pointerup', () => {
+    const stopDragging = (e) => {
       this.isDragging = false;
-    });
+      this.dragButton = -1;
+      if (e && e.pointerId) {
+        try {
+          el.releasePointerCapture(e.pointerId);
+        } catch (err) {}
+      }
+    };
+
+    window.addEventListener('pointerup', stopDragging);
+    window.addEventListener('pointercancel', stopDragging);
 
     window.addEventListener('pointermove', (e) => {
-      if (!this.isDragging || !this.currentVrm) return;
-      const deltaX = e.clientX - this.previousMousePosition.x;
-      this.currentVrm.scene.rotation.y += deltaX * 0.008;
+      if (!this.isDragging) return;
+
+      if (this.dragButton === 0 && this.currentVrm) {
+        // Left click drag: rotate avatar model horizontally
+        const deltaX = e.clientX - this.previousMousePosition.x;
+        this.currentVrm.scene.rotation.y += deltaX * 0.008;
+      } else if (this.dragButton === 2) {
+        // Right click drag: control camera movement along Y axis
+        const deltaY = e.clientY - this.previousMousePosition.y;
+        // Dragging mouse UP (-deltaY) moves camera UP (+Y)
+        // Dragging mouse DOWN (+deltaY) moves camera DOWN (-Y)
+        const moveY = -deltaY * 0.004;
+        this.camera.position.y = THREE.MathUtils.clamp(
+          this.camera.position.y + moveY,
+          0.1,  // Near feet/ground level
+          2.6   // Above head level
+        );
+      }
+
       this.previousMousePosition = { x: e.clientX, y: e.clientY };
     });
 
