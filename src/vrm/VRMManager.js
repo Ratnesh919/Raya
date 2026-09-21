@@ -96,9 +96,14 @@ export class VRMManager {
     this.cameraFullBodyPos = new THREE.Vector3(0, 1.25, 3.8);
     this.cameraFullBodyTarget = new THREE.Vector3(0, 1.15, 0);
 
+    // 3D Orbital Camera state & scratch math
+    this.cameraTarget = new THREE.Vector3().copy(this.cameraPortraitTarget);
+    this.cameraSpherical = new THREE.Spherical();
+    this._cameraOffset = new THREE.Vector3();
+
     this.updateCameraForScreen();
     this.camera.position.copy(this.cameraPortraitPos);
-    this.camera.lookAt(this.cameraPortraitTarget);
+    this.camera.lookAt(this.cameraTarget);
 
     // 5. Lighting
     this.setupLighting();
@@ -158,8 +163,14 @@ export class VRMManager {
     this.camera.updateProjectionMatrix();
     const targetPos = this.currentCameraMode === 'full' ? this.cameraFullBodyPos : this.cameraPortraitPos;
     const targetLook = this.currentCameraMode === 'full' ? this.cameraFullBodyTarget : this.cameraPortraitTarget;
+    this.cameraTarget.copy(targetLook);
     this.camera.position.copy(targetPos);
-    this.camera.lookAt(targetLook);
+    this.camera.lookAt(this.cameraTarget);
+
+    if (this._cameraOffset && this.cameraSpherical) {
+      this._cameraOffset.subVectors(this.camera.position, this.cameraTarget);
+      this.cameraSpherical.setFromVector3(this._cameraOffset);
+    }
   }
 
   setupLighting() {
@@ -227,20 +238,32 @@ export class VRMManager {
       if (!this.isDragging) return;
 
       if (this.dragButton === 0 && this.currentVrm) {
-        // Left click drag: rotate avatar model horizontally
+        // Left click drag: rotate avatar model horizontally (around local Y axis)
         const deltaX = e.clientX - this.previousMousePosition.x;
         this.currentVrm.scene.rotation.y += deltaX * 0.008;
       } else if (this.dragButton === 2) {
-        // Right click drag: control camera movement along Y axis
+        // Right click drag: full 3D orbital camera angle control
+        const deltaX = e.clientX - this.previousMousePosition.x;
         const deltaY = e.clientY - this.previousMousePosition.y;
-        // Dragging mouse UP (-deltaY) moves camera UP (+Y)
-        // Dragging mouse DOWN (+deltaY) moves camera DOWN (-Y)
-        const moveY = -deltaY * 0.004;
-        this.camera.position.y = THREE.MathUtils.clamp(
-          this.camera.position.y + moveY,
-          0.1,  // Near feet/ground level
-          2.6   // Above head level
+
+        // Azimuth (horizontal 3D orbit around avatar)
+        this.cameraSpherical.theta -= deltaX * 0.008;
+
+        // Elevation / Pitch (vertical 3D tilt angle)
+        // Dragging mouse UP (-deltaY) tilts camera UP to view avatar from higher angle
+        // Dragging mouse DOWN (+deltaY) tilts camera DOWN to view avatar from lower angle
+        this.cameraSpherical.phi += deltaY * 0.006;
+
+        // Safe clamping on polar angle to prevent gimbal flipping
+        this.cameraSpherical.phi = THREE.MathUtils.clamp(
+          this.cameraSpherical.phi,
+          0.12,                  // ~7° from zenith (overhead high-angle view)
+          Math.PI / 2 + 0.45     // ~115° (upward low-angle view)
         );
+
+        this._cameraOffset.setFromSpherical(this.cameraSpherical);
+        this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
+        this.camera.lookAt(this.cameraTarget);
       }
 
       this.previousMousePosition = { x: e.clientX, y: e.clientY };
@@ -248,17 +271,26 @@ export class VRMManager {
 
     window.addEventListener('wheel', (e) => {
       const zoomDelta = e.deltaY * 0.002;
-      const newZ = THREE.MathUtils.clamp(this.camera.position.z + zoomDelta, 1.2, 6.5);
-      this.camera.position.z = newZ;
+      const minRadius = this.currentCameraMode === 'full' ? 1.5 : 0.7;
+      const maxRadius = this.currentCameraMode === 'full' ? 6.5 : 4.5;
+      this.cameraSpherical.radius = THREE.MathUtils.clamp(
+        this.cameraSpherical.radius + zoomDelta,
+        minRadius,
+        maxRadius
+      );
+      this._cameraOffset.setFromSpherical(this.cameraSpherical);
+      this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
+      this.camera.lookAt(this.cameraTarget);
     }, { passive: true });
 
     // Mobile Touch Drag & Pinch-to-Zoom
     let touchStartDist = 0;
-    let touchStartZ = 0;
+    let touchStartRadius = 0;
 
     el.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         this.isDragging = true;
+        this.dragButton = 0;
         this.previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       } else if (e.touches.length === 2) {
         this.isDragging = false;
@@ -266,7 +298,7 @@ export class VRMManager {
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
-        touchStartZ = this.camera.position.z;
+        touchStartRadius = this.cameraSpherical.radius;
       }
     }, { passive: true });
 
@@ -281,7 +313,16 @@ export class VRMManager {
           e.touches[0].clientY - e.touches[1].clientY
         );
         const factor = touchStartDist / Math.max(currentDist, 1);
-        this.camera.position.z = THREE.MathUtils.clamp(touchStartZ * factor, 1.2, 6.5);
+        const minRadius = this.currentCameraMode === 'full' ? 1.5 : 0.7;
+        const maxRadius = this.currentCameraMode === 'full' ? 6.5 : 4.5;
+        this.cameraSpherical.radius = THREE.MathUtils.clamp(
+          touchStartRadius * factor,
+          minRadius,
+          maxRadius
+        );
+        this._cameraOffset.setFromSpherical(this.cameraSpherical);
+        this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
+        this.camera.lookAt(this.cameraTarget);
       }
     }, { passive: true });
 
@@ -297,6 +338,7 @@ export class VRMManager {
     const targetLook = mode === 'full' ? this.cameraFullBodyTarget : this.cameraPortraitTarget;
 
     const startPos = this.camera.position.clone();
+    const startTarget = this.cameraTarget.clone();
     const startTime = performance.now();
     const duration = 650; // ms
 
@@ -306,10 +348,15 @@ export class VRMManager {
       const ease = 0.5 - Math.cos(t * Math.PI) / 2;
 
       this.camera.position.lerpVectors(startPos, targetPos, ease);
-      this.camera.lookAt(targetLook);
+      this.cameraTarget.lerpVectors(startTarget, targetLook, ease);
+      this.camera.lookAt(this.cameraTarget);
 
       if (t < 1) {
         requestAnimationFrame(animateCamera);
+      } else {
+        this.cameraTarget.copy(targetLook);
+        this._cameraOffset.subVectors(this.camera.position, this.cameraTarget);
+        this.cameraSpherical.setFromVector3(this._cameraOffset);
       }
     };
     requestAnimationFrame(animateCamera);
