@@ -1,3 +1,5 @@
+import { LoaderAnimation } from './LoaderAnimation.js';
+
 export class ControlsHUD {
   constructor({ vrmManager, animationEngine, expressionManager }) {
     this.vrmManager = vrmManager;
@@ -8,10 +10,9 @@ export class ControlsHUD {
     this.fileInputEl = document.getElementById('file-input-vrm');
     this.btnUploadEl = document.getElementById('btn-upload-vrm');
     this.btnCameraEl = document.getElementById('btn-camera-toggle');
-    this.loadingOverlayEl = document.getElementById('loading-overlay');
-    this.loadingTextEl = document.getElementById('loading-text');
-    this.loaderBarFillEl = document.getElementById('loader-bar-fill');
-    this.loadingPctEl = document.getElementById('loading-pct');
+
+    // Advanced Cybernetic Holographic Loader Animation
+    this.loaderAnimation = new LoaderAnimation();
 
     this.currentCameraMode = 'portrait';
     this.hideTimeout = null;
@@ -95,34 +96,10 @@ export class ControlsHUD {
   }
 
   updateProgress(pct, text = null) {
-    const clampedPct = Math.min(100, Math.max(0, Math.round(pct)));
-    if (this.loaderBarFillEl) {
-      this.loaderBarFillEl.style.width = `${clampedPct}%`;
-    }
-    if (this.loadingPctEl) {
-      this.loadingPctEl.textContent = `${clampedPct}%`;
-    }
-    if (text && this.loadingTextEl) {
-      this.loadingTextEl.textContent = text;
-    }
+    this.loaderAnimation.updateProgress(pct, text);
 
-    const stepBadge = document.getElementById('loader-step-badge');
-    if (stepBadge) {
-      if (clampedPct < 25) {
-        stepBadge.textContent = 'STAGE 01 // NEURAL INIT';
-      } else if (clampedPct < 60) {
-        stepBadge.textContent = 'STAGE 02 // MTOON SHADERS';
-      } else if (clampedPct < 85) {
-        stepBadge.textContent = 'STAGE 03 // SPRING DYNAMICS';
-      } else if (clampedPct < 100) {
-        stepBadge.textContent = 'STAGE 04 // VOICE & VISEMES';
-      } else {
-        stepBadge.textContent = 'SYSTEM ONLINE // CONNECTED';
-      }
-    }
-
-    if (clampedPct >= 100) {
-      this.hideLoading(550);
+    if (pct >= 100) {
+      this.hideLoading(450);
     }
   }
 
@@ -131,23 +108,18 @@ export class ControlsHUD {
       clearTimeout(this.hideTimeout);
       this.hideTimeout = null;
     }
-    if (this.loadingTextEl) this.loadingTextEl.textContent = text;
-    if (this.loaderBarFillEl) this.loaderBarFillEl.style.width = '8%';
-    if (this.loadingPctEl) this.loadingPctEl.textContent = '8%';
-    const stepBadge = document.getElementById('loader-step-badge');
-    if (stepBadge) stepBadge.textContent = 'STAGE 01 // NEURAL INIT';
-    this.loadingOverlayEl?.classList.add('active');
+    this.loaderAnimation.playIntro(text);
   }
 
   hideLoading(delayMs = 0) {
     if (this.hideTimeout) clearTimeout(this.hideTimeout);
     if (delayMs > 0) {
       this.hideTimeout = setTimeout(() => {
-        this.loadingOverlayEl?.classList.remove('active');
+        this.loaderAnimation.playOutro();
         this.hideTimeout = null;
       }, delayMs);
     } else {
-      this.loadingOverlayEl?.classList.remove('active');
+      this.loaderAnimation.playOutro();
     }
   }
 }

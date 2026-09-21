@@ -305,39 +305,95 @@
     <!-- 3D HOLOGRAPHIC CYBERPUNK LOADING SCREEN -->
     <div id="loading-overlay" class="loading-overlay active">
       <div class="loader-backdrop-fx">
+        <div class="loader-cyber-grid"></div>
         <div class="loader-glow-orb orb-1"></div>
         <div class="loader-glow-orb orb-2"></div>
+        <div class="loader-glow-orb orb-3"></div>
       </div>
 
-      <div class="loader-card glass-card">
+      <div class="loader-card glass-card" id="loader-card">
+        <!-- TACTICAL HUD CORNER BRACKETS -->
+        <div class="hud-corner hud-corner-tl"></div>
+        <div class="hud-corner hud-corner-tr"></div>
+        <div class="hud-corner hud-corner-bl"></div>
+        <div class="hud-corner hud-corner-br"></div>
+        <div class="loader-scanlines"></div>
+
         <!-- TOP HUD TELEMETRY BADGES -->
         <div class="loader-hud-header">
           <div class="hud-status-badge">
             <span class="hud-pulse-dot"></span>
             <span class="hud-status-label">VRM NEURAL LINK</span>
+            <span class="hud-ping-label">ONLINE</span>
           </div>
-          <div class="hud-tech-badge">GPU 4X MSAA</div>
+          <div class="hud-tech-badge">
+            <span class="hud-gpu-tag">WEBGL 2.0</span>
+            <span class="hud-sep">|</span>
+            <span class="hud-msaa-tag">4X MSAA</span>
+          </div>
         </div>
 
-        <!-- HOLOGRAPHIC GYRO REACTOR -->
-        <div class="loader-gyro-container">
+        <!-- HOLOGRAPHIC 3D GYRO REACTOR -->
+        <div class="loader-gyro-container" id="loader-gyro-container">
+          <div class="gyro-reactor-aura"></div>
+          
+          <!-- CALIBRATED RADAR TICK DIAL -->
+          <svg class="gyro-radar-ticks" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="64" class="radar-outer-track" />
+            <circle cx="70" cy="70" r="54" class="radar-inner-track" />
+            <!-- 12 Compass Degree Ticks -->
+            <g class="radar-ticks-group">
+              <line x1="70" y1="4" x2="70" y2="10" />
+              <line x1="100" y1="12" x2="97" y2="17" />
+              <line x1="126" y1="38" x2="121" y2="41" />
+              <line x1="136" y1="70" x2="130" y2="70" />
+              <line x1="126" y1="102" x2="121" y2="99" />
+              <line x1="100" y1="128" x2="97" y2="123" />
+              <line x1="70" y1="136" x2="70" y2="130" />
+              <line x1="40" y1="128" x2="43" y2="123" />
+              <line x1="14" y1="102" x2="19" y2="99" />
+              <line x1="4" y1="70" x2="10" y2="70" />
+              <line x1="14" y1="38" x2="19" y2="41" />
+              <line x1="40" y1="12" x2="43" y2="17" />
+            </g>
+          </svg>
+
+          <!-- 3D GIMBAL RINGS -->
           <div class="gyro-ring gyro-ring-outer"></div>
+          
           <div class="gyro-ring gyro-ring-middle">
             <span class="gyro-satellite-node sat-1"></span>
             <span class="gyro-satellite-node sat-2"></span>
+            <span class="gyro-satellite-node sat-3"></span>
           </div>
+
           <div class="gyro-ring gyro-ring-inner"></div>
-          <div class="gyro-core-crystal">
-            <svg class="gyro-core-icon" viewBox="0 0 40 40" fill="none">
-              <path d="M20 3L35 12V28L20 37L5 28V12L20 3Z" stroke="url(#core-grad)" stroke-width="2" fill="rgba(168, 85, 247, 0.15)"/>
-              <path d="M20 10L28 15V25L20 30L12 25V15L20 10Z" fill="url(#core-grad-inner)"/>
+
+          <!-- PERIODIC QUANTUM SHOCKWAVE PULSES -->
+          <div class="gyro-shockwave-ring wave-1"></div>
+          <div class="gyro-shockwave-ring wave-2"></div>
+
+          <!-- FLOATING QUANTUM CORE CRYSTAL -->
+          <div class="gyro-core-crystal" id="gyro-core-crystal">
+            <svg class="gyro-core-icon" viewBox="0 0 44 44" fill="none">
+              <!-- Outer Quantum Hex Frame -->
+              <path class="core-hex-outer" d="M22 3L39 13V31L22 41L5 31V13L22 3Z" stroke="url(#core-grad-1)" stroke-width="2" fill="rgba(168, 85, 247, 0.12)"/>
+              <!-- Middle Facet Wireframe -->
+              <path class="core-hex-mid" d="M22 10L32 16V28L22 34L12 28V16L22 10Z" stroke="url(#core-grad-2)" stroke-width="1.5" fill="rgba(0, 242, 254, 0.15)"/>
+              <!-- Core Luminous Nucleus -->
+              <polygon points="22,15 28,19 28,25 22,29 16,25 16,19" fill="url(#core-nucleus)"/>
               <defs>
-                <linearGradient id="core-grad" x1="5" y1="3" x2="35" y2="37">
+                <linearGradient id="core-grad-1" x1="5" y1="3" x2="39" y2="41" gradientUnits="userSpaceOnUse">
                   <stop stop-color="#00f2fe"/>
                   <stop offset="0.5" stop-color="#a855f7"/>
                   <stop offset="1" stop-color="#ff2d55"/>
                 </linearGradient>
-                <linearGradient id="core-grad-inner" x1="12" y1="10" x2="28" y2="30">
+                <linearGradient id="core-grad-2" x1="12" y1="10" x2="32" y2="34" gradientUnits="userSpaceOnUse">
+                  <stop stop-color="#ffffff"/>
+                  <stop offset="0.6" stop-color="#00f2fe"/>
+                  <stop offset="1" stop-color="#a855f7"/>
+                </linearGradient>
+                <linearGradient id="core-nucleus" x1="16" y1="15" x2="28" y2="29" gradientUnits="userSpaceOnUse">
                   <stop stop-color="#ffffff"/>
                   <stop offset="1" stop-color="#a855f7"/>
                 </linearGradient>
@@ -350,14 +406,41 @@
         <div class="loader-brand-title">RAYA NEURAL CORE</div>
         <div class="loader-subtext">3D Interactive Anime AI Companion</div>
 
-        <!-- DIAGNOSTIC STAGE TRACKER -->
+        <!-- 4-SEGMENT SEQUENTIAL STAGE TRACKER -->
+        <div class="loader-stage-nodes">
+          <div class="stage-node-item active" data-stage="1">
+            <span class="stage-dot"></span>
+            <span class="stage-label">INIT</span>
+          </div>
+          <div class="stage-node-line"></div>
+          <div class="stage-node-item" data-stage="2">
+            <span class="stage-dot"></span>
+            <span class="stage-label">SHADERS</span>
+          </div>
+          <div class="stage-node-line"></div>
+          <div class="stage-node-item" data-stage="3">
+            <span class="stage-dot"></span>
+            <span class="stage-label">SKELETON</span>
+          </div>
+          <div class="stage-node-line"></div>
+          <div class="stage-node-item" data-stage="4">
+            <span class="stage-dot"></span>
+            <span class="stage-label">AUDIO</span>
+          </div>
+        </div>
+
+        <!-- DIAGNOSTIC STAGE TRACKER BADGE -->
         <div class="loader-step-track">
           <span id="loader-step-badge" class="loader-step-badge">STAGE 01 // NEURAL INIT</span>
         </div>
 
-        <!-- HIGH-TECH PROGRESS BAR WITH LASER SPARK HEAD -->
+        <!-- HIGH-TECH LASER ENERGY CONDUIT (PROGRESS BAR) -->
         <div class="loader-bar-wrapper">
+          <div class="loader-bar-track-ticks">
+            <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+          </div>
           <div id="loader-bar-fill" class="loader-bar-fill" style="width: 8%;">
+            <div class="loader-bar-laser-head"></div>
             <div class="loader-bar-spark"></div>
           </div>
         </div>
@@ -366,6 +449,15 @@
         <div class="loader-status-row">
           <span id="loading-text" class="loader-status-text">Synchronizing 3D Neural Viewport...</span>
           <span id="loading-pct" class="loader-pct-badge">8%</span>
+        </div>
+
+        <!-- LIVE TELEMETRY SUB-ROW -->
+        <div class="loader-telemetry-strip">
+          <span class="telem-item">SYS.MEM <b class="telem-val">OK</b></span>
+          <span class="telem-dot">•</span>
+          <span class="telem-item">THREADS <b class="telem-val">8</b></span>
+          <span class="telem-dot">•</span>
+          <span class="telem-item">LATENCY <b class="telem-val" id="telem-latency">12ms</b></span>
         </div>
       </div>
     </div>

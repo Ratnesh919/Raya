@@ -60,6 +60,13 @@ An expressive, ultra-responsive 3D AI companion web application featuring real-t
 - **Mixamo FBX Retargeting with Finger Bones**: Retargets humanoid animations with full finger posing and zero T-pose startup glitches.
 - **Hardware-Accelerated Web Speech**: Instant-start, zero-RAM native TTS/STT, with optional neural Kokoro-82M ONNX model in Settings.
 
+### 🌀 Holographic Cyberpunk Boot Sequence (Anime.js & Design Spells)
+- **3D Kinetic Gyroscope Reactor**: Multi-axis 3D perspective gimbal rings with orbiting photon satellite nodes and a floating quantum crystal core.
+- **Magnetic 3D Parallax Tilt (Design Spell)**: Real-time pointer interaction dynamically tilts the holographic loader card in 3D perspective with smooth spring dampening.
+- **Diagnostic Stage Tracker & Cyber Glitch Decryption**: Sequential 4-stage hardware diagnostics with animated alphanumeric decryption scrambling on stage shifts.
+- **Quantum Laser Conduit**: Segmented laser fluid progress bar with leading-edge particle spark bursts and eased numerical interpolation.
+- **Warp Completion Outro**: Seamless radiant shockwave burst and card dissolve at 100% completion cleanly unveiling the 3D avatar.
+
 ### 🧠 Persistent Companion Memory
 - **Netlify Blobs Database**:
   - Built with `@netlify/blobs` and serverless `@netlify/functions`.
