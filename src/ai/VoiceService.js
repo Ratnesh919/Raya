@@ -609,10 +609,14 @@ export class VoiceService {
 
   /**
    * Speak synthesized voice via Web Speech API across all browsers with Edge Natural fallback recovery,
-   * phonetic transliteration, Chrome GC shielding, and iOS Safari resume watchdogs.
+   * phonetic transliteration, Chrome GC shielding, continuous sentence chaining, and resilient lip sync.
    */
   speakWebSpeech(cleanText, detectedLang) {
     if (!this.synth) return;
+
+    // Invalidate any previous ongoing speech session
+    this._speechSessionId = (this._speechSessionId || 0) + 1;
+    const sessionId = this._speechSessionId;
 
     if (this.synth.paused) {
       try { this.synth.resume(); } catch (e) {}
@@ -645,8 +649,45 @@ export class VoiceService {
       spokenScriptText = transliterateDevanagari(spokenScriptText);
     }
 
-    const doSpeak = () => {
-      const utterance = new SpeechSynthesisUtterance(spokenScriptText);
+    // Natural sentence splitting: divides text by punctuation so each utterance is short (2-5s),
+    // 100% avoiding the 15-second Chromium engine crash/stall and keeping lip sync perfectly continuous.
+    const rawSentences = spokenScriptText.match(/[^.!?\n]+[.!?\n]*/g) || [spokenScriptText];
+    const sentences = rawSentences.map((s) => s.trim()).filter((s) => s.length > 0);
+    if (sentences.length === 0) return;
+
+    let currentIndex = 0;
+    let keepAliveTimer = null;
+    let speechEnded = false;
+
+    const cleanup = () => {
+      if (speechEnded || sessionId !== this._speechSessionId) return;
+      speechEnded = true;
+      if (keepAliveTimer) clearInterval(keepAliveTimer);
+      window._currentRayaUtterance = null;
+      this.currentUtterance = null;
+      this.isSpeaking = false;
+      if (this.lipSyncEngine) {
+        this.lipSyncEngine.stopSyntheticSpeech();
+      }
+      if (this.onSpeechStatus) this.onSpeechStatus('idle');
+
+      // Cooldown timer to prevent mic feedback echo
+      if (this._cooldownTimeoutId) clearTimeout(this._cooldownTimeoutId);
+      this._cooldownTimeoutId = setTimeout(() => {
+        this._wakeWordCooldown = false;
+        this._cooldownTimeoutId = null;
+      }, 1200);
+    };
+
+    const speakSentence = () => {
+      if (sessionId !== this._speechSessionId || speechEnded) return;
+      if (currentIndex >= sentences.length) {
+        cleanup();
+        return;
+      }
+
+      const sentenceText = sentences[currentIndex];
+      const utterance = new SpeechSynthesisUtterance(sentenceText);
 
       if (voiceToUse) {
         utterance.voice = voiceToUse;
@@ -661,101 +702,51 @@ export class VoiceService {
       utterance.rate = this.rate || 1.10;
       utterance.volume = 1.0;
 
-      // Pin reference to window to eliminate Chromium garbage collection bug
+      // Retain strong reference on window to prevent Chrome garbage collecting active utterance
       window._currentRayaUtterance = utterance;
       this.currentUtterance = utterance;
 
-      let watchdogTimer = null;
-      let watchdogPaused = null;
-      let speechEnded = false;
-
-      const cleanup = () => {
-        if (speechEnded) return;
-        speechEnded = true;
-        if (watchdogTimer) clearInterval(watchdogTimer);
-        if (watchdogPaused) clearInterval(watchdogPaused);
-        window._currentRayaUtterance = null;
-        this.currentUtterance = null;
-        this.isSpeaking = false;
-        if (this.lipSyncEngine) {
-          this.lipSyncEngine.stopSyntheticSpeech();
-        }
-        if (this.onSpeechStatus) this.onSpeechStatus('idle');
-
-        // Cooldown timer to prevent echo
-        if (this._cooldownTimeoutId) clearTimeout(this._cooldownTimeoutId);
-        this._cooldownTimeoutId = setTimeout(() => {
-          this._wakeWordCooldown = false;
-          this._cooldownTimeoutId = null;
-        }, 1200);
-      };
-
       utterance.onstart = () => {
+        if (sessionId !== this._speechSessionId) return;
         this.isSpeaking = true;
         if (this.lipSyncEngine) {
           this.lipSyncEngine.startSyntheticSpeech();
         }
         if (this.onSpeechStatus) this.onSpeechStatus('speaking');
+      };
 
-        // Watchdog 1: Silent stop detection
-        watchdogTimer = setInterval(() => {
-          if (!this.synth.speaking && !this.synth.pending && this.isSpeaking && !speechEnded) {
-            console.warn('[VoiceService] Watchdog: speech synthesis silently dropped, forcing cleanup.');
-            cleanup();
-          }
-        }, 300);
-
-        // Watchdog 2: Chrome paused state recovery
-        watchdogPaused = setInterval(() => {
-          if (this.synth.paused && this.isSpeaking && !speechEnded) {
-            try { this.synth.resume(); } catch (e) {}
-          }
-        }, 800);
+      // Built-in boundary hook: word events keep lip-sync synchronized and continuously active
+      utterance.onboundary = () => {
+        if (sessionId !== this._speechSessionId) return;
+        if (this.lipSyncEngine && !this.lipSyncEngine.isSyntheticSpeaking) {
+          this.lipSyncEngine.startSyntheticSpeech();
+        }
       };
 
       utterance.onend = () => {
-        cleanup();
+        if (sessionId !== this._speechSessionId) return;
+        currentIndex++;
+        if (currentIndex < sentences.length) {
+          speakSentence();
+        } else {
+          cleanup();
+        }
       };
 
       utterance.onerror = (e) => {
+        if (sessionId !== this._speechSessionId) return;
         if (e.error === 'interrupted' || e.error === 'canceled') {
           cleanup();
           return;
         }
-        console.warn('[VoiceService] Speech error:', e.error);
-        cleanup();
-
-        // Resilient fallback retry
-        try {
-          const allVoices = this.synth.getVoices();
-          const fallbackVoice =
-            allVoices.find((v) => isFemaleVoice(v) && /Neerja.*Natural|Ava.*Natural|Jenny.*Natural|Samantha|Zira/i.test(v.name)) ||
-            allVoices.find((v) => isFemaleVoice(v)) ||
-            null;
-          const fallbackUtterance = new SpeechSynthesisUtterance(cleanText);
-          if (fallbackVoice) fallbackUtterance.voice = fallbackVoice;
-          fallbackUtterance.lang = fallbackVoice ? fallbackVoice.lang : 'en-US';
-          fallbackUtterance.rate = 1.10;
-          fallbackUtterance.pitch = 1.0;
-          fallbackUtterance.onstart = () => {
-            this.isSpeaking = true;
-            if (this.lipSyncEngine) this.lipSyncEngine.startSyntheticSpeech();
-            if (this.onSpeechStatus) this.onSpeechStatus('speaking');
-          };
-          fallbackUtterance.onend = () => cleanup();
-          fallbackUtterance.onerror = () => cleanup();
-          this.synth.speak(fallbackUtterance);
-        } catch (err) {
-          console.warn('[VoiceService] Fallback retry error:', err);
+        console.warn('[VoiceService] Sentence speech error:', e.error);
+        currentIndex++;
+        if (currentIndex < sentences.length) {
+          speakSentence();
+        } else {
+          cleanup();
         }
       };
-
-      // Hard safety ceiling based on word count
-      const wordCount = cleanText.split(/\s+/).length;
-      const estimatedMs = Math.max(3500, (wordCount / 3.0) * 1000 + 3000);
-      setTimeout(() => {
-        if (this.isSpeaking && !speechEnded) cleanup();
-      }, estimatedMs);
 
       try {
         this.synth.speak(utterance);
@@ -764,30 +755,51 @@ export class VoiceService {
         }
       } catch (e) {
         console.error('[VoiceService] synth.speak threw error:', e);
-        cleanup();
+        currentIndex++;
+        if (currentIndex < sentences.length) {
+          speakSentence();
+        } else {
+          cleanup();
+        }
       }
     };
 
-    // Edge requires a short delay after cancel() before speak() can execute reliably
+    // Chromium keep-alive: prevents Chromium background audio worker pause bug
+    keepAliveTimer = setInterval(() => {
+      if (sessionId === this._speechSessionId && this.isSpeaking && this.synth.speaking) {
+        try {
+          this.synth.pause();
+          this.synth.resume();
+        } catch (e) {}
+      }
+    }, 4500);
+
+    // Generous fallback safety timeout in case of an unhandled browser audio hang
+    const wordCount = cleanText.split(/\s+/).length;
+    const maxSafetyMs = Math.max(60000, wordCount * 1800 + 30000);
+    setTimeout(() => {
+      if (sessionId === this._speechSessionId && this.isSpeaking && !speechEnded) {
+        console.warn('[VoiceService] Maximum safety timeout reached, closing speech session.');
+        cleanup();
+      }
+    }, maxSafetyMs);
+
+    // Cancel previous and start cleanly
     const isEdge = /Edg\//.test(navigator.userAgent);
-    if (this.synth.speaking) {
+    if (this.synth.speaking || this.synth.pending) {
       try { this.synth.cancel(); } catch (e) {}
       if (isEdge) {
-        setTimeout(() => doSpeak(), 120);
+        setTimeout(() => speakSentence(), 120);
       } else {
-        doSpeak();
+        speakSentence();
       }
     } else {
-      if (isEdge && this.synth.pending) {
-        try { this.synth.cancel(); } catch (e) {}
-        setTimeout(() => doSpeak(), 120);
-      } else {
-        doSpeak();
-      }
+      speakSentence();
     }
   }
 
   stopSpeaking() {
+    this._speechSessionId = (this._speechSessionId || 0) + 1;
     if (this.kokoroService) {
       try { this.kokoroService.stop(); } catch (e) {}
     }
