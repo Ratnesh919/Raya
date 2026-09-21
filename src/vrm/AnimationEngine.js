@@ -210,16 +210,40 @@ export class AnimationEngine {
     this.currentFingerPose = { ...FINGER_POSES.idle };
     this.targetFingerPose = { ...FINGER_POSES.idle };
 
+    // Gesture cooldown state (10 seconds between non-idle gestures to prevent rapid jarring animations)
+    this.lastGestureTime = 0;
+    this.gestureCooldownMs = 10000;
+    this.isIdlePreloaded = false;
+
     // Root elevation tracking to keep avatar centered
     this.targetRootY = 0.0;
     this.currentRootY = 0.0;
+
+    // Preload ONLY the base idle animation in background so it is ready immediately when model loads
+    this.preloadIdle();
 
     // Register with VRMManager multi-listener
     this.vrmManager.addModelLoadedListener((vrm) => this.bindModel(vrm));
   }
 
+  /**
+   * Preload ONLY the base idle animation on startup so the avatar never appears in a T-pose.
+   * Other animations remain on-demand streaming to conserve mobile memory and bandwidth.
+   */
+  preloadIdle() {
+    if (this.isIdlePreloaded) return;
+    this.isIdlePreloaded = true;
+    this.enqueueLoadMixamoClip('idle', this.animations.idle)
+      .then(() => {
+        console.log('[AnimationEngine] Preloaded idle animation successfully.');
+      })
+      .catch((err) => {
+        console.warn('[AnimationEngine] Preload idle failed (will retry on demand):', err);
+      });
+  }
+
   async bindModel(vrm) {
-    console.log('[AnimationEngine] Binding model & starting idle animation...');
+    console.log('[AnimationEngine] Binding model & synchronizing idle motion...');
     this.vrm = vrm;
     this.targetRootY = 0.0;
     this.currentRootY = 0.0;
@@ -261,8 +285,13 @@ export class AnimationEngine {
       rightThumb: THUMB_R.map((name) => this.vrm.humanoid.getNormalizedBoneNode(name))
     };
 
-    // Start with idle animation immediately on-demand
-    await this.playAnimation('idle', 0.2);
+    // Immediately start idle animation and force first frame calculation so bones lock into idle
+    // posture BEFORE the loading overlay disappears (100% eliminates the 2-second T-pose glitch)
+    await this.playAnimation('idle', 0.0);
+    if (this.mixer) {
+      this.mixer.update(0.016);
+      this.applyFingerPose(0.016);
+    }
   }
 
   /**
@@ -412,6 +441,22 @@ export class AnimationEngine {
 
     const url = this.animations[targetAnim];
     this.requestedAnimName = targetAnim;
+
+    // 10-second cooldown for non-idle gestures to prevent rapid/frequent animation switching
+    const isIdle = targetAnim === 'idle' || targetAnim === 'happyIdle';
+    const now = Date.now();
+    if (!isIdle) {
+      const elapsed = now - this.lastGestureTime;
+      if (elapsed < this.gestureCooldownMs) {
+        console.log(
+          `[AnimationEngine] Gesture "${targetAnim}" held by 10s cooldown (${Math.ceil(
+            (this.gestureCooldownMs - elapsed) / 1000
+          )}s left). Maintaining idle posture.`
+        );
+        return;
+      }
+      this.lastGestureTime = now;
+    }
 
     try {
       let action = this.actions.get(targetAnim);

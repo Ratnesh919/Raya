@@ -440,13 +440,14 @@ export class VRMManager {
       this.isLoading = false;
 
       // Notify ALL registered listeners (AnimationEngine, ExpressionManager, LipSync, LifeSimulator, etc.)
-      this.modelLoadedListeners.forEach((cb) => {
+      // Awaiting listeners ensures the idle animation is active and rendered before the loader screen disappears
+      for (const cb of this.modelLoadedListeners) {
         try {
-          cb(vrm);
+          await cb(vrm);
         } catch (err) {
           console.error('[VRMManager] Model listener error:', err);
         }
-      });
+      }
 
       if (this.onLoadProgress) {
         this.onLoadProgress(100, 'Companion Ready!');
