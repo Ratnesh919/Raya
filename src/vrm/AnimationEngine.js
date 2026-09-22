@@ -218,6 +218,37 @@ export class AnimationEngine {
     this.targetRootY = 0.0;
     this.currentRootY = 0.0;
 
+    // Sequential One-by-One Background Downloader state
+    // Ensures all animations are downloaded one at a time, never concurrently or all at once
+    this.sequentialQueue = [
+      'happyIdle',
+      'think',
+      'happy',
+      'wave',
+      'excited',
+      'no',
+      'sad',
+      'yawn',
+      'angry',
+      'wave2',
+      'sad2'
+    ];
+    this.isSequentialRunning = false;
+    this.sequentialDelayMs = 2000; // 2.0s rate-limiting delay between downloads
+    this.sequentialTimer = null;
+    this.currentDownload = null;
+
+    // Visibility listener: pause background downloads when tab is hidden, resume when active
+    if (typeof document !== 'undefined') {
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden && this.isSequentialRunning && this.sequentialQueue.length > 0) {
+          if (!this.sequentialTimer) {
+            this.sequentialTimer = setTimeout(() => this._downloadNextInSequence(), 1000);
+          }
+        }
+      });
+    }
+
     // Preload ONLY the base idle animation in background so it is ready immediately when model loads
     this.preloadIdle();
 
@@ -236,7 +267,7 @@ export class AnimationEngine {
     setTimeout(() => {
       this.enqueueLoadMixamoClip('idle', this.animations.idle)
         .then(() => {
-          console.log('[AnimationEngine] Preloaded idle animation successfully.');
+          console.log('[AnimationEngine] Preloaded base idle animation successfully.');
         })
         .catch((err) => {
           console.warn('[AnimationEngine] Preload idle failed (will retry on demand):', err);
@@ -285,16 +316,33 @@ export class AnimationEngine {
       this.mixer.update(0.016);
       this.applyFingerPose(0.016);
     }
+
+    // Start downloading remaining animations strictly ONE BY ONE in the background
+    this.startSequentialBackgroundDownload();
   }
 
   /**
    * Non-blocking sequential animation loader.
-   * Ensures only ONE animation file is downloaded & parsed at a time,
+   * Ensures only ONE animation file is downloaded & parsed at a time (strict concurrency = 1),
    * deduplicates concurrent requests, and yields to the browser frame loop.
    */
   enqueueLoadMixamoClip(name, url) {
     if (this.loadedClips.has(name)) {
       return Promise.resolve(this.loadedClips.get(name));
+    }
+
+    // Deduplicate: Check if another alias already downloaded the exact same file URL (e.g. think / thinking)
+    for (const [loadedName, clipData] of this.loadedClips.entries()) {
+      if (clipData && clipData.url === url) {
+        this.loadedClips.set(name, clipData);
+        return Promise.resolve(clipData);
+      }
+    }
+
+    // If this animation is in the pending sequential queue, remove it so it won't be re-fetched later
+    const qIdx = this.sequentialQueue.indexOf(name);
+    if (qIdx !== -1) {
+      this.sequentialQueue.splice(qIdx, 1);
     }
 
     if (this.inFlightLoads.has(name)) {
@@ -307,24 +355,40 @@ export class AnimationEngine {
         return this.loadedClips.get(name);
       }
 
+      this.currentDownload = name;
+
       // Cooperative yield before network/parsing to keep Three.js rendering silky smooth
       await new Promise((resolve) => setTimeout(resolve, 16));
 
-      const asset = await new Promise((resolve, reject) => {
-        this.fbxLoader.load(url, resolve, undefined, reject);
-      });
+      try {
+        const asset = await new Promise((resolve, reject) => {
+          this.fbxLoader.load(url, resolve, undefined, reject);
+        });
 
-      const rawClip = THREE.AnimationClip.findByName(asset.animations, 'mixamo.com') || asset.animations[0];
-      if (!rawClip) {
-        throw new Error(`No animation found in ${url}`);
+        const rawClip = THREE.AnimationClip.findByName(asset.animations, 'mixamo.com') || asset.animations[0];
+        if (!rawClip) {
+          throw new Error(`No animation found in ${url}`);
+        }
+
+        // Cooperative yield after heavy parsing
+        await new Promise((resolve) => setTimeout(resolve, 8));
+
+        const result = { asset, rawClip, url };
+        this.loadedClips.set(name, result);
+
+        // Alias any other animation keys that point to this exact URL
+        for (const [otherName, otherUrl] of Object.entries(this.animations)) {
+          if (otherUrl === url && !this.loadedClips.has(otherName)) {
+            this.loadedClips.set(otherName, result);
+            const otherIdx = this.sequentialQueue.indexOf(otherName);
+            if (otherIdx !== -1) this.sequentialQueue.splice(otherIdx, 1);
+          }
+        }
+
+        return result;
+      } finally {
+        this.currentDownload = null;
       }
-
-      // Cooperative yield after heavy parsing
-      await new Promise((resolve) => setTimeout(resolve, 8));
-
-      const result = { asset, rawClip, url };
-      this.loadedClips.set(name, result);
-      return result;
     });
 
     this.inFlightLoads.set(name, loadTask);
@@ -333,6 +397,72 @@ export class AnimationEngine {
     return loadTask.finally(() => {
       this.inFlightLoads.delete(name);
     });
+  }
+
+  /**
+   * Starts sequential background downloading of all animations strictly ONE BY ONE.
+   * - Never downloads more than one animation at any time (concurrency = 1).
+   * - Waits 2000ms between each download to ensure zero impact on render loop & network.
+   * - Yields whenever the tab is hidden or user interactions take priority.
+   */
+  startSequentialBackgroundDownload() {
+    if (this.isSequentialRunning) return;
+    this.isSequentialRunning = true;
+
+    if (this.sequentialTimer) clearTimeout(this.sequentialTimer);
+    this.sequentialTimer = setTimeout(() => {
+      this._downloadNextInSequence();
+    }, 2500);
+  }
+
+  async _downloadNextInSequence() {
+    if (!this.isSequentialRunning) return;
+
+    // Prune items already downloaded
+    while (this.sequentialQueue.length > 0 && this.loadedClips.has(this.sequentialQueue[0])) {
+      this.sequentialQueue.shift();
+    }
+
+    if (this.sequentialQueue.length === 0) {
+      console.log('[AnimationEngine] 🏁 All animations downloaded one by one. Cache fully ready!');
+      this.isSequentialRunning = false;
+      return;
+    }
+
+    // Pause if document is hidden (user switched tabs or locked phone)
+    if (document.hidden) {
+      this.sequentialTimer = setTimeout(() => this._downloadNextInSequence(), 2000);
+      return;
+    }
+
+    const nextAnim = this.sequentialQueue.shift();
+    const url = this.animations[nextAnim];
+
+    if (url && !this.loadedClips.has(nextAnim)) {
+      try {
+        console.log(`[AnimationEngine] 📥 Downloading animation 1-by-1: "${nextAnim}" (${this.sequentialQueue.length} remaining in queue)...`);
+        await this.enqueueLoadMixamoClip(nextAnim, url);
+        console.log(`[AnimationEngine] ✅ Completed download: "${nextAnim}". Pausing ${this.sequentialDelayMs}ms before next...`);
+      } catch (err) {
+        console.warn(`[AnimationEngine] Sequential load failed for "${nextAnim}":`, err);
+      }
+    }
+
+    // Schedule next animation download with rate-limiting delay
+    this.sequentialTimer = setTimeout(() => {
+      this._downloadNextInSequence();
+    }, this.sequentialDelayMs);
+  }
+
+  getDownloadStatus() {
+    return {
+      loadedCount: this.loadedClips.size,
+      totalCount: Object.keys(this.animations).length,
+      currentDownload: this.currentDownload,
+      loadedList: Array.from(this.loadedClips.keys()),
+      remainingQueue: [...this.sequentialQueue],
+      isSequentialRunning: this.isSequentialRunning
+    };
   }
 
   retargetClip(asset, rawClip, url, name = null) {
