@@ -1269,39 +1269,6 @@ body.drawer-open .bottom-controls,
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* Finger Gesture Chips */
-.finger-chip-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #cbd5e1;
-  border-radius: 6px;
-  padding: 0.38rem 0.2rem;
-  font-size: 0.72rem;
-  font-family: var(--font-sans);
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  white-space: nowrap;
-}
-
-.finger-chip-btn:hover {
-  background: rgba(168, 85, 247, 0.22);
-  border-color: rgba(168, 85, 247, 0.55);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.finger-chip-btn.active {
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(168, 85, 247, 0.3));
-  border-color: var(--accent-cyan);
-  color: #ffffff;
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.35);
-  font-weight: 700;
-}
-
 /* ─── SELECT DROPDOWN DARKENING & READABILITY FIX ────────────────────────── */
 select, select option {
   background-color: #1a1235 !important;

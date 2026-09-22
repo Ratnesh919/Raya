@@ -64,11 +64,7 @@ async function bootstrap() {
     expressionManager,
     chestPhysics,
     chatUI,
-    controlsHUD,
-    fingerController: animationEngine.fingerController,
-    setFingerPose: (pose, hand, speed) => animationEngine.setFingerPose(pose, hand, speed),
-    setFingerCurl: (hand, finger, amount) => animationEngine.setFingerCurl(hand, finger, amount),
-    setFingerSpread: (hand, amount) => animationEngine.setFingerSpread(hand, amount)
+    controlsHUD
   };
 
   // 4. Main Render Loop
@@ -251,64 +247,6 @@ async function bootstrap() {
       if (popLightVal) popLightVal.textContent = '55%';
       if (popQualitySelect) popQualitySelect.value = 'high';
       if (popQualityTag) popQualityTag.textContent = 'HIGH / GPU';
-
-      // Reset fingers to relaxed
-      animationEngine.setFingerPose('relaxed');
-      document.querySelectorAll('.finger-chip-btn').forEach((btn) => {
-        btn.classList.toggle('active', btn.getAttribute('data-finger-pose') === 'relaxed');
-      });
-      const fingerLabel = document.getElementById('pop-finger-active-label');
-      if (fingerLabel) fingerLabel.textContent = 'Relaxed';
-      const fingerSlider = document.getElementById('pop-finger-curl-slider');
-      const fingerVal = document.getElementById('pop-finger-curl-val');
-      if (fingerSlider) fingerSlider.value = 0.22;
-      if (fingerVal) fingerVal.textContent = '22%';
-    });
-  }
-
-  // Realtime Finger Pose Chips
-  const fingerChips = document.querySelectorAll('.finger-chip-btn');
-  const fingerActiveLabel = document.getElementById('pop-finger-active-label');
-  const fingerCurlSlider = document.getElementById('pop-finger-curl-slider');
-  const fingerCurlVal = document.getElementById('pop-finger-curl-val');
-
-  fingerChips.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const pose = btn.getAttribute('data-finger-pose');
-      if (!pose) return;
-
-      fingerChips.forEach((b) => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      if (fingerActiveLabel) {
-        fingerActiveLabel.textContent = pose.charAt(0).toUpperCase() + pose.slice(1);
-      }
-
-      animationEngine.setFingerPose(pose);
-
-      if (fingerCurlSlider && fingerCurlVal) {
-        const estCurl = pose === 'fist' ? 0.98 : (pose === 'open' ? 0.0 : (pose === 'peace' ? 0.45 : 0.25));
-        fingerCurlSlider.value = estCurl;
-        fingerCurlVal.textContent = Math.round(estCurl * 100) + '%';
-      }
-    });
-  });
-
-  // Realtime Finger Curl Slider
-  if (fingerCurlSlider && fingerCurlVal) {
-    fingerCurlSlider.addEventListener('input', (e) => {
-      const curl = parseFloat(e.target.value);
-      fingerCurlVal.textContent = Math.round(curl * 100) + '%';
-
-      // Apply curl directly to all fingers in real-time
-      ['thumb', 'index', 'middle', 'ring', 'little'].forEach((f) => {
-        animationEngine.setFingerCurl('both', f, curl);
-      });
-
-      if (fingerActiveLabel) {
-        fingerActiveLabel.textContent = `Custom (${Math.round(curl * 100)}%)`;
-      }
-      fingerChips.forEach((b) => b.classList.remove('active'));
     });
   }
 }

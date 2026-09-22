@@ -57,7 +57,7 @@ An expressive, ultra-responsive 3D AI companion web application featuring real-t
 ### ⚡ Zero-Lag High Performance Architecture
 - **0 Garbage Collection Allocations per Frame**: Pre-allocated scratch vectors and quaternions in the 60 FPS animation loop eliminate GC stuttering.
 - **$O(1)$ Animation Retargeting**: Fast bone lookup map avoids recursive scene hierarchy traversals.
-- **Mixamo FBX Retargeting with Finger Bones**: Retargets humanoid animations with full finger posing and zero T-pose startup glitches.
+- **Mixamo FBX Retargeting**: Retargets humanoid animations with zero T-pose startup glitches.
 - **Hardware-Accelerated Web Speech**: Instant-start, zero-RAM native TTS/STT, with optional neural Kokoro-82M ONNX model in Settings.
 
 ### 🌀 Holographic Cyberpunk Boot Sequence (Anime.js & Design Spells)
@@ -148,7 +148,7 @@ Raya/
     │   └── KokoroService.js   # Optional Kokoro-82M neural TTS engine
     ├── vrm/
     │   ├── VRMManager.js      # Three.js scene, lighting, 3D orbit camera, and VRM loader
-    │   ├── AnimationEngine.js # Humanoid bone retargeting & finger poses
+    │   ├── AnimationEngine.js # Humanoid bone retargeting & animations
     │   ├── ExpressionManager.js # Emotion blendshape state interpolator
     │   ├── LipSyncEngine.js   # Word-synchronized audio & viseme synthesizer
     │   └── LifeSimulator.js   # Breathing, blinking, saccades, and gaze tracking

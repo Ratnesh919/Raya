@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
-import { FingerController, FINGER_PRESETS } from './FingerController.js';
 
 // Mixamo to VRM normalized bone mapping
 const MIXAMO_VRM_RIG_MAP = {
@@ -25,119 +24,8 @@ const MIXAMO_VRM_RIG_MAP = {
   mixamorigRightUpLeg: 'rightUpperLeg',
   mixamorigRightLeg: 'rightLowerLeg',
   mixamorigRightFoot: 'rightFoot',
-  mixamorigRightToeBase: 'rightToes',
-
-  // Left Hand Fingers (Mixamo -> VRM Humanoid)
-  mixamorigLeftHandThumb1: 'leftThumbProximal',
-  mixamorigLeftHandThumb2: 'leftThumbIntermediate',
-  mixamorigLeftHandThumb3: 'leftThumbDistal',
-  mixamorigLeftHandIndex1: 'leftIndexProximal',
-  mixamorigLeftHandIndex2: 'leftIndexIntermediate',
-  mixamorigLeftHandIndex3: 'leftIndexDistal',
-  mixamorigLeftHandMiddle1: 'leftMiddleProximal',
-  mixamorigLeftHandMiddle2: 'leftMiddleIntermediate',
-  mixamorigLeftHandMiddle3: 'leftMiddleDistal',
-  mixamorigLeftHandRing1: 'leftRingProximal',
-  mixamorigLeftHandRing2: 'leftRingIntermediate',
-  mixamorigLeftHandRing3: 'leftRingDistal',
-  mixamorigLeftHandPinky1: 'leftLittleProximal',
-  mixamorigLeftHandPinky2: 'leftLittleIntermediate',
-  mixamorigLeftHandPinky3: 'leftLittleDistal',
-  mixamorigLeftHandLittle1: 'leftLittleProximal',
-  mixamorigLeftHandLittle2: 'leftLittleIntermediate',
-  mixamorigLeftHandLittle3: 'leftLittleDistal',
-
-  // Right Hand Fingers (Mixamo -> VRM Humanoid)
-  mixamorigRightHandThumb1: 'rightThumbProximal',
-  mixamorigRightHandThumb2: 'rightThumbIntermediate',
-  mixamorigRightHandThumb3: 'rightThumbDistal',
-  mixamorigRightHandIndex1: 'rightIndexProximal',
-  mixamorigRightHandIndex2: 'rightIndexIntermediate',
-  mixamorigRightHandIndex3: 'rightIndexDistal',
-  mixamorigRightHandMiddle1: 'rightMiddleProximal',
-  mixamorigRightHandMiddle2: 'rightMiddleIntermediate',
-  mixamorigRightHandMiddle3: 'rightMiddleDistal',
-  mixamorigRightHandRing1: 'rightRingProximal',
-  mixamorigRightHandRing2: 'rightRingIntermediate',
-  mixamorigRightHandRing3: 'rightRingDistal',
-  mixamorigRightHandPinky1: 'rightLittleProximal',
-  mixamorigRightHandPinky2: 'rightLittleIntermediate',
-  mixamorigRightHandPinky3: 'rightLittleDistal',
-  mixamorigRightHandLittle1: 'rightLittleProximal',
-  mixamorigRightHandLittle2: 'rightLittleIntermediate',
-  mixamorigRightHandLittle3: 'rightLittleDistal'
+  mixamorigRightToeBase: 'rightToes'
 };
-
-// Procedural finger curls & spreads
-export const FINGER_POSES = {
-  idle: {
-    proximal: 0.38,
-    intermediate: 0.48,
-    distal: 0.28,
-    spread: 0.04,
-    thumbCurl: 0.28,
-    thumbSpread: 0.18
-  },
-  wave: {
-    proximal: 0.10,
-    intermediate: 0.14,
-    distal: 0.08,
-    spread: -0.02,
-    thumbCurl: 0.10,
-    thumbSpread: 0.12
-  },
-  happy: {
-    proximal: 0.22,
-    intermediate: 0.28,
-    distal: 0.15,
-    spread: 0.08,
-    thumbCurl: 0.18,
-    thumbSpread: 0.22
-  },
-  excited: {
-    proximal: 0.12,
-    intermediate: 0.16,
-    distal: 0.08,
-    spread: 0.12,
-    thumbCurl: 0.08,
-    thumbSpread: 0.28
-  },
-  angry: {
-    proximal: 0.52,
-    intermediate: 0.62,
-    distal: 0.42,
-    spread: -0.06,
-    thumbCurl: 0.38,
-    thumbSpread: 0.08
-  },
-  sad: {
-    proximal: 0.50,
-    intermediate: 0.60,
-    distal: 0.40,
-    spread: 0.02,
-    thumbCurl: 0.35,
-    thumbSpread: 0.05
-  },
-  pointing: {
-    proximal: 0.88,
-    intermediate: 1.02,
-    distal: 0.85,
-    spread: -0.06,
-    thumbCurl: 0.85,
-    thumbSpread: -0.10,
-    indexMult: 0.04
-  }
-};
-
-const FINGER_CHAINS_L = [
-  ['leftIndexProximal', 'leftIndexIntermediate', 'leftIndexDistal'],
-  ['leftMiddleProximal', 'leftMiddleIntermediate', 'leftMiddleDistal'],
-  ['leftRingProximal', 'leftRingIntermediate', 'leftRingDistal'],
-  ['leftLittleProximal', 'leftLittleIntermediate', 'leftLittleDistal']
-];
-const THUMB_L = ['leftThumbMetacarpal', 'leftThumbProximal', 'leftThumbDistal'];
-const FINGER_CHAINS_R = FINGER_CHAINS_L.map((c) => c.map((n) => n.replace('left', 'right')));
-const THUMB_R = THUMB_L.map((n) => n.replace('left', 'right'));
 
 // Build a fast lookup map for all nodes in the FBX asset (O(N) once instead of traversing per track)
 function getRigNodeMap(asset) {
@@ -203,11 +91,6 @@ export class AnimationEngine {
     this.actions = new Map();
     this.currentAction = null;
     this.currentAnimName = null;
-
-    // Realtime Interactive Finger Controller
-    this.fingerController = new FingerController(null);
-    this.currentFingerPose = { ...FINGER_POSES.idle };
-    this.targetFingerPose = { ...FINGER_POSES.idle };
 
     // Gesture cooldown state (10 seconds between non-idle gestures to prevent rapid jarring animations)
     this.lastGestureTime = 0;
@@ -306,15 +189,11 @@ export class AnimationEngine {
       }
     });
 
-    // Initialize Realtime Finger Controller on humanoid rig
-    this.fingerController.initBones(this.vrm);
-
     // Immediately start idle animation and force first frame calculation so bones lock into idle
     // posture BEFORE the loading overlay disappears (100% eliminates the 2-second T-pose glitch)
     await this.playAnimation('idle', 0.0);
     if (this.mixer) {
       this.mixer.update(0.016);
-      this.applyFingerPose(0.016);
     }
 
     // Start downloading remaining animations strictly ONE BY ONE in the background
@@ -542,8 +421,6 @@ export class AnimationEngine {
     console.log(`[AnimationEngine] Retargeted ${rawClip.name || url}: created ${tracks.length} tracks`);
     if (tracks.length === 0) return null;
     const clip = new THREE.AnimationClip(rawClip.name, rawClip.duration, tracks);
-    const animatedBoneNodes = new Set(tracks.map((t) => t.name.split('.')[0]));
-    clip.userData = { animatedBones: animatedBoneNodes };
     if (name) {
       this.retargetedClipsCache.set(name, clip);
     }
@@ -615,13 +492,6 @@ export class AnimationEngine {
         this.actions.set(targetAnim, action);
       }
 
-      // Update procedural finger pose target based on gesture
-      if (FINGER_POSES[targetAnim]) {
-        this.targetFingerPose = { ...FINGER_POSES[targetAnim] };
-      } else {
-        this.targetFingerPose = { ...FINGER_POSES.idle };
-      }
-
       // Avatar remains naturally grounded at origin
       this.targetRootY = 0.0;
       this.targetRootZ = 0.0;
@@ -643,36 +513,10 @@ export class AnimationEngine {
     }
   }
 
-  setFingerPose(presetName, hand = 'both', speed = 10.0) {
-    if (this.fingerController) {
-      return this.fingerController.setPose(presetName, hand, speed);
-    }
-    return false;
-  }
-
-  setFingerCurl(hand, finger, amount) {
-    if (this.fingerController) {
-      this.fingerController.setFingerCurl(hand, finger, amount);
-    }
-  }
-
-  setFingerSpread(hand, amount) {
-    if (this.fingerController) {
-      this.fingerController.setSpread(hand, amount);
-    }
-  }
-
-  applyFingerPose(delta) {
-    if (this.fingerController) {
-      this.fingerController.update(delta);
-    }
-  }
-
   update(delta) {
     if (this.mixer) {
       this.mixer.update(delta);
     }
-    this.applyFingerPose(delta);
 
     // Smoothly maintain avatar root alignment (gated by epsilon threshold to avoid invalidating scene matrix every frame)
     if (this.vrm?.scene) {
