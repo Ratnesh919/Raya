@@ -148,12 +148,19 @@ export class VRMManager {
 
     if (aspect < 1.0) {
       // Mobile portrait screen framing
+      // Phone aspect ratio typically ~0.46 (iPhone) to 0.56 (9:16)
       const phoneScale = 1.0 / Math.max(aspect, 0.45);
-      this.cameraPortraitPos.set(0, 1.34, 1.85 * Math.min(phoneScale * 0.65, 1.4));
-      this.cameraPortraitTarget.set(0, 1.30, 0);
-      this.cameraFullBodyPos.set(0, 1.12, 3.8 * Math.min(phoneScale * 0.72, 1.55));
-      this.cameraFullBodyTarget.set(0, 1.02, 0);
+
+      // Portrait: Focus cleanly on head, face, and chest centered above bottom controls
+      this.cameraPortraitPos.set(0, 1.38, 1.65 * Math.min(phoneScale * 0.55, 1.25));
+      this.cameraPortraitTarget.set(0, 1.34, 0);
+
+      // Full Body: Target lowered to Y=0.70 so avatar center of mass is centered,
+      // ensuring head is safely below top bar and feet (Y=0) have full clearance above bottom chat bar
+      this.cameraFullBodyPos.set(0, 0.82, 3.65 * Math.min(phoneScale * 0.65, 1.45));
+      this.cameraFullBodyTarget.set(0, 0.70, 0);
     } else {
+      // Desktop / PC (Preserved - user confirmed "it is good for pc")
       this.cameraPortraitPos.set(0, 1.38, 1.58);
       this.cameraPortraitTarget.set(0, 1.35, 0);
       this.cameraFullBodyPos.set(0, 1.25, 3.8);
@@ -286,6 +293,7 @@ export class VRMManager {
     // Mobile Touch Drag & Pinch-to-Zoom
     let touchStartDist = 0;
     let touchStartRadius = 0;
+    let previousTwoTouchCenter = null;
 
     el.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
@@ -299,19 +307,48 @@ export class VRMManager {
           e.touches[0].clientY - e.touches[1].clientY
         );
         touchStartRadius = this.cameraSpherical.radius;
+        previousTwoTouchCenter = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+        };
       }
     }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 1 && this.isDragging && this.currentVrm) {
+      if (e.touches.length === 1 && this.isDragging) {
         const deltaX = e.touches[0].clientX - this.previousMousePosition.x;
-        this.currentVrm.scene.rotation.y += deltaX * 0.01;
+        const deltaY = e.touches[0].clientY - this.previousMousePosition.y;
+
+        // 1-Finger Horizontal: rotate avatar model around Y axis
+        if (this.currentVrm) {
+          this.currentVrm.scene.rotation.y += deltaX * 0.009;
+        }
+
+        // 1-Finger Vertical: tilt the 3D camera elevation (phi) on mobile!
+        // Dragging DOWN (+deltaY) tilts camera DOWN to view from lower angle
+        // Dragging UP (-deltaY) tilts camera UP to view from higher angle
+        this.cameraSpherical.phi += deltaY * 0.005;
+        this.cameraSpherical.phi = THREE.MathUtils.clamp(
+          this.cameraSpherical.phi,
+          0.16,
+          Math.PI / 2 + 0.38
+        );
+        this._cameraOffset.setFromSpherical(this.cameraSpherical);
+        this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
+        this.camera.lookAt(this.cameraTarget);
+
         this.previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       } else if (e.touches.length === 2 && touchStartDist > 0) {
         const currentDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
+        const currentCenter = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+        };
+
+        // 2-Finger Pinch: Zoom camera in/out
         const factor = touchStartDist / Math.max(currentDist, 1);
         const minRadius = this.currentCameraMode === 'full' ? 1.5 : 0.7;
         const maxRadius = this.currentCameraMode === 'full' ? 6.5 : 4.5;
@@ -320,6 +357,22 @@ export class VRMManager {
           minRadius,
           maxRadius
         );
+
+        // 2-Finger Pan: Full 3D orbital camera angle (azimuth + pitch)
+        if (previousTwoTouchCenter) {
+          const midDeltaX = currentCenter.x - previousTwoTouchCenter.x;
+          const midDeltaY = currentCenter.y - previousTwoTouchCenter.y;
+
+          this.cameraSpherical.theta -= midDeltaX * 0.008;
+          this.cameraSpherical.phi += midDeltaY * 0.005;
+          this.cameraSpherical.phi = THREE.MathUtils.clamp(
+            this.cameraSpherical.phi,
+            0.16,
+            Math.PI / 2 + 0.38
+          );
+        }
+        previousTwoTouchCenter = currentCenter;
+
         this._cameraOffset.setFromSpherical(this.cameraSpherical);
         this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
         this.camera.lookAt(this.cameraTarget);
@@ -329,6 +382,7 @@ export class VRMManager {
     window.addEventListener('touchend', () => {
       this.isDragging = false;
       touchStartDist = 0;
+      previousTwoTouchCenter = null;
     }, { passive: true });
   }
 
@@ -337,26 +391,44 @@ export class VRMManager {
     const targetPos = mode === 'full' ? this.cameraFullBodyPos : this.cameraPortraitPos;
     const targetLook = mode === 'full' ? this.cameraFullBodyTarget : this.cameraPortraitTarget;
 
-    const startPos = this.camera.position.clone();
     const startTarget = this.cameraTarget.clone();
     const startTime = performance.now();
-    const duration = 650; // ms
+    const duration = 600; // ms
+
+    // Target spherical parameters
+    const targetOffset = new THREE.Vector3().subVectors(targetPos, targetLook);
+    const targetSpherical = new THREE.Spherical().setFromVector3(targetOffset);
+
+    const startSpherical = this.cameraSpherical.clone();
+    // Smoothly blend theta towards 0 (front-facing) if heavily rotated, or preserve subtle angle
+    const destTheta = Math.abs(startSpherical.theta) > Math.PI * 0.5 ? 0 : startSpherical.theta * 0.35;
 
     const animateCamera = (now) => {
       const elapsed = now - startTime;
       const t = Math.min(elapsed / duration, 1);
       const ease = 0.5 - Math.cos(t * Math.PI) / 2;
 
-      this.camera.position.lerpVectors(startPos, targetPos, ease);
+      // Smoothly interpolate target look-at point
       this.cameraTarget.lerpVectors(startTarget, targetLook, ease);
+
+      // Smoothly interpolate spherical coordinates (radius, phi, theta)
+      this.cameraSpherical.radius = THREE.MathUtils.lerp(startSpherical.radius, targetSpherical.radius, ease);
+      this.cameraSpherical.phi = THREE.MathUtils.lerp(startSpherical.phi, targetSpherical.phi, ease);
+      this.cameraSpherical.theta = THREE.MathUtils.lerp(startSpherical.theta, destTheta, ease);
+
+      this._cameraOffset.setFromSpherical(this.cameraSpherical);
+      this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
       this.camera.lookAt(this.cameraTarget);
 
       if (t < 1) {
         requestAnimationFrame(animateCamera);
       } else {
         this.cameraTarget.copy(targetLook);
-        this._cameraOffset.subVectors(this.camera.position, this.cameraTarget);
-        this.cameraSpherical.setFromVector3(this._cameraOffset);
+        this.cameraSpherical.copy(targetSpherical);
+        this.cameraSpherical.theta = destTheta;
+        this._cameraOffset.setFromSpherical(this.cameraSpherical);
+        this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
+        this.camera.lookAt(this.cameraTarget);
       }
     };
     requestAnimationFrame(animateCamera);

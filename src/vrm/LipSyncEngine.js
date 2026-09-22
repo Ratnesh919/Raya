@@ -189,6 +189,21 @@ export class LipSyncEngine {
     this.isSyntheticSpeaking = false;
     this.isAudioActive = false;
     this.lastWordTime = 0;
+    this.targetVowels = null;
+    this.weights.aa = 0;
+    this.weights.ee = 0;
+    this.weights.ih = 0;
+    this.weights.oh = 0;
+    this.weights.ou = 0;
+    this.setBlendshape('aa', 0);
+    this.setBlendshape('ee', 0);
+    this.setBlendshape('ih', 0);
+    this.setBlendshape('oh', 0);
+    this.setBlendshape('ou', 0);
+    const manager = this.getManager();
+    if (manager && typeof manager.update === 'function') {
+      try { manager.update(); } catch (e) {}
+    }
   }
 
   update(delta) {
@@ -250,39 +265,46 @@ export class LipSyncEngine {
 
     // 2. Synthetic Speech Mode (Web Speech API & continuous phonation fallback)
     if (!hasAudioVolume && this.isSyntheticSpeaking) {
-      // Advance syllable cadence phase (~3.0 Hz natural human conversational rhythm)
-      this.speechPhase += delta * this.speechCadence;
-
-      // Organic jaw syllable aperture:
-      // Minimum jaw aperture = 0.28 (mouth stays naturally parted during speech, NEVER freezes or closes shut)
-      // Peak jaw aperture = 0.82 (open vowel articulation)
-      const jawCycle = 0.5 + 0.5 * Math.sin(this.speechPhase);
-      const harmonic = 0.10 * Math.sin(this.speechPhase * 0.4 + 0.8);
-      const jawAperture = THREE.MathUtils.clamp(0.28 + 0.52 * jawCycle + harmonic, 0.22, 0.88);
-
       const timeSinceWord = performance.now() - (this.lastWordTime || 0);
 
-      // If word events are active (received within the last 1.2s), use the word-derived vowels
-      if (this.lastWordTime > 0 && timeSinceWord < 1200 && this.targetVowels) {
-        targetAa = this.targetVowels.aa * jawAperture;
-        targetEe = this.targetVowels.ee * jawAperture;
-        targetIh = this.targetVowels.ih * jawAperture;
-        targetOh = this.targetVowels.oh * jawAperture;
-        targetOu = this.targetVowels.ou * jawAperture;
+      // Strict silence cutoff: if no word event or voice activity for > 850ms, auto-terminate synthetic speaking
+      if (timeSinceWord > 850) {
+        this.isSyntheticSpeaking = false;
+        this.lastWordTime = 0;
+        targetAa = 0;
+        targetEe = 0;
+        targetIh = 0;
+        targetOh = 0;
+        targetOu = 0;
+      } else if (timeSinceWord > 360) {
+        // Natural speech pause between words: mouth smoothly decays shut to neutral resting pose
+        const pauseDecay = Math.max(0, 1 - (timeSinceWord - 360) / 240);
+        const jawAperture = 0.22 * pauseDecay;
+        if (this.targetVowels) {
+          targetAa = this.targetVowels.aa * jawAperture;
+          targetEe = this.targetVowels.ee * jawAperture;
+          targetIh = this.targetVowels.ih * jawAperture;
+          targetOh = this.targetVowels.oh * jawAperture;
+          targetOu = this.targetVowels.ou * jawAperture;
+        }
       } else {
-        // Fallback procedural cadence when boundary events are delayed, unsupported (Safari/Android), or between sentences
-        // Smoothly cycles through natural conversational vowels without abrupt shifts
-        const cycle = (this.speechPhase * 0.35) % (Math.PI * 2);
-        const wAa = Math.max(0, Math.sin(cycle));
-        const wEe = Math.max(0, Math.sin(cycle + 1.3));
-        const wOh = Math.max(0, Math.sin(cycle + 3.8));
-        const sum = wAa + wEe + wOh || 1.0;
+        // Active speaking: drive vowels by syllable cadence and word phonemes
+        this.speechPhase += delta * this.speechCadence;
+        const jawCycle = 0.5 + 0.5 * Math.sin(this.speechPhase);
+        const harmonic = 0.10 * Math.sin(this.speechPhase * 0.4 + 0.8);
+        const jawAperture = THREE.MathUtils.clamp(0.24 + 0.54 * jawCycle + harmonic, 0.18, 0.85);
 
-        targetAa = (wAa / sum) * jawAperture * 0.80;
-        targetEe = (wEe / sum) * jawAperture * 0.65;
-        targetOh = (wOh / sum) * jawAperture * 0.70;
-        targetIh = (wEe / sum) * jawAperture * 0.35;
-        targetOu = (wOh / sum) * jawAperture * 0.30;
+        if (this.targetVowels) {
+          targetAa = this.targetVowels.aa * jawAperture;
+          targetEe = this.targetVowels.ee * jawAperture;
+          targetIh = this.targetVowels.ih * jawAperture;
+          targetOh = this.targetVowels.oh * jawAperture;
+          targetOu = this.targetVowels.ou * jawAperture;
+        } else {
+          targetAa = 0.40 * jawAperture;
+          targetEe = 0.25 * jawAperture;
+          targetOh = 0.20 * jawAperture;
+        }
       }
     }
 

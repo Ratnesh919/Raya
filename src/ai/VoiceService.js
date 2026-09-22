@@ -658,11 +658,17 @@ export class VoiceService {
     let currentIndex = 0;
     let keepAliveTimer = null;
     let speechEnded = false;
+    let sentenceStartTime = 0;
+    let expectedSentenceMs = 3000;
+    let lastKeepAliveTick = 0;
 
     const cleanup = () => {
       if (speechEnded || sessionId !== this._speechSessionId) return;
       speechEnded = true;
-      if (keepAliveTimer) clearInterval(keepAliveTimer);
+      if (keepAliveTimer) {
+        clearInterval(keepAliveTimer);
+        keepAliveTimer = null;
+      }
       window._currentRayaUtterance = null;
       this.currentUtterance = null;
       this.isSpeaking = false;
@@ -688,6 +694,9 @@ export class VoiceService {
 
       const sentenceText = sentences[currentIndex];
       const utterance = new SpeechSynthesisUtterance(sentenceText);
+      const sentenceWords = sentenceText.trim().split(/\s+/).length;
+      sentenceStartTime = performance.now();
+      expectedSentenceMs = Math.max(1200, (sentenceWords / (Math.max(this.rate, 0.8) * 2.2)) * 1000 + 1600);
 
       if (voiceToUse) {
         utterance.voice = voiceToUse;
@@ -709,6 +718,7 @@ export class VoiceService {
       utterance.onstart = () => {
         if (sessionId !== this._speechSessionId) return;
         this.isSpeaking = true;
+        sentenceStartTime = performance.now();
         if (this.lipSyncEngine) {
           this.lipSyncEngine.startSyntheticSpeech();
           const firstWordMatch = sentenceText.trim().match(/^[^\s,.;:!?]+/);
@@ -742,6 +752,9 @@ export class VoiceService {
 
       utterance.onend = () => {
         if (sessionId !== this._speechSessionId) return;
+        if (this.lipSyncEngine) {
+          this.lipSyncEngine.stopSyntheticSpeech();
+        }
         currentIndex++;
         if (currentIndex < sentences.length) {
           speakSentence();
@@ -752,6 +765,9 @@ export class VoiceService {
 
       utterance.onerror = (e) => {
         if (sessionId !== this._speechSessionId) return;
+        if (this.lipSyncEngine) {
+          this.lipSyncEngine.stopSyntheticSpeech();
+        }
         if (e.error === 'interrupted' || e.error === 'canceled') {
           cleanup();
           return;
@@ -772,6 +788,9 @@ export class VoiceService {
         }
       } catch (e) {
         console.error('[VoiceService] synth.speak threw error:', e);
+        if (this.lipSyncEngine) {
+          this.lipSyncEngine.stopSyntheticSpeech();
+        }
         currentIndex++;
         if (currentIndex < sentences.length) {
           speakSentence();
@@ -781,19 +800,64 @@ export class VoiceService {
       }
     };
 
-    // Chromium keep-alive: prevents Chromium background audio worker pause bug
+    // Active Speech Watchdog: polls every 150ms to detect dropped onend events, stalls, or silent speech endings
+    lastKeepAliveTick = performance.now();
     keepAliveTimer = setInterval(() => {
-      if (sessionId === this._speechSessionId && this.isSpeaking && this.synth.speaking) {
-        try {
-          this.synth.pause();
-          this.synth.resume();
-        } catch (e) {}
+      if (sessionId !== this._speechSessionId || speechEnded) {
+        if (keepAliveTimer) clearInterval(keepAliveTimer);
+        return;
       }
-    }, 4500);
+
+      const now = performance.now();
+
+      if (this.isSpeaking) {
+        // 1. Detect if speech synthesis engine finished speaking but dropped onend
+        if (this.synth && !this.synth.speaking && !this.synth.pending) {
+          if (now - sentenceStartTime > 350) {
+            if (this.lipSyncEngine) {
+              this.lipSyncEngine.stopSyntheticSpeech();
+            }
+            currentIndex++;
+            if (currentIndex < sentences.length) {
+              speakSentence();
+            } else {
+              cleanup();
+            }
+            return;
+          }
+        }
+
+        // 2. Sentence timeout safety: if sentence exceeded expected duration by > 3.0s, force advance
+        if (now - sentenceStartTime > expectedSentenceMs + 3000) {
+          console.warn('[VoiceService] Sentence playback watchdog timeout, advancing sentence.');
+          if (this.lipSyncEngine) {
+            this.lipSyncEngine.stopSyntheticSpeech();
+          }
+          currentIndex++;
+          if (currentIndex < sentences.length) {
+            speakSentence();
+          } else {
+            cleanup();
+          }
+          return;
+        }
+
+        // 3. Chromium keep-alive: prevents background audio engine stalling on long utterances
+        if (now - lastKeepAliveTick > 4000) {
+          lastKeepAliveTick = now;
+          if (this.synth && this.synth.speaking) {
+            try {
+              this.synth.pause();
+              this.synth.resume();
+            } catch (e) {}
+          }
+        }
+      }
+    }, 150);
 
     // Generous fallback safety timeout in case of an unhandled browser audio hang
     const wordCount = cleanText.split(/\s+/).length;
-    const maxSafetyMs = Math.max(60000, wordCount * 1800 + 30000);
+    const maxSafetyMs = Math.max(30000, wordCount * 1200 + 15000);
     setTimeout(() => {
       if (sessionId === this._speechSessionId && this.isSpeaking && !speechEnded) {
         console.warn('[VoiceService] Maximum safety timeout reached, closing speech session.');

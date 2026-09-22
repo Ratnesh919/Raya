@@ -175,8 +175,6 @@ export class KokoroService {
           try {
             this.lipSyncEngine.connectMediaElement(audioEl);
           } catch (e) {}
-          // Also start synthetic viseme cadence for reliable lip movement across all browsers
-          this.lipSyncEngine.startSyntheticSpeech();
         }
       };
 

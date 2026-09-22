@@ -55,7 +55,9 @@ export class ControlsHUD {
       this.btnCameraEl.addEventListener('click', () => {
         this.currentCameraMode = this.currentCameraMode === 'portrait' ? 'full' : 'portrait';
         this.vrmManager.setCameraMode(this.currentCameraMode);
-        this.btnCameraEl.title = this.currentCameraMode === 'portrait' ? 'Switch to Full Body' : 'Switch to Portrait';
+        const isFull = this.currentCameraMode === 'full';
+        this.btnCameraEl.classList.toggle('active-mode', isFull);
+        this.btnCameraEl.title = isFull ? 'Switch to Portrait (Close-up)' : 'Switch to Full Body';
       });
     }
 

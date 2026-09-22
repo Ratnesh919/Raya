@@ -154,6 +154,13 @@ html, body {
   transform: translateY(-1px);
 }
 
+.btn-icon.active-mode {
+  background: rgba(0, 242, 254, 0.22);
+  border-color: var(--accent-cyan);
+  color: var(--accent-cyan);
+  box-shadow: 0 0 15px rgba(0, 242, 254, 0.45);
+}
+
 .btn-icon.has-unread {
   position: relative;
   border-color: var(--primary-neon);
