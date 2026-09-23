@@ -13,12 +13,12 @@ export class ChestPhysics {
     this.vrm = null;
     this.breastBones = [];
 
-    // Physics parameters (tuned for natural, noticeable soft-body elastic behavior)
-    this.stiffness = 32.0;      // Spring restoring force coefficient
-    this.damping = 4.2;         // Velocity damping coefficient
+    // Physics parameters (tuned for natural, subtle soft-body elastic behavior)
+    this.stiffness = 36.0;      // Spring restoring force coefficient
+    this.damping = 5.0;         // Velocity damping coefficient
     this.mass = 1.0;            // Normalized mass
-    this.breathingCoupling = 0.065; // Noticeable coupling with breathing cycle
-    this.inertiaGain = 1.25;    // Enhanced sensitivity to torso acceleration
+    this.breathingCoupling = 0.022; // Natural, gentle coupling with breathing cycle
+    this.inertiaGain = 0.50;    // Gentle, controlled sensitivity to torso movement
 
     // Tracking torso movement for inertial physics
     this.chestBone = null;
@@ -113,8 +113,8 @@ export class ChestPhysics {
       const newVelX = (currentRotX - this.prevChestRotX) / dt;
       const newVelY = (currentRotY - this.prevChestRotY) / dt;
 
-      accelX = (newVelX - this.chestVelX) / dt;
-      accelY = (newVelY - this.chestVelY) / dt;
+      accelX = THREE.MathUtils.clamp((newVelX - this.chestVelX) / dt, -15, 15);
+      accelY = THREE.MathUtils.clamp((newVelY - this.chestVelY) / dt, -15, 15);
 
       this.chestVelX = newVelX;
       this.chestVelY = newVelY;
@@ -123,8 +123,8 @@ export class ChestPhysics {
     }
 
     // 2. Harmonic breathing oscillation force
-    // Subtle, organic sinusoidal breathing cycle (~0.9 Hz)
-    const breatheFreq = 0.9 * Math.PI * 2;
+    // Subtle, organic sinusoidal breathing cycle (~0.75 Hz matching LifeSimulator)
+    const breatheFreq = 0.75 * Math.PI * 2;
     const breathePhase = Math.sin(this.time * breatheFreq);
     const breatheForce = Math.cos(this.time * breatheFreq) * this.breathingCoupling;
 
@@ -134,17 +134,15 @@ export class ChestPhysics {
       const sideSign = bone.isLeft ? 1 : -1;
 
       // External forces:
-      // - Counter-inertial force from torso acceleration (leads to realistic lag & bounce)
-      // - Breathing expansion & relaxation
-      // - Subtle micro-flutter for soft-body vitality
-      const microFlutter = Math.sin(this.time * 3.4 + i * 0.7) * 0.003;
-      const extForceX = -accelX * this.inertiaGain * 0.08 + breatheForce + microFlutter;
-      const extForceY = -accelY * this.inertiaGain * 0.04 * sideSign;
+      // - Gentle counter-inertial force from torso acceleration
+      // - Soft breathing expansion & relaxation (no high-frequency fluttering)
+      const extForceX = -accelX * this.inertiaGain * 0.05 + breatheForce;
+      const extForceY = -accelY * this.inertiaGain * 0.025 * sideSign;
 
       // Physics equation: a = (-k * x - c * v + F_ext) / m
       const aX = (-this.stiffness * bone.displacementX - this.damping * bone.velocityX + extForceX) / this.mass;
       const aY = (-this.stiffness * bone.displacementY - this.damping * bone.velocityY + extForceY) / this.mass;
-      const aZ = (-this.stiffness * bone.displacementZ - this.damping * bone.velocityZ + (breathePhase * 0.004 * sideSign)) / this.mass;
+      const aZ = (-this.stiffness * bone.displacementZ - this.damping * bone.velocityZ + (breathePhase * 0.002 * sideSign)) / this.mass;
 
       // Integrate velocity and displacement (Euler-Cromer method for energy stability)
       bone.velocityX += aX * dt;
@@ -155,10 +153,10 @@ export class ChestPhysics {
       bone.displacementY += bone.velocityY * dt;
       bone.displacementZ += bone.velocityZ * dt;
 
-      // Anatomically realistic limits (soft clamping to prevent any mesh distortion)
-      bone.displacementX = THREE.MathUtils.clamp(bone.displacementX, -0.10, 0.12);
-      bone.displacementY = THREE.MathUtils.clamp(bone.displacementY, -0.05, 0.05);
-      bone.displacementZ = THREE.MathUtils.clamp(bone.displacementZ, -0.04, 0.04);
+      // Anatomically realistic limits (gentle clamping to guarantee smooth, natural motion)
+      bone.displacementX = THREE.MathUtils.clamp(bone.displacementX, -0.045, 0.055);
+      bone.displacementY = THREE.MathUtils.clamp(bone.displacementY, -0.025, 0.025);
+      bone.displacementZ = THREE.MathUtils.clamp(bone.displacementZ, -0.020, 0.020);
 
       // Apply dynamic rotation relative to rest pose
       bone.node.rotation.x = bone.restRotation.x + bone.displacementX;

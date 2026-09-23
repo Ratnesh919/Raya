@@ -7,9 +7,9 @@ export class LifeSimulator {
 
     // 1. Breathing parameters (organic human respiration cycle)
     this.breatheTime = 0;
-    this.breatheFreq = 0.85; // Natural ~14 breaths per minute
-    this.breatheSpineAmp = 0.028; // Subtle spine tilt
-    this.breatheChestAmp = 0.048; // Visible natural chest pitch expansion
+    this.breatheFreq = 0.75; // Calm, relaxed resting respiratory rate (~12-14 breaths/min)
+    this.breatheSpineAmp = 0.0; // Keep spine stable to eliminate head and upper-body wobbling
+    this.breatheChestAmp = 0.018; // Subtle, natural chest pitch breathing motion (~1.0 deg)
 
     // 2. Natural Blinking
     this.isBlinking = false;
@@ -80,20 +80,8 @@ export class LifeSimulator {
     if (this.vrm.humanoid) {
       const chest = this.vrm.humanoid.getNormalizedBoneNode('chest');
       if (chest) {
+        // Natural gentle chest pitch (smooth human respiration without body/head swaying)
         chest.rotation.x += breatheSin * this.breatheChestAmp;
-        // Natural 3D ribcage expansion on inhalation
-        const expansion = 1.0 + (breatheSin * 0.5 + 0.5) * 0.035;
-        chest.scale.set(expansion, 1.0, expansion);
-      }
-
-      const spine = this.vrm.humanoid.getNormalizedBoneNode('spine');
-      if (spine) {
-        spine.rotation.x += breatheSin * this.breatheSpineAmp;
-      }
-
-      const upperChest = this.vrm.humanoid.getNormalizedBoneNode('upperChest');
-      if (upperChest) {
-        upperChest.rotation.x += breatheSin * (this.breatheChestAmp * 0.65);
       }
     }
   }

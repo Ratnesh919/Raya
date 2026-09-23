@@ -293,6 +293,7 @@ export class VRMManager {
     // Mobile Touch Drag & Pinch-to-Zoom
     let touchStartDist = 0;
     let touchStartRadius = 0;
+    let previousTwoTouchCenter = null;
 
     el.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
@@ -306,6 +307,10 @@ export class VRMManager {
           e.touches[0].clientY - e.touches[1].clientY
         );
         touchStartRadius = this.cameraSpherical.radius;
+        previousTwoTouchCenter = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+        };
       }
     }, { passive: true });
 
@@ -314,11 +319,14 @@ export class VRMManager {
         const deltaX = e.touches[0].clientX - this.previousMousePosition.x;
         const deltaY = e.touches[0].clientY - this.previousMousePosition.y;
 
-        // 1-Finger Drag on Mobile: Full 3D orbital camera angle control
-        // Horizontal drag orbits camera azimuth (theta) around the avatar
-        this.cameraSpherical.theta -= deltaX * 0.008;
+        // 1-Finger Horizontal: rotate avatar model around Y axis
+        if (this.currentVrm) {
+          this.currentVrm.scene.rotation.y += deltaX * 0.009;
+        }
 
-        // Vertical drag tilts camera elevation (phi)
+        // 1-Finger Vertical: tilt the 3D camera elevation (phi) on mobile!
+        // Dragging DOWN (+deltaY) tilts camera DOWN to view from lower angle
+        // Dragging UP (-deltaY) tilts camera UP to view from higher angle
         this.cameraSpherical.phi += deltaY * 0.005;
         this.cameraSpherical.phi = THREE.MathUtils.clamp(
           this.cameraSpherical.phi,
@@ -336,8 +344,12 @@ export class VRMManager {
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
         );
+        const currentCenter = {
+          x: (e.touches[0].clientX + e.touches[1].clientX) / 2,
+          y: (e.touches[0].clientY + e.touches[1].clientY) / 2
+        };
 
-        // 2-Finger Touch: strictly Pinch-to-Zoom without shifting camera angles
+        // 2-Finger Pinch: Zoom camera in/out
         const factor = touchStartDist / Math.max(currentDist, 1);
         const minRadius = this.currentCameraMode === 'full' ? 1.5 : 0.7;
         const maxRadius = this.currentCameraMode === 'full' ? 6.5 : 4.5;
@@ -346,6 +358,21 @@ export class VRMManager {
           minRadius,
           maxRadius
         );
+
+        // 2-Finger Pan: Full 3D orbital camera angle (azimuth + pitch)
+        if (previousTwoTouchCenter) {
+          const midDeltaX = currentCenter.x - previousTwoTouchCenter.x;
+          const midDeltaY = currentCenter.y - previousTwoTouchCenter.y;
+
+          this.cameraSpherical.theta -= midDeltaX * 0.008;
+          this.cameraSpherical.phi += midDeltaY * 0.005;
+          this.cameraSpherical.phi = THREE.MathUtils.clamp(
+            this.cameraSpherical.phi,
+            0.16,
+            Math.PI / 2 + 0.38
+          );
+        }
+        previousTwoTouchCenter = currentCenter;
 
         this._cameraOffset.setFromSpherical(this.cameraSpherical);
         this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
@@ -356,6 +383,7 @@ export class VRMManager {
     window.addEventListener('touchend', () => {
       this.isDragging = false;
       touchStartDist = 0;
+      previousTwoTouchCenter = null;
     }, { passive: true });
   }
 
