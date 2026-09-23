@@ -118,6 +118,21 @@
             </select>
           </div>
 
+          <!-- FACIAL EXPRESSIONS PREVIEW -->
+          <div class="form-group" style="margin-bottom: 0.85rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
+              <span>🎭 Facial Expressions</span>
+            </div>
+            <div class="emotion-chips-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+              <button class="emotion-chip-btn" data-emotion="happy" type="button">😊 Happy</button>
+              <button class="emotion-chip-btn" data-emotion="wink" type="button">😉 Wink</button>
+              <button class="emotion-chip-btn" data-emotion="surprised" type="button">😮 Surprise</button>
+              <button class="emotion-chip-btn" data-emotion="blush" type="button">😳 Blush</button>
+              <button class="emotion-chip-btn" data-emotion="caring" type="button">🥺 Caring</button>
+              <button class="emotion-chip-btn" data-emotion="neutral" type="button">😐 Reset</button>
+            </div>
+          </div>
+
           <button id="btn-reset-appearance" style="width: 100%; padding: 0.45rem; border-radius: 0.5rem; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #cbd5e1; font-size: 0.78rem; cursor: pointer;">
             Reset to Defaults
           </button>

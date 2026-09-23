@@ -247,6 +247,7 @@ async function bootstrap() {
       if (popLightVal) popLightVal.textContent = '55%';
       if (popQualitySelect) popQualitySelect.value = 'high';
       if (popQualityTag) popQualityTag.textContent = 'HIGH / GPU';
+      expressionManager.setEmotion('neutral');
     });
   }
 }

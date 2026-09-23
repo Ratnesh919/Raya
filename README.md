@@ -83,8 +83,8 @@ An expressive, ultra-responsive 3D AI companion web application featuring real-t
 
 | Action | Desktop Interaction | Mobile / Touch Interaction |
 | :--- | :--- | :--- |
-| **Rotate Avatar** | Left-Click and drag horizontally | 1-Finger drag horizontally |
-| **3D Camera Orbit & Tilt** | Right-Click and drag in any direction | — |
+| **3D Camera Angle Orbit & Tilt** | Right-Click drag in any direction | 1-Finger drag in any direction |
+| **Rotate Avatar** | Left-Click and drag horizontally | — |
 | **Zoom In / Out** | Mouse scroll wheel | 2-Finger pinch |
 | **Toggle Portrait / Full Body** | Click camera icon (top bar) | Tap camera icon (top bar) |
 | **Voice Chat** | Click microphone button (bottom dock) | Tap microphone button (bottom dock) |

@@ -13,12 +13,12 @@ export class ChestPhysics {
     this.vrm = null;
     this.breastBones = [];
 
-    // Physics parameters (tuned for natural, subtle soft-body elastic behavior)
-    this.stiffness = 38.0;      // Spring restoring force coefficient
-    this.damping = 5.2;         // Velocity damping coefficient (prevents perpetual ringing)
+    // Physics parameters (tuned for natural, noticeable soft-body elastic behavior)
+    this.stiffness = 32.0;      // Spring restoring force coefficient
+    this.damping = 4.2;         // Velocity damping coefficient
     this.mass = 1.0;            // Normalized mass
-    this.breathingCoupling = 0.024; // Elastic coupling with breathing cycle
-    this.inertiaGain = 0.65;    // Sensitivity to torso acceleration
+    this.breathingCoupling = 0.065; // Noticeable coupling with breathing cycle
+    this.inertiaGain = 1.25;    // Enhanced sensitivity to torso acceleration
 
     // Tracking torso movement for inertial physics
     this.chestBone = null;
@@ -156,9 +156,9 @@ export class ChestPhysics {
       bone.displacementZ += bone.velocityZ * dt;
 
       // Anatomically realistic limits (soft clamping to prevent any mesh distortion)
-      bone.displacementX = THREE.MathUtils.clamp(bone.displacementX, -0.065, 0.085);
-      bone.displacementY = THREE.MathUtils.clamp(bone.displacementY, -0.035, 0.035);
-      bone.displacementZ = THREE.MathUtils.clamp(bone.displacementZ, -0.025, 0.025);
+      bone.displacementX = THREE.MathUtils.clamp(bone.displacementX, -0.10, 0.12);
+      bone.displacementY = THREE.MathUtils.clamp(bone.displacementY, -0.05, 0.05);
+      bone.displacementZ = THREE.MathUtils.clamp(bone.displacementZ, -0.04, 0.04);
 
       // Apply dynamic rotation relative to rest pose
       bone.node.rotation.x = bone.restRotation.x + bone.displacementX;

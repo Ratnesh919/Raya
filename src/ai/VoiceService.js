@@ -813,7 +813,7 @@ export class VoiceService {
       if (this.isSpeaking) {
         // 1. Detect if speech synthesis engine finished speaking but dropped onend
         if (this.synth && !this.synth.speaking && !this.synth.pending) {
-          if (now - sentenceStartTime > 350) {
+          if (now - sentenceStartTime > Math.max(800, expectedSentenceMs * 0.7)) {
             if (this.lipSyncEngine) {
               this.lipSyncEngine.stopSyntheticSpeech();
             }

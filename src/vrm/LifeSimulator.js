@@ -5,11 +5,11 @@ export class LifeSimulator {
     this.vrmManager = vrmManager;
     this.vrm = null;
 
-    // 1. Breathing parameters
+    // 1. Breathing parameters (organic human respiration cycle)
     this.breatheTime = 0;
-    this.breatheFreq = 0.9;
-    this.breatheSpineAmp = 0.015;
-    this.breatheChestAmp = 0.022;
+    this.breatheFreq = 0.85; // Natural ~14 breaths per minute
+    this.breatheSpineAmp = 0.028; // Subtle spine tilt
+    this.breatheChestAmp = 0.048; // Visible natural chest pitch expansion
 
     // 2. Natural Blinking
     this.isBlinking = false;
@@ -76,13 +76,24 @@ export class LifeSimulator {
   updateBreathing(delta) {
     this.breatheTime += delta * this.breatheFreq * Math.PI * 2;
     const breatheSin = Math.sin(this.breatheTime);
-    const dSin = breatheSin - (this.prevBreatheSin || 0);
-    this.prevBreatheSin = breatheSin;
 
     if (this.vrm.humanoid) {
       const chest = this.vrm.humanoid.getNormalizedBoneNode('chest');
       if (chest) {
-        chest.rotation.x += dSin * this.breatheChestAmp;
+        chest.rotation.x += breatheSin * this.breatheChestAmp;
+        // Natural 3D ribcage expansion on inhalation
+        const expansion = 1.0 + (breatheSin * 0.5 + 0.5) * 0.035;
+        chest.scale.set(expansion, 1.0, expansion);
+      }
+
+      const spine = this.vrm.humanoid.getNormalizedBoneNode('spine');
+      if (spine) {
+        spine.rotation.x += breatheSin * this.breatheSpineAmp;
+      }
+
+      const upperChest = this.vrm.humanoid.getNormalizedBoneNode('upperChest');
+      if (upperChest) {
+        upperChest.rotation.x += breatheSin * (this.breatheChestAmp * 0.65);
       }
     }
   }

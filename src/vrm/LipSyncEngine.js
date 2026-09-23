@@ -179,6 +179,7 @@ export class LipSyncEngine {
 
   startSyntheticSpeech() {
     this.isSyntheticSpeaking = true;
+    this.speechStartTime = performance.now();
     this.lastWordTime = performance.now();
     if (!this.targetVowels) {
       this.targetVowels = { aa: 0.45, ee: 0.25, ih: 0.15, oh: 0.20, ou: 0.15 };
@@ -188,6 +189,7 @@ export class LipSyncEngine {
   stopSyntheticSpeech() {
     this.isSyntheticSpeaking = false;
     this.isAudioActive = false;
+    this.speechStartTime = 0;
     this.lastWordTime = 0;
     this.targetVowels = null;
     this.weights.aa = 0;
@@ -265,34 +267,24 @@ export class LipSyncEngine {
 
     // 2. Synthetic Speech Mode (Web Speech API & continuous phonation fallback)
     if (!hasAudioVolume && this.isSyntheticSpeaking) {
-      const timeSinceWord = performance.now() - (this.lastWordTime || 0);
-
-      // Strict silence cutoff: if no word event or voice activity for > 850ms, auto-terminate synthetic speaking
-      if (timeSinceWord > 850) {
-        this.isSyntheticSpeaking = false;
-        this.lastWordTime = 0;
-        targetAa = 0;
-        targetEe = 0;
-        targetIh = 0;
-        targetOh = 0;
-        targetOu = 0;
-      } else if (timeSinceWord > 360) {
-        // Natural speech pause between words: mouth smoothly decays shut to neutral resting pose
-        const pauseDecay = Math.max(0, 1 - (timeSinceWord - 360) / 240);
-        const jawAperture = 0.22 * pauseDecay;
-        if (this.targetVowels) {
-          targetAa = this.targetVowels.aa * jawAperture;
-          targetEe = this.targetVowels.ee * jawAperture;
-          targetIh = this.targetVowels.ih * jawAperture;
-          targetOh = this.targetVowels.oh * jawAperture;
-          targetOu = this.targetVowels.ou * jawAperture;
-        }
+      const now = performance.now();
+      // Generous 25-second absolute timeout to protect against frozen browser threads
+      if (this.speechStartTime && now - this.speechStartTime > 25000) {
+        this.stopSyntheticSpeech();
       } else {
-        // Active speaking: drive vowels by syllable cadence and word phonemes
+        // Active speaking: drive vowels by syllable cadence and harmonic rhythm
         this.speechPhase += delta * this.speechCadence;
         const jawCycle = 0.5 + 0.5 * Math.sin(this.speechPhase);
         const harmonic = 0.10 * Math.sin(this.speechPhase * 0.4 + 0.8);
         const jawAperture = THREE.MathUtils.clamp(0.24 + 0.54 * jawCycle + harmonic, 0.18, 0.85);
+
+        // Organic vowel modulation to articulate natural syllable shapes even when mobile browsers drop onboundary
+        const vCycle = (this.speechPhase * 0.35) % (Math.PI * 2);
+        const aaMod = 0.40 + 0.25 * Math.sin(vCycle);
+        const eeMod = 0.25 + 0.15 * Math.sin(vCycle + 1.2);
+        const ohMod = 0.25 + 0.18 * Math.cos(vCycle);
+        const ihMod = 0.18 + 0.10 * Math.sin(vCycle + 2.4);
+        const ouMod = 0.15 + 0.10 * Math.cos(vCycle + 1.8);
 
         if (this.targetVowels) {
           targetAa = this.targetVowels.aa * jawAperture;
@@ -301,9 +293,11 @@ export class LipSyncEngine {
           targetOh = this.targetVowels.oh * jawAperture;
           targetOu = this.targetVowels.ou * jawAperture;
         } else {
-          targetAa = 0.40 * jawAperture;
-          targetEe = 0.25 * jawAperture;
-          targetOh = 0.20 * jawAperture;
+          targetAa = aaMod * jawAperture;
+          targetEe = eeMod * jawAperture;
+          targetIh = ihMod * jawAperture;
+          targetOh = ohMod * jawAperture;
+          targetOu = ouMod * jawAperture;
         }
       }
     }

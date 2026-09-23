@@ -1,11 +1,11 @@
 import * as THREE from 'three';
 
 const EXPR_ALIASES = {
-  happy: ['happy', 'Joy', 'joy', 'HAPPY', 'JOY'],
+  happy: ['happy', 'relaxed', 'Joy', 'fun', 'joy', 'Fun', 'HAPPY', 'JOY'],
   surprised: ['surprised', 'Surprised', 'SURPRISED'],
   sad: ['sad', 'Sorrow', 'sorrow', 'SAD', 'SORROW'],
   angry: ['angry', 'Angry', 'ANGRY'],
-  relaxed: ['relaxed', 'Fun', 'fun', 'RELAXED'],
+  relaxed: ['relaxed', 'fun', 'Fun', 'happy', 'Joy', 'RELAXED'],
   think: ['neutral', 'Neutral', 'NEUTRAL', 'confused'],
   wink: ['blinkLeft', 'blink_l', 'Blink_L', 'BLINK_L', 'blinkRight'],
   blink: ['blink', 'Blink', 'BLINK'],
@@ -35,28 +35,28 @@ export class ExpressionManager {
     this.emotionPresets = {
       // Core companion emotions (Pure facial emotions; mouth blendshapes left free for LipSync)
       neutral: {},
-      happy: { happy: 0.60, relaxed: 0.15 },
-      joy: { happy: 0.95, relaxed: 0.35 },
-      caring: { sad: 0.45, relaxed: 0.15 },
-      console: { sad: 0.60, relaxed: 0.10 },
-      empathy: { sad: 0.50, relaxed: 0.15 },
-      advice: { relaxed: 0.35, surprised: 0.15 },
+      happy: { happy: 0.85, relaxed: 0.85 },
+      joy: { happy: 0.95, relaxed: 0.95 },
+      caring: { sad: 0.45, relaxed: 0.45 },
+      console: { sad: 0.55, relaxed: 0.35 },
+      empathy: { sad: 0.45, relaxed: 0.35 },
+      advice: { relaxed: 0.50, surprised: 0.25 },
       surprised: { surprised: 0.85 },
       sad: { sad: 0.85 },
       angry: { angry: 0.85 },
-      relaxed: { relaxed: 0.45, happy: 0.2 },
-      think: { relaxed: 0.30, surprised: 0.18 },
-      wink: { wink: 1.0, happy: 0.6, relaxed: 0.15 },
-      blush: { blush: 0.95, happy: 0.55, wink: 0.15 },
-      curiosity: { surprised: 0.4, relaxed: 0.2 },
-      amusement: { happy: 0.75, relaxed: 0.25 },
-      admiration: { relaxed: 0.45, happy: 0.40, surprised: 0.15 },
-      love: { relaxed: 0.45, happy: 0.50, blush: 0.8 },
-      gratitude: { relaxed: 0.45, happy: 0.45 },
-      optimism: { happy: 0.65, relaxed: 0.2 },
-      embarrassment: { blush: 0.85, wink: 0.3, happy: 0.35 },
-      disappointment: { sad: 0.65, angry: 0.2 },
-      confusion: { surprised: 0.45, angry: 0.1 }
+      relaxed: { relaxed: 0.75, happy: 0.40 },
+      think: { relaxed: 0.35, surprised: 0.25 },
+      wink: { wink: 1.0, happy: 0.60, relaxed: 0.60 },
+      blush: { blush: 0.95, happy: 0.60, relaxed: 0.60 },
+      curiosity: { surprised: 0.65, relaxed: 0.35 },
+      amusement: { happy: 0.80, relaxed: 0.80 },
+      admiration: { relaxed: 0.50, happy: 0.50, surprised: 0.20 },
+      love: { blush: 0.85, happy: 0.70, relaxed: 0.70 },
+      gratitude: { relaxed: 0.60, happy: 0.70 },
+      optimism: { happy: 0.75, relaxed: 0.75 },
+      embarrassment: { blush: 0.85, wink: 0.50, happy: 0.40, relaxed: 0.40 },
+      disappointment: { sad: 0.65, angry: 0.20 },
+      confusion: { surprised: 0.50, angry: 0.15 }
     };
 
     // Listen to model loaded event
@@ -72,7 +72,7 @@ export class ExpressionManager {
 
     const manager = this.getManager();
     if (manager?.expressions) {
-      const names = manager.expressions.map((e) => e.expressionName || e.name);
+      const names = manager.expressions.map((e) => `${e.expressionName || e.name} (${e.binds ? e.binds.length : 'unknown'} binds)`);
       console.log('[ExpressionManager] Registered expressions on avatar:', names);
     }
 
@@ -94,6 +94,10 @@ export class ExpressionManager {
       if (typeof manager.getExpression === 'function') {
         const expr = manager.getExpression(target);
         if (expr) {
+          // If this expression exists but has zero binds, skip to next candidate (e.g. Joy with 0 binds -> Fun/relaxed)
+          if (expr.binds && expr.binds.length === 0) {
+            continue;
+          }
           manager.setValue(target, value);
           applied = true;
           break;
@@ -128,7 +132,8 @@ export class ExpressionManager {
     for (const target of targets) {
       try {
         if (typeof manager.getExpression === 'function') {
-          if (!manager.getExpression(target)) continue;
+          const expr = manager.getExpression(target);
+          if (!expr || (expr.binds && expr.binds.length === 0)) continue;
         }
         const val = manager.getValue(target);
         if (typeof val === 'number') return val;
