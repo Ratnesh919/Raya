@@ -9,6 +9,7 @@ import { ChestPhysics } from './vrm/ChestPhysics.js';
 import { LLMService } from './ai/LLMService.js';
 import { VoiceService } from './ai/VoiceService.js';
 import { MemoryService } from './ai/MemoryService.js';
+import { PersonalityEngine } from './ai/PersonalityEngine.js';
 
 import { ChatUI } from './ui/ChatUI.js';
 import { ControlsHUD } from './ui/ControlsHUD.js';
@@ -27,12 +28,15 @@ async function bootstrap() {
   const lifeSimulator = new LifeSimulator(vrmManager);
   const chestPhysics = new ChestPhysics(vrmManager);
 
-  // 2. AI, Voice & Netlify Database Memory Services
+  // 2. AI, Voice, Netlify Database Memory & Flexible Personality Services
+  const personalityEngine = new PersonalityEngine();
+
   const memoryService = new MemoryService();
   await memoryService.loadMemory();
 
   const llmService = new LLMService();
   llmService.setMemoryService(memoryService);
+  llmService.setPersonalityEngine(personalityEngine);
 
   const voiceService = new VoiceService(lipSyncEngine);
 
@@ -43,7 +47,8 @@ async function bootstrap() {
     expressionManager,
     animationEngine,
     vrmManager,
-    memoryService
+    memoryService,
+    personalityEngine
   });
 
   const controlsHUD = new ControlsHUD({
@@ -54,7 +59,8 @@ async function bootstrap() {
 
   const settingsModal = new SettingsModal({
     llmService,
-    voiceService
+    voiceService,
+    personalityEngine
   });
 
   // Attach to window for diagnostics and runtime access
@@ -63,6 +69,7 @@ async function bootstrap() {
     animationEngine,
     expressionManager,
     chestPhysics,
+    personalityEngine,
     chatUI,
     controlsHUD
   };

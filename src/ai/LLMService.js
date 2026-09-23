@@ -28,16 +28,21 @@ export class LLMService {
     this.apiKey = this.getApiKey(this.provider);
     this.model = localStorage.getItem(`raya_model_${this.provider}`) || DEFAULT_MODELS[this.provider];
     const savedPrompt = localStorage.getItem('raya_system_prompt');
-    if (!savedPrompt || !localStorage.getItem('raya_prompt_v3')) {
-      localStorage.setItem('raya_prompt_v3', 'true');
+    if (!savedPrompt || !localStorage.getItem('raya_prompt_v4')) {
+      localStorage.setItem('raya_prompt_v4', 'true');
       localStorage.setItem('raya_system_prompt', DEFAULT_SYSTEM_PROMPT);
       this.systemPrompt = DEFAULT_SYSTEM_PROMPT;
     } else {
       this.systemPrompt = savedPrompt;
     }
 
+    this.personalityEngine = null;
     this.memoryService = null;
     this.messages = [];
+  }
+
+  setPersonalityEngine(personalityEngine) {
+    this.personalityEngine = personalityEngine;
   }
 
   setMemoryService(memoryService) {
@@ -46,6 +51,9 @@ export class LLMService {
 
   getEffectiveSystemPrompt() {
     let base = this.systemPrompt || DEFAULT_SYSTEM_PROMPT;
+    if (this.personalityEngine) {
+      base += this.personalityEngine.getPromptDirective();
+    }
     if (this.memoryService) {
       const mem = this.memoryService.getMemory();
       if (mem) {
@@ -130,6 +138,11 @@ export class LLMService {
       throw new Error(`Please enter your ${this.provider.toUpperCase()} API key in Settings to chat with Raya.`);
     }
 
+    // Adapt dynamic personality to the user's message before calling the LLM
+    if (this.personalityEngine) {
+      this.personalityEngine.processUserMessage(userText, this.messages);
+    }
+
     // Append user message
     this.messages.push({ role: 'user', content: userText });
 
@@ -157,8 +170,12 @@ export class LLMService {
     // Append assistant reply
     this.messages.push({ role: 'assistant', content: replyText });
 
-    // Parse actions and clean speech text
-    return parseRayaResponse(replyText);
+    // Parse actions, emotions, personality tags and clean speech text
+    const parsed = parseRayaResponse(replyText);
+    if (parsed.personality && this.personalityEngine) {
+      this.personalityEngine.processExplicitTag(parsed.personality);
+    }
+    return parsed;
   }
 
   async callNvidia() {

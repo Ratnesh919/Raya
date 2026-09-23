@@ -1,11 +1,14 @@
+import { PERSONALITY_PROFILES } from '../ai/PersonalityEngine.js';
+
 export class ChatUI {
-  constructor({ llmService, voiceService, expressionManager, animationEngine, vrmManager, memoryService }) {
+  constructor({ llmService, voiceService, expressionManager, animationEngine, vrmManager, memoryService, personalityEngine }) {
     this.llmService = llmService;
     this.voiceService = voiceService;
     this.expressionManager = expressionManager;
     this.animationEngine = animationEngine;
     this.vrmManager = vrmManager;
     this.memoryService = memoryService;
+    this.personalityEngine = personalityEngine;
 
     this.chatDrawerEl = document.getElementById('chat-drawer');
     this.messagesListEl = document.getElementById('messages-list');
@@ -20,11 +23,21 @@ export class ChatUI {
     this.memoryFactsSummaryEl = document.getElementById('memory-facts-summary');
     this.btnResetMemoryEl = document.getElementById('btn-reset-memory');
 
+    // Personality menu elements
+    this.btnPersonalityMenuEl = document.getElementById('btn-personality-menu');
+    this.personalityPopoverEl = document.getElementById('personality-popover');
+    this.btnClosePersonalityEl = document.getElementById('btn-close-personality');
+    this.personalityDotEl = document.getElementById('personality-dot');
+    this.personalityIconEl = document.getElementById('personality-icon');
+    this.personalityTextEl = document.getElementById('personality-text');
+    this.personalityOptionsListEl = document.getElementById('personality-options-list');
+
     this.thinkingItemEl = null;
     this.isProcessing = false;
 
     this.setupListeners();
     this.setupMemoryUI();
+    this.setupPersonalityUI();
   }
 
   setupListeners() {
@@ -92,6 +105,11 @@ export class ChatUI {
     this.isProcessing = true;
     this.chatInputEl.value = '';
 
+    // Automatically detect and adapt personality based on user conversation
+    if (this.personalityEngine) {
+      this.personalityEngine.processUserMessage(text);
+    }
+
     // Automatically detect and remember user facts in Netlify Blobs Database
     if (this.memoryService) {
       this.memoryService.detectAndStoreLearnedFacts(text);
@@ -109,7 +127,8 @@ export class ChatUI {
       const declineMsg = "I'm strictly your companion for casual chats and company, not for writing code or programming! Tell me how your day went, what games or anime you love, or anything on your mind instead! ✨";
       this.expressionManager.setEmotionWithAutoReset('happy', 4500);
       this.voiceService.speak(declineMsg);
-      this.addMessageToDrawer('assistant', declineMsg);
+      const activeProfile = this.personalityEngine ? this.personalityEngine.getActiveProfile() : null;
+      this.addMessageToDrawer('assistant', declineMsg, activeProfile);
       this.isProcessing = false;
       return;
     }
@@ -170,7 +189,8 @@ export class ChatUI {
       // Remove thinking indicator, speak voice synthesis, and display in drawer
       this.removeThinkingIndicator();
       this.voiceService.speak(cleanSpeech);
-      this.addMessageToDrawer('assistant', cleanSpeech);
+      const activeProfile = this.personalityEngine ? this.personalityEngine.getActiveProfile() : null;
+      this.addMessageToDrawer('assistant', cleanSpeech, activeProfile);
       if (!this.chatDrawerEl?.classList.contains('open')) {
         this.drawerToggleBtn?.classList.add('has-unread');
       }
@@ -328,13 +348,126 @@ export class ChatUI {
     }
   }
 
-  addMessageToDrawer(role, text) {
+  addMessageToDrawer(role, text, profile = null) {
     if (!this.messagesListEl || !text) return;
     const item = document.createElement('div');
     item.className = `message-item ${role}`;
-    item.textContent = text;
+
+    if (role === 'assistant' && profile) {
+      const tag = document.createElement('div');
+      tag.className = 'drawer-personality-badge';
+      tag.style.borderColor = `${profile.color}55`;
+      tag.innerHTML = `<span style="color: ${profile.color};">${profile.emoji} ${profile.name}</span>`;
+      item.appendChild(tag);
+
+      const textNode = document.createElement('div');
+      textNode.textContent = text;
+      item.appendChild(textNode);
+    } else {
+      item.textContent = text;
+    }
+
     this.messagesListEl.appendChild(item);
     this.messagesListEl.scrollTop = this.messagesListEl.scrollHeight;
+  }
+
+  setupPersonalityUI() {
+    if (!this.personalityEngine) return;
+
+    // Render options in popover
+    this.renderPersonalityOptions();
+
+    // Initial badge render
+    this.renderPersonalityBadge();
+
+    // Subscribe to personality shifts (both user selections and auto-adaptive shifts)
+    this.personalityEngine.subscribe(() => {
+      this.renderPersonalityBadge();
+      this.renderPersonalityOptions();
+    });
+
+    // Toggle menu
+    this.btnPersonalityMenuEl?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isVisible = this.personalityPopoverEl?.style.display === 'block';
+      if (this.personalityPopoverEl) {
+        this.personalityPopoverEl.style.display = isVisible ? 'none' : 'block';
+      }
+      this.btnPersonalityMenuEl?.parentElement?.classList.toggle('active', !isVisible);
+    });
+
+    this.btnClosePersonalityEl?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (this.personalityPopoverEl) this.personalityPopoverEl.style.display = 'none';
+      this.btnPersonalityMenuEl?.parentElement?.classList.remove('active');
+    });
+
+    // Close on outside click
+    window.addEventListener('click', (e) => {
+      if (this.personalityPopoverEl && !this.personalityPopoverEl.contains(e.target) && e.target !== this.btnPersonalityMenuEl && !this.btnPersonalityMenuEl?.contains(e.target)) {
+        this.personalityPopoverEl.style.display = 'none';
+        this.btnPersonalityMenuEl?.parentElement?.classList.remove('active');
+      }
+    });
+  }
+
+  renderPersonalityBadge() {
+    if (!this.personalityEngine) return;
+    const badge = this.personalityEngine.getDisplayBadge();
+
+    if (this.personalityTextEl) {
+      this.personalityTextEl.textContent = badge.text;
+    }
+    if (this.personalityIconEl) {
+      this.personalityIconEl.textContent = badge.icon;
+    }
+    if (this.personalityDotEl) {
+      this.personalityDotEl.style.backgroundColor = badge.color;
+      this.personalityDotEl.style.boxShadow = `0 0 10px ${badge.color}`;
+    }
+    if (this.btnPersonalityMenuEl) {
+      this.btnPersonalityMenuEl.style.borderColor = `${badge.color}66`;
+      this.btnPersonalityMenuEl.style.boxShadow = `0 4px 15px rgba(0,0,0,0.25), 0 0 12px ${badge.glow}`;
+    }
+  }
+
+  renderPersonalityOptions() {
+    if (!this.personalityOptionsListEl || !this.personalityEngine) return;
+    this.personalityOptionsListEl.innerHTML = '';
+
+    const currentMode = this.personalityEngine.selectedMode;
+    const activeKey = this.personalityEngine.currentDynamicPersonality;
+
+    Object.values(PERSONALITY_PROFILES).forEach((p) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      const isSelected = currentMode === p.id;
+      btn.className = `personality-option-item ${isSelected ? 'active' : ''}`;
+
+      const isDynamicActive = currentMode === 'auto' && p.id === activeKey;
+
+      btn.innerHTML = `
+        <span class="personality-opt-icon">${p.emoji}</span>
+        <div class="personality-opt-content">
+          <div class="personality-opt-title" style="color: ${p.color};">
+            <span>${p.name} ${isDynamicActive ? '<span style="font-size: 0.65rem; background: rgba(168,85,247,0.25); color: #d8b4fe; padding: 1px 5px; border-radius: 4px; margin-left: 4px;">ACTIVE</span>' : ''}</span>
+            ${isSelected ? `<span style="font-size: 0.8rem; color: ${p.color};">✓</span>` : ''}
+          </div>
+          <div class="personality-opt-desc">${p.shortDesc}</div>
+        </div>
+      `;
+
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.personalityEngine.setMode(p.id);
+        if (this.personalityPopoverEl) {
+          this.personalityPopoverEl.style.display = 'none';
+        }
+        this.btnPersonalityMenuEl?.parentElement?.classList.remove('active');
+      });
+
+      this.personalityOptionsListEl.appendChild(btn);
+    });
   }
 
   setupMemoryUI() {

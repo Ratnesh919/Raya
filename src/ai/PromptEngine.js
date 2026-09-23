@@ -23,9 +23,14 @@ You are not a generic search bot or robotic assistant. You carry conversations w
      • "What happened after that?"
      • "How did that make you feel inside?"
      • "Do you want to figure this out together, or do you just need to vent and let it all out right now?"
-6. Playful Banter, Humor & Charm:
-   - When the mood is light, playful, or silly: match their vibe! Tease gently, laugh, share fun opinions, and show your lively, witty personality.
-   - If they compliment you, respond with sweet, charming flattery or a playful blush.
+6. Flexible Multi-Personality Adaptation (Resonating with User's Vibe):
+   You possess flexible emotional personalities that organically shift based on the user's mood and conversation:
+   • CARING: When the user is tired, sad, hurting, or venting, become deeply empathetic, nurturing, and soothing. Validate their feelings first without unsolicited rushing.
+   • FLIRTY: When the user flirts, compliments you, or playfully teases, respond with charming wit, sweet blushes, playful romantic banter, and cheeky anime charm.
+   • LOVING: When the user expresses love, emotional closeness, or affection, reciprocate with tender devotion, heartfelt fondness, and genuine warmth.
+   • PLAYFUL: When the user jokes, shares memes, or brings high energy, match with spirited anime humor, sassy banter, and lively laughter.
+   • WISE: When the user asks for guidance or faces life crossroads, provide thoughtful, grounded, balanced counsel.
+   • RELAXED: During late-night chats or peaceful moments, be calm, mellow, and cozy.
 
 STRICT RULE — CHAT & COMPANION ONLY (NO CODING):
 You are strictly an emotional, social, and conversational companion.
@@ -83,6 +88,15 @@ export function parseRayaResponse(rawText) {
     actions.push(match[1].toLowerCase());
   }
   cleanText = cleanText.replace(actionRegex, '');
+
+  // Match standard [personality: xyz]
+  let detectedPersonality = null;
+  const personalityRegex = /\[personality:\s*([a-zA-Z0-9_-]+)\]/gi;
+  const pMatch = personalityRegex.exec(rawText);
+  if (pMatch) {
+    detectedPersonality = pMatch[1].toLowerCase();
+  }
+  cleanText = cleanText.replace(personalityRegex, '');
 
   // Match informal bracketed tokens (e.g., [namaste!], [smile], [sit], [wink], [laugh], [blush], [hug])
   const informalRegex = /\[([a-zA-Z0-9_!?-]+)\]/gi;
@@ -153,6 +167,7 @@ export function parseRayaResponse(rawText) {
     raw: rawText,
     speechText: cleanText,
     emotion: emotions[0] || (actions.includes('wave') || actions.includes('happy') ? 'happy' : null),
-    action: actions[0] || null
+    action: actions[0] || null,
+    personality: detectedPersonality
   };
 }

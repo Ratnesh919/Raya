@@ -3,9 +3,10 @@ import { DEFAULT_SYSTEM_PROMPT } from '../ai/PromptEngine.js';
 import { isRealisticVoice } from '../ai/VoiceService.js';
 
 export class SettingsModal {
-  constructor({ llmService, voiceService }) {
+  constructor({ llmService, voiceService, personalityEngine }) {
     this.llmService = llmService;
     this.voiceService = voiceService;
+    this.personalityEngine = personalityEngine;
 
     this.modalEl = document.getElementById('settings-modal');
     this.btnOpenEl = document.getElementById('btn-open-settings');
@@ -15,6 +16,7 @@ export class SettingsModal {
     this.providerSelectEl = document.getElementById('setting-provider');
     this.apiKeyInputEl = document.getElementById('setting-api-key');
     this.modelInputEl = document.getElementById('setting-model');
+    this.personalitySelectEl = document.getElementById('setting-personality');
     this.ttsEngineSelectEl = document.getElementById('setting-tts-engine');
     this.kokoroVoiceSelectEl = document.getElementById('setting-kokoro-voice');
     this.kokoroVoiceGroupEl = document.getElementById('kokoro-voice-group');
@@ -76,6 +78,11 @@ export class SettingsModal {
       this.apiKeyInputEl.value = this.llmService.getApiKey(currentProv);
     }
     this.modelInputEl.value = this.llmService.model;
+
+    // Personality Mode configuration
+    if (this.personalitySelectEl && this.personalityEngine) {
+      this.personalitySelectEl.value = this.personalityEngine.selectedMode;
+    }
 
     // TTS Engine & Voice configuration
     const currentEngine = this.voiceService.ttsEngine || 'webspeech';
@@ -150,6 +157,11 @@ export class SettingsModal {
     }
     this.llmService.setModel(model, prov);
     this.llmService.setSystemPrompt(this.systemPromptEl.value);
+
+    // Save Personality Mode
+    if (this.personalitySelectEl && this.personalityEngine) {
+      this.personalityEngine.setMode(this.personalitySelectEl.value);
+    }
 
     // Save TTS Engine & Voice configuration
     if (this.ttsEngineSelectEl) {

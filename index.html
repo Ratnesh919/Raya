@@ -28,6 +28,29 @@
           </div>
         </div>
 
+        <!-- Personality Selector Badge & Quick Menu -->
+        <div class="personality-menu-wrapper interactive">
+          <button id="btn-personality-menu" class="glass-card personality-chip" type="button" title="Raya's Personality Mode (Click to change)">
+            <span class="personality-dot" id="personality-dot"></span>
+            <span class="personality-icon" id="personality-icon">⚡</span>
+            <span class="personality-text" id="personality-text">Auto: Caring</span>
+            <svg class="personality-arrow" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+
+          <!-- Floating Personality Popover -->
+          <div id="personality-popover" class="personality-popover glass-card" style="display: none;">
+            <div class="personality-popover-header">
+              <div style="font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 6px;">
+                <span>🎭 Personality Mode</span>
+              </div>
+              <button id="btn-close-personality" style="background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 1.1rem; line-height: 1;">×</button>
+            </div>
+            <div class="personality-options-list" id="personality-options-list"></div>
+          </div>
+        </div>
+
         <div class="top-actions interactive">
           <!-- Character Model Selector -->
           <select id="model-select" class="glass-card chip" style="outline: none; padding-right: 1.5rem; cursor: pointer;">
@@ -71,6 +94,14 @@
           <button id="btn-toggle-drawer" class="btn-icon glass-card" title="Chat History">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
+          </button>
+
+          <!-- Settings Modal Toggle -->
+          <button id="btn-open-settings" class="btn-icon glass-card" title="Raya Settings & AI Keys">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
           </button>
         </div>
@@ -236,6 +267,23 @@
         <div class="form-group">
           <label class="form-label">Model Name</label>
           <input type="text" id="setting-model" class="form-input" placeholder="e.g. gemini-2.0-flash" />
+        </div>
+
+        <!-- Raya Personality Mode Selection -->
+        <div class="form-group">
+          <label class="form-label">🎭 Raya Personality Mode</label>
+          <select id="setting-personality" class="form-select">
+            <option value="auto" selected>⚡ Auto-Adaptive (Dynamically shifts based on conversation)</option>
+            <option value="caring">✨ Caring (Gentle, Empathetic & Comforting)</option>
+            <option value="flirty">💋 Flirty (Playful, Teasing, Blushing & Charming)</option>
+            <option value="loving">💖 Loving (Devoted, Deeply Affectionate & Sweet)</option>
+            <option value="playful">🌟 Playful (Energetic Anime Humor & Sassy Banter)</option>
+            <option value="wise">🦉 Wise (Thoughtful, Grounded Advisor & Counselor)</option>
+            <option value="relaxed">🌙 Relaxed (Cozy, Chill & Mellow Companion)</option>
+          </select>
+          <small id="personality-hint" style="display: block; margin-top: 4px; color: var(--accent-cyan); font-size: 0.74rem;">
+            Auto-Adaptive dynamically switches whether you need comforting, flirting, affection, advice, or playful banter.
+          </small>
         </div>
 
         <!-- Voice Settings -->

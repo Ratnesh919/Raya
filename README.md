@@ -39,6 +39,19 @@ An expressive, ultra-responsive 3D AI companion web application featuring real-t
 - **Facial Emotion Blending**:
   - Smooth cubic interpolation across emotional expressions: **Happy**, **Joy**, **Surprised**, **Sad**, **Angry**, **Relaxed**, **Think**, **Wink**, **Blush**, **Caring**, and **Neutral**.
 
+### 🎭 Flexible Multi-Personality System
+- **Auto-Adaptive Conversational Mode**:
+  - Dynamically evaluates conversation tone, user emotion, and intent in real time, shifting Raya's personality to match what you need.
+- **Dedicated Personality Personas**:
+  - **✨ Caring & Nurturing**: Gentle, empathetic, and validating companion who comforts you when you are stressed, tired, or need to vent.
+  - **💋 Flirty & Charming**: Playful, witty, charming romantic banter, sweet blushes, and cheeky anime teasing.
+  - **💖 Loving & Affectionate**: Deeply devoted, tender, sweet, and loyal companion who expresses heartfelt closeness and cherishes you.
+  - **🌟 Playful & Cheerful**: High-energy anime companion humor, spirited jokes, witty challenges, and vibrant laughter.
+  - **🦉 Wise & Grounded**: Calm, thoughtful counselor who offers clear perspective, practical wisdom, and balanced life guidance.
+  - **🌙 Relaxed & Chill**: Cozy, tranquil, and mellow companion ideal for late-night chats and unwinding.
+- **1-Tap Personality Switcher**:
+  - Interactive top bar chip and Settings Modal dropdown allow switching between **Auto-Adaptive** and specific locked personas with instant visual and emotional feedback.
+
 ### 🗣️ Phonetic Word-Synchronized Lip-Sync
 - **TTS Word Boundary Synchronization**:
   - Listens directly to speech synthesis `utterance.onboundary` events to drive viseme shapes in exact synchrony with vocalized words.
