@@ -395,6 +395,12 @@ export class AnimationEngine {
     const pRWR = new THREE.Quaternion();
     const _qA = new THREE.Quaternion();
 
+    const isThinking =
+      name === 'think' ||
+      name === 'thinking' ||
+      (url && /think/i.test(url)) ||
+      (rawClip?.name && /think/i.test(rawClip.name));
+
     const hipsNode = findRigNode(asset, 'Hips', 'mixamorig:Hips', 'mixamorigHips');
     const hMotion = hipsNode ? hipsNode.position.y : 100;
     const hVRM = this.vrm.humanoid?.normalizedRestPose?.hips?.position?.[1] || 1.0;
@@ -414,6 +420,13 @@ export class AnimationEngine {
       const vrmBone = MIXAMO_VRM_RIG_MAP[rigName];
       if (!vrmBone) return;
 
+      const isFinger = /thumb|index|middle|ring|little|pinky/i.test(vrmBone);
+      if (isThinking && isFinger) {
+        // Discard flat Mixamo finger tracks for thinking animation.
+        // We will inject the tailored, natural anime thinking hand pose tracks below.
+        return;
+      }
+
       let vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(vrmBone)?.name;
       if (!vrmNode && vrmBone.includes('ThumbMetacarpal')) {
         vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(vrmBone.replace('Metacarpal', 'Proximal'))?.name;
@@ -430,7 +443,6 @@ export class AnimationEngine {
         if (track instanceof THREE.QuaternionKeyframeTrack) {
           const values = track.values.slice();
           const isVrm0 = this.vrm.meta?.metaVersion === '0';
-          const isFinger = /thumb|index|middle|ring|little|pinky/i.test(vrmBone);
           for (let i = 0; i < values.length; i += 4) {
             _qA.fromArray(values, i).premultiply(pRWR).multiply(rRI).toArray(values, i);
             // Invert coordinate frame for body bones only; finger bones are local to the hand and must NOT be flipped
@@ -465,61 +477,125 @@ export class AnimationEngine {
       }
     });
 
-    // Ensure all 5 fingers have natural relaxed resting tracks if omitted in the FBX animation
-    const animatedVrmNodes = new Set(tracks.map((t) => t.name.split('.')[0]));
-    const fingerDefs = [
-      { name: 'Index', prox: 0.28, inter: 0.38, dist: 0.20 },
-      { name: 'Middle', prox: 0.32, inter: 0.42, dist: 0.22 },
-      { name: 'Ring', prox: 0.35, inter: 0.45, dist: 0.24 },
-      { name: 'Little', prox: 0.38, inter: 0.48, dist: 0.26 }
-    ];
+    if (isThinking) {
+      // High-precision, tailored anime thinking pose:
+      // Right hand is brought up to the chin/jawline:
+      // - Index finger is gently curved along the jaw/chin
+      // - Middle finger is comfortably curled
+      // - Ring and Little (pinky) fingers are curled snugly into the palm
+      // - Thumb rests gracefully supporting the jawline
+      // Left hand is relaxed naturally down at the side
+      const thinkingPoses = [
+        // Right hand (thinking chin rest)
+        { bone: 'rightIndexProximal', angle: -0.28 },
+        { bone: 'rightIndexIntermediate', angle: -0.42 },
+        { bone: 'rightIndexDistal', angle: -0.24 },
+        { bone: 'rightMiddleProximal', angle: -0.55 },
+        { bone: 'rightMiddleIntermediate', angle: -0.75 },
+        { bone: 'rightMiddleDistal', angle: -0.38 },
+        { bone: 'rightRingProximal', angle: -0.70 },
+        { bone: 'rightRingIntermediate', angle: -0.95 },
+        { bone: 'rightRingDistal', angle: -0.48 },
+        { bone: 'rightLittleProximal', angle: -0.75 },
+        { bone: 'rightLittleIntermediate', angle: -1.05 },
+        { bone: 'rightLittleDistal', angle: -0.52 },
+        { bone: 'rightThumbMetacarpal', angle: -0.20 },
+        { bone: 'rightThumbProximal', angle: -0.30 },
+        { bone: 'rightThumbDistal', angle: -0.18 },
 
-    ['left', 'right'].forEach((side) => {
-      const isLeft = side === 'left';
-      const curlSign = isLeft ? -1 : 1;
+        // Left hand (natural relaxed posture at side)
+        { bone: 'leftIndexProximal', angle: 0.28 },
+        { bone: 'leftIndexIntermediate', angle: 0.38 },
+        { bone: 'leftIndexDistal', angle: 0.20 },
+        { bone: 'leftMiddleProximal', angle: 0.32 },
+        { bone: 'leftMiddleIntermediate', angle: 0.42 },
+        { bone: 'leftMiddleDistal', angle: 0.22 },
+        { bone: 'leftRingProximal', angle: 0.35 },
+        { bone: 'leftRingIntermediate', angle: 0.45 },
+        { bone: 'leftRingDistal', angle: 0.24 },
+        { bone: 'leftLittleProximal', angle: 0.38 },
+        { bone: 'leftLittleIntermediate', angle: 0.48 },
+        { bone: 'leftLittleDistal', angle: 0.26 },
+        { bone: 'leftThumbMetacarpal', angle: 0.15 },
+        { bone: 'leftThumbProximal', angle: 0.20 },
+        { bone: 'leftThumbDistal', angle: 0.15 }
+      ];
 
-      // 4 Fingers
-      fingerDefs.forEach((f) => {
-        const pBone = `${side}${f.name}Proximal`;
-        const iBone = `${side}${f.name}Intermediate`;
-        const dBone = `${side}${f.name}Distal`;
-
-        const pNode = this.vrm.humanoid?.getNormalizedBoneNode(pBone)?.name;
-        const iNode = this.vrm.humanoid?.getNormalizedBoneNode(iBone)?.name;
-        const dNode = this.vrm.humanoid?.getNormalizedBoneNode(dBone)?.name;
-
-        if (pNode && !animatedVrmNodes.has(pNode)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.prox * curlSign);
-          tracks.push(new THREE.QuaternionKeyframeTrack(`${pNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+      thinkingPoses.forEach(({ bone, angle }) => {
+        let vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone)?.name;
+        if (!vrmNode && bone.includes('ThumbMetacarpal')) {
+          vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone.replace('Metacarpal', 'Proximal'))?.name;
+        } else if (!vrmNode && bone.includes('ThumbProximal')) {
+          vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone.replace('Proximal', 'Intermediate'))?.name;
         }
-        if (iNode && !animatedVrmNodes.has(iNode)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.inter * curlSign);
-          tracks.push(new THREE.QuaternionKeyframeTrack(`${iNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
-        }
-        if (dNode && !animatedVrmNodes.has(dNode)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.dist * curlSign);
-          tracks.push(new THREE.QuaternionKeyframeTrack(`${dNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+        if (vrmNode) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), angle);
+          tracks.push(
+            new THREE.QuaternionKeyframeTrack(
+              `${vrmNode}.quaternion`,
+              [0, rawClip.duration],
+              [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]
+            )
+          );
         }
       });
+    } else {
+      // Ensure all 5 fingers have natural relaxed resting tracks if omitted in the FBX animation
+      const animatedVrmNodes = new Set(tracks.map((t) => t.name.split('.')[0]));
+      const fingerDefs = [
+        { name: 'Index', prox: 0.28, inter: 0.38, dist: 0.20 },
+        { name: 'Middle', prox: 0.32, inter: 0.42, dist: 0.22 },
+        { name: 'Ring', prox: 0.35, inter: 0.45, dist: 0.24 },
+        { name: 'Little', prox: 0.38, inter: 0.48, dist: 0.26 }
+      ];
 
-      // Thumb
-      const t1 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbMetacarpal`)?.name || this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name;
-      const t2 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name || this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbIntermediate`)?.name;
-      const t3 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbDistal`)?.name;
+      ['left', 'right'].forEach((side) => {
+        const isLeft = side === 'left';
+        // In normalized VRM space: Left hand curls with +Z, Right hand curls with -Z
+        const curlSign = isLeft ? 1 : -1;
 
-      if (t1 && !animatedVrmNodes.has(t1)) {
-        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
-        tracks.push(new THREE.QuaternionKeyframeTrack(`${t1}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
-      }
-      if (t2 && !animatedVrmNodes.has(t2)) {
-        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.20 * curlSign);
-        tracks.push(new THREE.QuaternionKeyframeTrack(`${t2}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
-      }
-      if (t3 && !animatedVrmNodes.has(t3)) {
-        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
-        tracks.push(new THREE.QuaternionKeyframeTrack(`${t3}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
-      }
-    });
+        fingerDefs.forEach((f) => {
+          const pBone = `${side}${f.name}Proximal`;
+          const iBone = `${side}${f.name}Intermediate`;
+          const dBone = `${side}${f.name}Distal`;
+
+          const pNode = this.vrm.humanoid?.getNormalizedBoneNode(pBone)?.name;
+          const iNode = this.vrm.humanoid?.getNormalizedBoneNode(iBone)?.name;
+          const dNode = this.vrm.humanoid?.getNormalizedBoneNode(dBone)?.name;
+
+          if (pNode && !animatedVrmNodes.has(pNode)) {
+            const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.prox * curlSign);
+            tracks.push(new THREE.QuaternionKeyframeTrack(`${pNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+          }
+          if (iNode && !animatedVrmNodes.has(iNode)) {
+            const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.inter * curlSign);
+            tracks.push(new THREE.QuaternionKeyframeTrack(`${iNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+          }
+          if (dNode && !animatedVrmNodes.has(dNode)) {
+            const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.dist * curlSign);
+            tracks.push(new THREE.QuaternionKeyframeTrack(`${dNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+          }
+        });
+
+        // Thumb
+        const t1 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbMetacarpal`)?.name || this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name;
+        const t2 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name || this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbIntermediate`)?.name;
+        const t3 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbDistal`)?.name;
+
+        if (t1 && !animatedVrmNodes.has(t1)) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
+          tracks.push(new THREE.QuaternionKeyframeTrack(`${t1}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+        }
+        if (t2 && !animatedVrmNodes.has(t2)) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.20 * curlSign);
+          tracks.push(new THREE.QuaternionKeyframeTrack(`${t2}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+        }
+        if (t3 && !animatedVrmNodes.has(t3)) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
+          tracks.push(new THREE.QuaternionKeyframeTrack(`${t3}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+        }
+      });
+    }
 
     console.log(`[AnimationEngine] Retargeted ${rawClip.name || url}: created ${tracks.length} tracks`);
     if (tracks.length === 0) return null;
