@@ -21,7 +21,13 @@ Raya is a real-time 3D AI companion with expressive VRM animations, voice synthe
 - **UI & Controls**: `src/ui/ChatUI.js` (drawer, mic, text input, personality chip), `src/ui/SettingsModal.js`
 - **App Entry & Wiring**: `src/main.js`, `index.html`, `src/styles/main.css`
 
+## Knowledge Graph Workflow (Mandatory)
+- **Before modifying any feature**: Query the graph first using `graphify query "<feature or task description>"` to locate caller/callee relationships, imports, and affected flows without scanning files.
+- **After code changes**: Run `graphify update .` to keep the dependency graph in sync.
+- **Visual inspection**: Open `graphify-out/graph.html` or `graphify-out/GRAPH_TREE.html` for architecture overviews.
+
 ## Directories & Files to Avoid
 - `public/models/`, `public/animations/`, `public/audio/` (heavy binary assets: .vrm, .fbx, audio)
-- `node_modules/`, `dist/`, `graphify-out/`
+- `node_modules/`, `dist/`, `graphify-out/cache/`
 - NEVER read 3D model binaries (`.vrm`, `.fbx`, `.glb`) directly
+
