@@ -430,9 +430,11 @@ export class AnimationEngine {
         if (track instanceof THREE.QuaternionKeyframeTrack) {
           const values = track.values.slice();
           const isVrm0 = this.vrm.meta?.metaVersion === '0';
+          const isFinger = /thumb|index|middle|ring|little|pinky/i.test(vrmBone);
           for (let i = 0; i < values.length; i += 4) {
             _qA.fromArray(values, i).premultiply(pRWR).multiply(rRI).toArray(values, i);
-            if (isVrm0) {
+            // Invert coordinate frame for body bones only; finger bones are local to the hand and must NOT be flipped
+            if (isVrm0 && !isFinger) {
               values[i] = -values[i];
               values[i + 2] = -values[i + 2];
             }
@@ -460,6 +462,62 @@ export class AnimationEngine {
             )
           );
         }
+      }
+    });
+
+    // Ensure all 5 fingers have natural relaxed resting tracks if omitted in the FBX animation
+    const animatedVrmNodes = new Set(tracks.map((t) => t.name.split('.')[0]));
+    const fingerDefs = [
+      { name: 'Index', prox: 0.28, inter: 0.38, dist: 0.20 },
+      { name: 'Middle', prox: 0.32, inter: 0.42, dist: 0.22 },
+      { name: 'Ring', prox: 0.35, inter: 0.45, dist: 0.24 },
+      { name: 'Little', prox: 0.38, inter: 0.48, dist: 0.26 }
+    ];
+
+    ['left', 'right'].forEach((side) => {
+      const isLeft = side === 'left';
+      const curlSign = isLeft ? -1 : 1;
+
+      // 4 Fingers
+      fingerDefs.forEach((f) => {
+        const pBone = `${side}${f.name}Proximal`;
+        const iBone = `${side}${f.name}Intermediate`;
+        const dBone = `${side}${f.name}Distal`;
+
+        const pNode = this.vrm.humanoid?.getNormalizedBoneNode(pBone)?.name;
+        const iNode = this.vrm.humanoid?.getNormalizedBoneNode(iBone)?.name;
+        const dNode = this.vrm.humanoid?.getNormalizedBoneNode(dBone)?.name;
+
+        if (pNode && !animatedVrmNodes.has(pNode)) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.prox * curlSign);
+          tracks.push(new THREE.QuaternionKeyframeTrack(`${pNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+        }
+        if (iNode && !animatedVrmNodes.has(iNode)) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.inter * curlSign);
+          tracks.push(new THREE.QuaternionKeyframeTrack(`${iNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+        }
+        if (dNode && !animatedVrmNodes.has(dNode)) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.dist * curlSign);
+          tracks.push(new THREE.QuaternionKeyframeTrack(`${dNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+        }
+      });
+
+      // Thumb
+      const t1 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbMetacarpal`)?.name || this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name;
+      const t2 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name || this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbIntermediate`)?.name;
+      const t3 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbDistal`)?.name;
+
+      if (t1 && !animatedVrmNodes.has(t1)) {
+        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
+        tracks.push(new THREE.QuaternionKeyframeTrack(`${t1}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+      }
+      if (t2 && !animatedVrmNodes.has(t2)) {
+        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.20 * curlSign);
+        tracks.push(new THREE.QuaternionKeyframeTrack(`${t2}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
+      }
+      if (t3 && !animatedVrmNodes.has(t3)) {
+        const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
+        tracks.push(new THREE.QuaternionKeyframeTrack(`${t3}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
       }
     });
 
