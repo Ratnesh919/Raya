@@ -48,10 +48,10 @@
     "semantic_hash": "8f4a3c62f81356534885aaf69781b02e"
   },
   "src/main.js": {
-    "mtime": 1790170731.6059775,
-    "seen": 1790224350.8197603,
-    "ast_hash": "4a3e26a3022a968b986a6f3d348938a4",
-    "semantic_hash": "4a3e26a3022a968b986a6f3d348938a4"
+    "mtime": 1790253835.4000216,
+    "seen": 1790253882.2161272,
+    "ast_hash": "247617eca7f11ef6379a7073e36aec83",
+    "semantic_hash": ""
   },
   "src/ui/ChatUI.js": {
     "mtime": 1790170681.2140114,
@@ -78,10 +78,10 @@
     "semantic_hash": "22d20c88126d8dcd2c97686564b5d733"
   },
   "src/vrm/AnimationEngine.js": {
-    "mtime": 1790083832.235777,
-    "seen": 1790224350.8197649,
-    "ast_hash": "3b19e48bdc6b074580f39361f7892957",
-    "semantic_hash": "3b19e48bdc6b074580f39361f7892957"
+    "mtime": 1790253697.3494396,
+    "seen": 1790253882.216149,
+    "ast_hash": "63bae6a8a234743e4746c0ee0aecbbac",
+    "semantic_hash": ""
   },
   "src/vrm/ChestPhysics.js": {
     "mtime": 1790167959.567492,
@@ -90,10 +90,10 @@
     "semantic_hash": "df9c2b808bbcafb08414a58e3d293851"
   },
   "src/vrm/ExpressionManager.js": {
-    "mtime": 1790137405.8892434,
-    "seen": 1790224350.8197663,
-    "ast_hash": "1f056cf392916adb39c7090595a58a66",
-    "semantic_hash": "1f056cf392916adb39c7090595a58a66"
+    "mtime": 1790253737.2015502,
+    "seen": 1790253882.2161562,
+    "ast_hash": "bc1a431c7d365e236b1962d252d97d61",
+    "semantic_hash": ""
   },
   "src/vrm/LifeSimulator.js": {
     "mtime": 1790167906.650874,
@@ -124,5 +124,23 @@
     "seen": 1790224350.81977,
     "ast_hash": "83ad72c05af9de5f36020d2e71ad71f4",
     "semantic_hash": "83ad72c05af9de5f36020d2e71ad71f4"
+  },
+  "AGENTS.md": {
+    "mtime": 1790225606.25154,
+    "seen": 1790253882.2161782,
+    "ast_hash": "22c0fb6fd6eede3cff6931274da89735",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1790171061.663595,
+    "seen": 1790253882.2161825,
+    "ast_hash": "cb581ed664ad5cdd35bea5d46b78c3e9",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1790253772.0302663,
+    "seen": 1790253882.2161856,
+    "ast_hash": "1b6aa208a84161c64cfbf06d1b0e0212",
+    "semantic_hash": ""
   }
 }

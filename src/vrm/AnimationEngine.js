@@ -24,7 +24,47 @@ const MIXAMO_VRM_RIG_MAP = {
   mixamorigRightUpLeg: 'rightUpperLeg',
   mixamorigRightLeg: 'rightLowerLeg',
   mixamorigRightFoot: 'rightFoot',
-  mixamorigRightToeBase: 'rightToes'
+  mixamorigRightToeBase: 'rightToes',
+
+  // Left Hand Fingers (Mixamo -> VRM Humanoid)
+  mixamorigLeftHandThumb1: 'leftThumbMetacarpal',
+  mixamorigLeftHandThumb2: 'leftThumbProximal',
+  mixamorigLeftHandThumb3: 'leftThumbDistal',
+  mixamorigLeftHandIndex1: 'leftIndexProximal',
+  mixamorigLeftHandIndex2: 'leftIndexIntermediate',
+  mixamorigLeftHandIndex3: 'leftIndexDistal',
+  mixamorigLeftHandMiddle1: 'leftMiddleProximal',
+  mixamorigLeftHandMiddle2: 'leftMiddleIntermediate',
+  mixamorigLeftHandMiddle3: 'leftMiddleDistal',
+  mixamorigLeftHandRing1: 'leftRingProximal',
+  mixamorigLeftHandRing2: 'leftRingIntermediate',
+  mixamorigLeftHandRing3: 'leftRingDistal',
+  mixamorigLeftHandPinky1: 'leftLittleProximal',
+  mixamorigLeftHandPinky2: 'leftLittleIntermediate',
+  mixamorigLeftHandPinky3: 'leftLittleDistal',
+  mixamorigLeftHandLittle1: 'leftLittleProximal',
+  mixamorigLeftHandLittle2: 'leftLittleIntermediate',
+  mixamorigLeftHandLittle3: 'leftLittleDistal',
+
+  // Right Hand Fingers (Mixamo -> VRM Humanoid)
+  mixamorigRightHandThumb1: 'rightThumbMetacarpal',
+  mixamorigRightHandThumb2: 'rightThumbProximal',
+  mixamorigRightHandThumb3: 'rightThumbDistal',
+  mixamorigRightHandIndex1: 'rightIndexProximal',
+  mixamorigRightHandIndex2: 'rightIndexIntermediate',
+  mixamorigRightHandIndex3: 'rightIndexDistal',
+  mixamorigRightHandMiddle1: 'rightMiddleProximal',
+  mixamorigRightHandMiddle2: 'rightMiddleIntermediate',
+  mixamorigRightHandMiddle3: 'rightMiddleDistal',
+  mixamorigRightHandRing1: 'rightRingProximal',
+  mixamorigRightHandRing2: 'rightRingIntermediate',
+  mixamorigRightHandRing3: 'rightRingDistal',
+  mixamorigRightHandPinky1: 'rightLittleProximal',
+  mixamorigRightHandPinky2: 'rightLittleIntermediate',
+  mixamorigRightHandPinky3: 'rightLittleDistal',
+  mixamorigRightHandLittle1: 'rightLittleProximal',
+  mixamorigRightHandLittle2: 'rightLittleIntermediate',
+  mixamorigRightHandLittle3: 'rightLittleDistal'
 };
 
 // Build a fast lookup map for all nodes in the FBX asset (O(N) once instead of traversing per track)
@@ -374,7 +414,12 @@ export class AnimationEngine {
       const vrmBone = MIXAMO_VRM_RIG_MAP[rigName];
       if (!vrmBone) return;
 
-      const vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(vrmBone)?.name;
+      let vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(vrmBone)?.name;
+      if (!vrmNode && vrmBone.includes('ThumbMetacarpal')) {
+        vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(vrmBone.replace('Metacarpal', 'Proximal'))?.name;
+      } else if (!vrmNode && vrmBone.includes('ThumbProximal')) {
+        vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(vrmBone.replace('Proximal', 'Intermediate'))?.name;
+      }
       const rigNode = findRigNode(asset, rawBone, parts[0], rigName);
 
       if (vrmNode != null && rigNode != null && rigNode.parent != null) {

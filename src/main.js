@@ -239,6 +239,24 @@ async function bootstrap() {
     });
   }
 
+  // 7. Hook Facial Expression Preview Chips
+  const emotionChipBtns = document.querySelectorAll('.emotion-chip-btn');
+  emotionChipBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const emotion = btn.dataset.emotion;
+      if (!emotion) return;
+
+      emotionChipBtns.forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      if (emotion === 'neutral') {
+        expressionManager.setEmotion('neutral');
+      } else {
+        expressionManager.setEmotionWithAutoReset(emotion, 4500);
+      }
+    });
+  });
+
   if (btnResetAppearance) {
     btnResetAppearance.addEventListener('click', () => {
       // User preferred visual defaults: 70% skin, 50% hair, 55% lighting
@@ -254,6 +272,9 @@ async function bootstrap() {
       if (popLightVal) popLightVal.textContent = '55%';
       if (popQualitySelect) popQualitySelect.value = 'high';
       if (popQualityTag) popQualityTag.textContent = 'HIGH / GPU';
+      emotionChipBtns.forEach((b) => b.classList.remove('active'));
+      const neutralBtn = document.querySelector('.emotion-chip-btn[data-emotion="neutral"]');
+      if (neutralBtn) neutralBtn.classList.add('active');
       expressionManager.setEmotion('neutral');
     });
   }

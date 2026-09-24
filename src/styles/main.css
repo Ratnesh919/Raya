@@ -1455,11 +1455,12 @@ body.drawer-open .bottom-controls,
   transform: translateY(-1px);
 }
 
-.emotion-chip-btn:active {
-  background: linear-gradient(135deg, rgba(0, 242, 254, 0.25), rgba(168, 85, 247, 0.3));
+.emotion-chip-btn:active,
+.emotion-chip-btn.active {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.35), rgba(168, 85, 247, 0.45));
   border-color: var(--accent-cyan);
   color: #ffffff;
-  box-shadow: 0 0 10px rgba(0, 242, 254, 0.35);
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.45);
 }
 
 /* ─── SELECT DROPDOWN DARKENING & READABILITY FIX ────────────────────────── */
