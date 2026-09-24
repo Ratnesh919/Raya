@@ -1,0 +1,128 @@
+{
+  "netlify/functions/memory.mts": {
+    "mtime": 1789540667.1062405,
+    "seen": 1790224350.819747,
+    "ast_hash": "3250a09dfb8cec13e53047a3b111590d",
+    "semantic_hash": "3250a09dfb8cec13e53047a3b111590d"
+  },
+  "package.json": {
+    "mtime": 1789999174.8297393,
+    "seen": 1790224350.8197522,
+    "ast_hash": "0636af4cdb35eed7eb6fa32259fa4df1",
+    "semantic_hash": "0636af4cdb35eed7eb6fa32259fa4df1"
+  },
+  "src/ai/KokoroService.js": {
+    "mtime": 1790051125.7391312,
+    "seen": 1790224350.8197546,
+    "ast_hash": "127c5a33811844af8942c15b5151df7e",
+    "semantic_hash": "127c5a33811844af8942c15b5151df7e"
+  },
+  "src/ai/LLMService.js": {
+    "mtime": 1790169405.63414,
+    "seen": 1790224350.8197556,
+    "ast_hash": "d518c1a73f282cfb171d8e380bfb8005",
+    "semantic_hash": "d518c1a73f282cfb171d8e380bfb8005"
+  },
+  "src/ai/MemoryService.js": {
+    "mtime": 1789969573.1129248,
+    "seen": 1790224350.8197565,
+    "ast_hash": "d64993025c86ef9d096199370bafa6da",
+    "semantic_hash": "d64993025c86ef9d096199370bafa6da"
+  },
+  "src/ai/PersonalityEngine.js": {
+    "mtime": 1790169331.4650543,
+    "seen": 1790224350.8197572,
+    "ast_hash": "2efd33f896c808b8f6baa0763f91659d",
+    "semantic_hash": "2efd33f896c808b8f6baa0763f91659d"
+  },
+  "src/ai/PromptEngine.js": {
+    "mtime": 1790169077.531403,
+    "seen": 1790224350.8197584,
+    "ast_hash": "0219555a15a1d6c8a8490756748cda97",
+    "semantic_hash": "0219555a15a1d6c8a8490756748cda97"
+  },
+  "src/ai/VoiceService.js": {
+    "mtime": 1790137569.9005558,
+    "seen": 1790224350.8197594,
+    "ast_hash": "8f4a3c62f81356534885aaf69781b02e",
+    "semantic_hash": "8f4a3c62f81356534885aaf69781b02e"
+  },
+  "src/main.js": {
+    "mtime": 1790170731.6059775,
+    "seen": 1790224350.8197603,
+    "ast_hash": "4a3e26a3022a968b986a6f3d348938a4",
+    "semantic_hash": "4a3e26a3022a968b986a6f3d348938a4"
+  },
+  "src/ui/ChatUI.js": {
+    "mtime": 1790170681.2140114,
+    "seen": 1790224350.819761,
+    "ast_hash": "f7167d7dbbd1586402236d1112cb32a7",
+    "semantic_hash": "f7167d7dbbd1586402236d1112cb32a7"
+  },
+  "src/ui/ControlsHUD.js": {
+    "mtime": 1790051418.851797,
+    "seen": 1790224350.819762,
+    "ast_hash": "a5847ba00b68e752892aa37158eef92c",
+    "semantic_hash": "a5847ba00b68e752892aa37158eef92c"
+  },
+  "src/ui/LoaderAnimation.js": {
+    "mtime": 1789999571.1168275,
+    "seen": 1790224350.8197632,
+    "ast_hash": "8a8431450ddff56c8fb6b5319b205a97",
+    "semantic_hash": "8a8431450ddff56c8fb6b5319b205a97"
+  },
+  "src/ui/SettingsModal.js": {
+    "mtime": 1790170248.8898766,
+    "seen": 1790224350.819764,
+    "ast_hash": "22d20c88126d8dcd2c97686564b5d733",
+    "semantic_hash": "22d20c88126d8dcd2c97686564b5d733"
+  },
+  "src/vrm/AnimationEngine.js": {
+    "mtime": 1790083832.235777,
+    "seen": 1790224350.8197649,
+    "ast_hash": "3b19e48bdc6b074580f39361f7892957",
+    "semantic_hash": "3b19e48bdc6b074580f39361f7892957"
+  },
+  "src/vrm/ChestPhysics.js": {
+    "mtime": 1790167959.567492,
+    "seen": 1790224350.8197656,
+    "ast_hash": "df9c2b808bbcafb08414a58e3d293851",
+    "semantic_hash": "df9c2b808bbcafb08414a58e3d293851"
+  },
+  "src/vrm/ExpressionManager.js": {
+    "mtime": 1790137405.8892434,
+    "seen": 1790224350.8197663,
+    "ast_hash": "1f056cf392916adb39c7090595a58a66",
+    "semantic_hash": "1f056cf392916adb39c7090595a58a66"
+  },
+  "src/vrm/LifeSimulator.js": {
+    "mtime": 1790167906.650874,
+    "seen": 1790224350.819767,
+    "ast_hash": "bbb657ba7d0bbd59db2557cb814beddb",
+    "semantic_hash": "bbb657ba7d0bbd59db2557cb814beddb"
+  },
+  "src/vrm/LipSyncEngine.js": {
+    "mtime": 1790137545.5524106,
+    "seen": 1790224350.8197677,
+    "ast_hash": "cc4a2905600e912711c5688d28540117",
+    "semantic_hash": "cc4a2905600e912711c5688d28540117"
+  },
+  "src/vrm/VRMManager.js": {
+    "mtime": 1790167982.6635382,
+    "seen": 1790224350.8197687,
+    "ast_hash": "9d4d2e4d87c7fbc8805779dcc5a0f60d",
+    "semantic_hash": "9d4d2e4d87c7fbc8805779dcc5a0f60d"
+  },
+  "vercel.json": {
+    "mtime": 1789395422.97646,
+    "seen": 1790224350.8197696,
+    "ast_hash": "7d1a868af9cdd43fd87430a2783094ca",
+    "semantic_hash": "7d1a868af9cdd43fd87430a2783094ca"
+  },
+  "vite.config.js": {
+    "mtime": 1789741245.329541,
+    "seen": 1790224350.81977,
+    "ast_hash": "83ad72c05af9de5f36020d2e71ad71f4",
+    "semantic_hash": "83ad72c05af9de5f36020d2e71ad71f4"
+  }
+}

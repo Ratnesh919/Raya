@@ -29,3 +29,6 @@ dist-ssr
 *.sln
 *.sw?
 Thumbs.db
+
+# Graphify cache
+graphify-out/cache/

@@ -1,0 +1,441 @@
+{
+  "communities": {
+    "0": [
+      "netlify_functions_memory",
+      "netlify_functions_memory_config",
+      "netlify_functions_memory_default_memory",
+      "netlify_functions_memory_usermemory",
+      "package",
+      "package_dependencies",
+      "package_dependencies_animejs",
+      "package_dependencies_kokoro_js",
+      "package_dependencies_netlify_blobs",
+      "package_dependencies_netlify_functions",
+      "package_dependencies_pixiv_three_vrm",
+      "package_dependencies_pixiv_three_vrm_animation",
+      "package_dependencies_three",
+      "package_devdependencies",
+      "package_devdependencies_vite",
+      "package_name",
+      "package_private",
+      "package_scripts",
+      "package_scripts_build",
+      "package_scripts_dev",
+      "package_scripts_preview",
+      "package_type",
+      "package_version",
+      "ref_netlify_blobs",
+      "ref_netlify_functions",
+      "ref_pixiv_three_vrm",
+      "ref_pixiv_three_vrm_animation",
+      "ref_vite",
+      "vite_config"
+    ],
+    "1": [
+      "kokoro_js",
+      "src_ai_kokoroservice",
+      "src_ai_kokoroservice_kokoro_supported_langs",
+      "src_ai_kokoroservice_kokoro_voices",
+      "src_ai_voiceservice",
+      "src_ai_voiceservice_detectlanguage",
+      "src_ai_voiceservice_getnativescriptfortts",
+      "src_ai_voiceservice_isfemalevoice",
+      "src_ai_voiceservice_ismobiledevice",
+      "src_ai_voiceservice_transliteratedevanagari",
+      "src_ai_voiceservice_voiceservice",
+      "src_ai_voiceservice_voiceservice_constructor",
+      "src_ai_voiceservice_voiceservice_getavailablevoices",
+      "src_ai_voiceservice_voiceservice_getbestrealisticvoice",
+      "src_ai_voiceservice_voiceservice_initrecognition",
+      "src_ai_voiceservice_voiceservice_initvoices",
+      "src_ai_voiceservice_voiceservice_setkokorovoice",
+      "src_ai_voiceservice_voiceservice_setrecognitionlanguage",
+      "src_ai_voiceservice_voiceservice_setttsengine",
+      "src_ai_voiceservice_voiceservice_setvoice",
+      "src_ai_voiceservice_voiceservice_setvoiceparams",
+      "src_ai_voiceservice_voiceservice_speak",
+      "src_ai_voiceservice_voiceservice_speakwebspeech",
+      "src_ai_voiceservice_voiceservice_stopspeaking",
+      "src_ai_voiceservice_voiceservice_togglelistening"
+    ],
+    "2": [
+      "ref_three",
+      "src_ai_memoryservice",
+      "src_ai_memoryservice_excluded_name_words",
+      "src_ai_personalityengine",
+      "src_ai_personalityengine_personality_modes",
+      "src_ai_personalityengine_personality_profiles",
+      "src_main",
+      "src_ui_chatui",
+      "src_vrm_chestphysics",
+      "src_vrm_chestphysics_chestphysics",
+      "src_vrm_chestphysics_chestphysics_bindmodel",
+      "src_vrm_chestphysics_chestphysics_constructor",
+      "src_vrm_chestphysics_chestphysics_update",
+      "src_vrm_expressionmanager",
+      "src_vrm_expressionmanager_expr_aliases",
+      "src_vrm_lifesimulator",
+      "src_vrm_lipsyncengine",
+      "src_vrm_lipsyncengine_viseme_aliases",
+      "src_vrm_vrmmanager"
+    ],
+    "3": [
+      "src_ai_llmservice_llmservice",
+      "src_ai_llmservice_llmservice_callgemini",
+      "src_ai_llmservice_llmservice_callgroq",
+      "src_ai_llmservice_llmservice_callnvidia",
+      "src_ai_llmservice_llmservice_callopenai",
+      "src_ai_llmservice_llmservice_callopenaicompatible",
+      "src_ai_llmservice_llmservice_callopenrouter",
+      "src_ai_llmservice_llmservice_clearhistory",
+      "src_ai_llmservice_llmservice_constructor",
+      "src_ai_llmservice_llmservice_getapikey",
+      "src_ai_llmservice_llmservice_geteffectivesystemprompt",
+      "src_ai_llmservice_llmservice_seeddefaultkeys",
+      "src_ai_llmservice_llmservice_sendmessage",
+      "src_ai_llmservice_llmservice_setapikey",
+      "src_ai_llmservice_llmservice_setmemoryservice",
+      "src_ai_llmservice_llmservice_setmodel",
+      "src_ai_llmservice_llmservice_setpersonalityengine",
+      "src_ai_llmservice_llmservice_setprovider",
+      "src_ai_llmservice_llmservice_setsystemprompt"
+    ],
+    "4": [
+      "src_ai_memoryservice_memoryservice",
+      "src_ai_memoryservice_memoryservice_addfact",
+      "src_ai_memoryservice_memoryservice_constructor",
+      "src_ai_memoryservice_memoryservice_detectandstorelearnedfacts",
+      "src_ai_memoryservice_memoryservice_getmemory",
+      "src_ai_memoryservice_memoryservice_loadmemory",
+      "src_ai_memoryservice_memoryservice_resetmemory",
+      "src_ai_memoryservice_memoryservice_savememory",
+      "src_ai_memoryservice_memoryservice_setusername",
+      "src_main_bootstrap",
+      "src_main_bootstrap_animate",
+      "src_ui_controlshud_controlshud",
+      "src_ui_controlshud_controlshud_constructor",
+      "src_ui_controlshud_controlshud_hideloading",
+      "src_ui_controlshud_controlshud_loadmodelwithloader",
+      "src_ui_controlshud_controlshud_setupdraganddrop",
+      "src_ui_controlshud_controlshud_setuplisteners",
+      "src_ui_controlshud_controlshud_showloading",
+      "src_ui_controlshud_controlshud_updateprogress"
+    ],
+    "5": [
+      "src_vrm_vrmmanager_vrmmanager",
+      "src_vrm_vrmmanager_vrmmanager_addmodelloadedlistener",
+      "src_vrm_vrmmanager_vrmmanager_applyvisualadjustments",
+      "src_vrm_vrmmanager_vrmmanager_constructor",
+      "src_vrm_vrmmanager_vrmmanager_initscene",
+      "src_vrm_vrmmanager_vrmmanager_loadmodel",
+      "src_vrm_vrmmanager_vrmmanager_onwindowresize",
+      "src_vrm_vrmmanager_vrmmanager_poserestingarms",
+      "src_vrm_vrmmanager_vrmmanager_render",
+      "src_vrm_vrmmanager_vrmmanager_setcameramode",
+      "src_vrm_vrmmanager_vrmmanager_setchairvisible",
+      "src_vrm_vrmmanager_vrmmanager_setgraphicsquality",
+      "src_vrm_vrmmanager_vrmmanager_sethairbrightness",
+      "src_vrm_vrmmanager_vrmmanager_setoverallbrightness",
+      "src_vrm_vrmmanager_vrmmanager_setskinbrightness",
+      "src_vrm_vrmmanager_vrmmanager_setupinteractions",
+      "src_vrm_vrmmanager_vrmmanager_setuplighting",
+      "src_vrm_vrmmanager_vrmmanager_updatebreeze",
+      "src_vrm_vrmmanager_vrmmanager_updatecameraforscreen"
+    ],
+    "6": [
+      "src_ui_chatui_chatui",
+      "src_ui_chatui_chatui_addmessagetodrawer",
+      "src_ui_chatui_chatui_analyzechatsentiment",
+      "src_ui_chatui_chatui_analyzeuserintentemotion",
+      "src_ui_chatui_chatui_constructor",
+      "src_ui_chatui_chatui_handlesendmessage",
+      "src_ui_chatui_chatui_removethinkingindicator",
+      "src_ui_chatui_chatui_rendermemorystatus",
+      "src_ui_chatui_chatui_renderpersonalitybadge",
+      "src_ui_chatui_chatui_renderpersonalityoptions",
+      "src_ui_chatui_chatui_setuplisteners",
+      "src_ui_chatui_chatui_setupmemoryui",
+      "src_ui_chatui_chatui_setuppersonalityui",
+      "src_ui_chatui_chatui_showspeechbubble",
+      "src_ui_chatui_chatui_showthinkingindicator"
+    ],
+    "7": [
+      "src_vrm_animationengine",
+      "src_vrm_animationengine_animationengine",
+      "src_vrm_animationengine_animationengine_bindmodel",
+      "src_vrm_animationengine_animationengine_constructor",
+      "src_vrm_animationengine_animationengine_downloadnextinsequence",
+      "src_vrm_animationengine_animationengine_enqueueloadmixamoclip",
+      "src_vrm_animationengine_animationengine_getdownloadstatus",
+      "src_vrm_animationengine_animationengine_playanimation",
+      "src_vrm_animationengine_animationengine_preloadidle",
+      "src_vrm_animationengine_animationengine_retargetclip",
+      "src_vrm_animationengine_animationengine_startsequentialbackgrounddownload",
+      "src_vrm_animationengine_animationengine_update",
+      "src_vrm_animationengine_findrignode",
+      "src_vrm_animationengine_getrignodemap",
+      "src_vrm_animationengine_mixamo_vrm_rig_map"
+    ],
+    "8": [
+      "src_ai_llmservice",
+      "src_ai_llmservice_default_models",
+      "src_ai_llmservice_providers",
+      "src_ai_promptengine",
+      "src_ai_promptengine_default_system_prompt",
+      "src_ai_promptengine_parserayaresponse",
+      "src_ai_voiceservice_isrealisticvoice",
+      "src_ui_settingsmodal",
+      "src_ui_settingsmodal_settingsmodal",
+      "src_ui_settingsmodal_settingsmodal_close",
+      "src_ui_settingsmodal_settingsmodal_constructor",
+      "src_ui_settingsmodal_settingsmodal_open",
+      "src_ui_settingsmodal_settingsmodal_save",
+      "src_ui_settingsmodal_settingsmodal_setuplisteners"
+    ],
+    "9": [
+      "ref_animejs",
+      "src_ui_controlshud",
+      "src_ui_loaderanimation",
+      "src_ui_loaderanimation_loaderanimation",
+      "src_ui_loaderanimation_loaderanimation_constructor",
+      "src_ui_loaderanimation_loaderanimation_hideimmediately",
+      "src_ui_loaderanimation_loaderanimation_playintro",
+      "src_ui_loaderanimation_loaderanimation_playoutro",
+      "src_ui_loaderanimation_loaderanimation_scramblebadgetext",
+      "src_ui_loaderanimation_loaderanimation_setstage",
+      "src_ui_loaderanimation_loaderanimation_setupparallaxtilt",
+      "src_ui_loaderanimation_loaderanimation_starttelemetryjitter",
+      "src_ui_loaderanimation_loaderanimation_updateprogress"
+    ],
+    "10": [
+      "ref_kokoro_js",
+      "src_ai_kokoroservice_kokoroservice",
+      "src_ai_kokoroservice_kokoroservice_cleanup",
+      "src_ai_kokoroservice_kokoroservice_constructor",
+      "src_ai_kokoroservice_kokoroservice_getvoiceforlanguage",
+      "src_ai_kokoroservice_kokoroservice_init",
+      "src_ai_kokoroservice_kokoroservice_islanguagesupported",
+      "src_ai_kokoroservice_kokoroservice_issupported",
+      "src_ai_kokoroservice_kokoroservice_setspeed",
+      "src_ai_kokoroservice_kokoroservice_setvoice",
+      "src_ai_kokoroservice_kokoroservice_speak",
+      "src_ai_kokoroservice_kokoroservice_stop"
+    ],
+    "11": [
+      "src_ai_personalityengine_personalityengine",
+      "src_ai_personalityengine_personalityengine_constructor",
+      "src_ai_personalityengine_personalityengine_detectpersonalityfromconversation",
+      "src_ai_personalityengine_personalityengine_getactiveprofile",
+      "src_ai_personalityengine_personalityengine_getdisplaybadge",
+      "src_ai_personalityengine_personalityengine_getpromptdirective",
+      "src_ai_personalityengine_personalityengine_notify",
+      "src_ai_personalityengine_personalityengine_processexplicittag",
+      "src_ai_personalityengine_personalityengine_processusermessage",
+      "src_ai_personalityengine_personalityengine_setmode",
+      "src_ai_personalityengine_personalityengine_subscribe"
+    ],
+    "12": [
+      "src_vrm_expressionmanager_expressionmanager",
+      "src_vrm_expressionmanager_expressionmanager_bindmodel",
+      "src_vrm_expressionmanager_expressionmanager_constructor",
+      "src_vrm_expressionmanager_expressionmanager_easeinoutcubic",
+      "src_vrm_expressionmanager_expressionmanager_getexpressionvalue",
+      "src_vrm_expressionmanager_expressionmanager_getmanager",
+      "src_vrm_expressionmanager_expressionmanager_setemotion",
+      "src_vrm_expressionmanager_expressionmanager_setemotionwithautoreset",
+      "src_vrm_expressionmanager_expressionmanager_setexpressionvalue",
+      "src_vrm_expressionmanager_expressionmanager_update"
+    ],
+    "13": [
+      "src_vrm_lipsyncengine_lipsyncengine",
+      "src_vrm_lipsyncengine_lipsyncengine_connectmediaelement",
+      "src_vrm_lipsyncengine_lipsyncengine_constructor",
+      "src_vrm_lipsyncengine_lipsyncengine_getmanager",
+      "src_vrm_lipsyncengine_lipsyncengine_initaudiocontext",
+      "src_vrm_lipsyncengine_lipsyncengine_onword",
+      "src_vrm_lipsyncengine_lipsyncengine_setblendshape",
+      "src_vrm_lipsyncengine_lipsyncengine_startsyntheticspeech",
+      "src_vrm_lipsyncengine_lipsyncengine_stopsyntheticspeech",
+      "src_vrm_lipsyncengine_lipsyncengine_update"
+    ],
+    "14": [
+      "src_vrm_lifesimulator_lifesimulator",
+      "src_vrm_lifesimulator_lifesimulator_constructor",
+      "src_vrm_lifesimulator_lifesimulator_getmanager",
+      "src_vrm_lifesimulator_lifesimulator_setuplisteners",
+      "src_vrm_lifesimulator_lifesimulator_update",
+      "src_vrm_lifesimulator_lifesimulator_updateblinking",
+      "src_vrm_lifesimulator_lifesimulator_updatebreathing",
+      "src_vrm_lifesimulator_lifesimulator_updategaze",
+      "src_vrm_lifesimulator_lifesimulator_updatesaccades"
+    ],
+    "15": [
+      "vercel",
+      "vercel_rewrites"
+    ]
+  },
+  "cohesion": {
+    "0": 0.07142857142857142,
+    "1": 0.13666666666666666,
+    "2": 0.15789473684210525,
+    "3": 0.1871345029239766,
+    "4": 0.19883040935672514,
+    "5": 0.17543859649122806,
+    "6": 0.2761904761904762,
+    "7": 0.24761904761904763,
+    "8": 0.26373626373626374,
+    "9": 0.2564102564102564,
+    "10": 0.25757575757575757,
+    "11": 0.32727272727272727,
+    "12": 0.4444444444444444,
+    "13": 0.35555555555555557,
+    "14": 0.3888888888888889,
+    "15": 1.0
+  },
+  "gods": [
+    {
+      "id": "src_main_bootstrap",
+      "label": "bootstrap()",
+      "degree": 30
+    },
+    {
+      "id": "src_ai_llmservice_llmservice",
+      "label": "LLMService",
+      "degree": 21
+    },
+    {
+      "id": "src_vrm_vrmmanager_vrmmanager",
+      "label": "VRMManager",
+      "degree": 21
+    },
+    {
+      "id": "src_ai_voiceservice_voiceservice",
+      "label": "VoiceService",
+      "degree": 17
+    },
+    {
+      "id": "src_ui_chatui_chatui",
+      "label": "ChatUI",
+      "degree": 17
+    },
+    {
+      "id": "src_ai_kokoroservice_kokoroservice",
+      "label": "KokoroService",
+      "degree": 13
+    },
+    {
+      "id": "src_ai_personalityengine_personalityengine",
+      "label": "PersonalityEngine",
+      "degree": 13
+    },
+    {
+      "id": "src_vrm_animationengine_animationengine",
+      "label": "AnimationEngine",
+      "degree": 13
+    },
+    {
+      "id": "src_vrm_expressionmanager_expressionmanager",
+      "label": "ExpressionManager",
+      "degree": 12
+    },
+    {
+      "id": "src_vrm_lipsyncengine_lipsyncengine",
+      "label": "LipSyncEngine",
+      "degree": 12
+    }
+  ],
+  "surprises": [
+    {
+      "source": "bootstrap()",
+      "target": "VoiceService",
+      "source_files": [
+        "src/main.js",
+        "src/ai/VoiceService.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "bootstrap()",
+      "target": "PersonalityEngine",
+      "source_files": [
+        "src/main.js",
+        "src/ai/PersonalityEngine.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "bootstrap()",
+      "target": "ExpressionManager",
+      "source_files": [
+        "src/main.js",
+        "src/vrm/ExpressionManager.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "bootstrap()",
+      "target": "LipSyncEngine",
+      "source_files": [
+        "src/main.js",
+        "src/vrm/LipSyncEngine.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    },
+    {
+      "source": "bootstrap()",
+      "target": "LifeSimulator",
+      "source_files": [
+        "src/main.js",
+        "src/vrm/LifeSimulator.js"
+      ],
+      "confidence": "EXTRACTED",
+      "relation": "calls",
+      "why": "bridges separate communities"
+    }
+  ],
+  "questions": [
+    {
+      "type": "bridge_node",
+      "question": "Why does `bootstrap()` connect `Community 4` to `Community 1`, `Community 2`, `Community 3`, `Community 5`, `Community 6`, `Community 7`, `Community 8`, `Community 11`, `Community 12`, `Community 13`, `Community 14`?",
+      "why": "High betweenness centrality (0.251) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `three` connect `Community 2` to `Community 0`, `Community 7`?",
+      "why": "High betweenness centrality (0.182) - this node is a cross-community bridge."
+    },
+    {
+      "type": "bridge_node",
+      "question": "Why does `LLMService` connect `Community 3` to `Community 8`, `Community 2`, `Community 4`?",
+      "why": "High betweenness centrality (0.130) - this node is a cross-community bridge."
+    },
+    {
+      "type": "verify_inferred",
+      "question": "Are the 16 inferred relationships involving `bootstrap()` (e.g. with `main.js` and `.setMemoryService()`) actually correct?",
+      "why": "`bootstrap()` has 16 INFERRED edges - model-reasoned connections that need verification."
+    },
+    {
+      "type": "isolated_nodes",
+      "question": "What connects `UserMemory`, `config`, `DEFAULT_MEMORY` to the rest of the system?",
+      "why": "25 weakly-connected nodes found - possible documentation gaps or missing edges."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 0` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.07142857142857142 - nodes in this community are weakly interconnected."
+    },
+    {
+      "type": "low_cohesion",
+      "question": "Should `Community 1` be split into smaller, more focused modules?",
+      "why": "Cohesion score 0.13666666666666666 - nodes in this community are weakly interconnected."
+    }
+  ]
+}
