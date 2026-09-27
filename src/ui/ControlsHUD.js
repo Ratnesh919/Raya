@@ -43,9 +43,10 @@ export class ControlsHUD {
     });
 
     this.fileInputEl.addEventListener('change', async (e) => {
-      const file = e.target.files?.[0];
-      if (file) {
-        await this.loadModelWithLoader(file);
+      const files = Array.from(e.target.files || []);
+      if (files.length > 0) {
+        const payload = files.length > 1 ? files : files[0];
+        await this.loadModelWithLoader(payload);
       }
     });
 
@@ -60,7 +61,6 @@ export class ControlsHUD {
         this.btnCameraEl.title = isFull ? 'Switch to Portrait (Close-up)' : 'Switch to Full Body';
       });
     }
-
 
     // Emotion chips
     document.querySelectorAll('[data-emotion]').forEach((el) => {
@@ -79,19 +79,34 @@ export class ControlsHUD {
 
     window.addEventListener('drop', async (e) => {
       e.preventDefault();
-      const file = e.dataTransfer?.files?.[0];
-      if (file && (file.name.endsWith('.vrm') || file.name.endsWith('.glb'))) {
-        await this.loadModelWithLoader(file);
+      const files = Array.from(e.dataTransfer?.files || []);
+      const mainFile = files.find((f) => {
+        const n = f.name.toLowerCase();
+        return n.endsWith('.fbx') || n.endsWith('.vrm') || n.endsWith('.glb');
+      });
+
+      if (mainFile) {
+        const payload = files.length > 1 ? files : mainFile;
+        await this.loadModelWithLoader(payload);
       }
     });
   }
 
   async loadModelWithLoader(urlOrFile) {
-    this.showLoading(typeof urlOrFile === 'string' ? 'Loading 3D Model...' : 'Processing VRM File...');
+    let loadingMsg = 'Initializing 3D Avatar...';
+    if (typeof urlOrFile === 'string') {
+      loadingMsg = urlOrFile.toLowerCase().includes('.fbx') ? 'Loading FBX Model & Textures...' : 'Loading 3D VRM Model...';
+    } else if (Array.isArray(urlOrFile)) {
+      loadingMsg = 'Processing FBX Model & Texture Assets...';
+    } else if (urlOrFile instanceof File) {
+      loadingMsg = urlOrFile.name.toLowerCase().endsWith('.fbx') ? 'Processing FBX Model...' : 'Processing VRM File...';
+    }
+
+    this.showLoading(loadingMsg);
     try {
       await this.vrmManager.loadModel(urlOrFile);
     } catch (err) {
-      alert('Failed to load VRM model: ' + err.message);
+      alert('Failed to load 3D model: ' + err.message);
     } finally {
       this.hideLoading();
     }

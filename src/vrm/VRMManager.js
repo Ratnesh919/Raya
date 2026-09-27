@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { VRMLoaderPlugin, VRMUtils } from '@pixiv/three-vrm';
+import { FBXAvatarLoader } from './FBXAvatarLoader.js';
 
 export class VRMManager {
   constructor(canvas) {
@@ -8,6 +9,7 @@ export class VRMManager {
     this.currentVrm = null;
     this.currentModelUrl = null;
     this.isLoading = false;
+    this.fbxAvatarLoader = new FBXAvatarLoader();
 
     // Visual adjustment settings matching user configuration (70% skin, 50% hair, 55% lighting)
     if (!localStorage.getItem('raya_visual_defaults_v5')) {
@@ -507,71 +509,104 @@ export class VRMManager {
     this.isLoading = true;
 
     try {
-      let url = urlOrFile;
-      if (urlOrFile instanceof File) {
-        url = URL.createObjectURL(urlOrFile);
-      }
+      const isFBX =
+        (Array.isArray(urlOrFile) && urlOrFile.some((f) => f.name?.toLowerCase().endsWith('.fbx'))) ||
+        (urlOrFile instanceof File && urlOrFile.name.toLowerCase().endsWith('.fbx')) ||
+        (typeof urlOrFile === 'string' && urlOrFile.toLowerCase().includes('.fbx'));
 
-      if (this.onLoadProgress) {
-        this.onLoadProgress(10, 'Initializing 3D neural assets...');
-      }
+      let vrm = null;
 
-      const loader = new GLTFLoader();
-      loader.register((parser) => new VRMLoaderPlugin(parser));
+      if (isFBX) {
+        if (this.onLoadProgress) {
+          this.onLoadProgress(15, 'Initializing FBX neural avatar...');
+        }
+        vrm = await this.fbxAvatarLoader.load(urlOrFile, {
+          onProgress: (pct, msg) => {
+            if (this.onLoadProgress) this.onLoadProgress(pct, msg);
+          }
+        });
+      } else {
+        let url = urlOrFile;
+        if (urlOrFile instanceof File) {
+          url = URL.createObjectURL(urlOrFile);
+        }
 
-      let simulatedPct = 12;
-      const gltf = await new Promise((resolve, reject) => {
-        loader.load(
-          url,
-          (g) => {
-            if (this.onLoadProgress) {
-              this.onLoadProgress(90, 'Compiling shaders & spring bones...');
-            }
-            resolve(g);
-          },
-          (progress) => {
-            if (this.onLoadProgress) {
-              if (progress.total > 0) {
-                const pct = Math.min(88, Math.round((progress.loaded / progress.total) * 88));
-                this.onLoadProgress(pct, `Downloading model assets (${pct}%)...`);
-              } else {
-                simulatedPct = Math.min(85, simulatedPct + 6);
-                this.onLoadProgress(simulatedPct, `Downloading character neural mesh (${simulatedPct}%)...`);
+        if (this.onLoadProgress) {
+          this.onLoadProgress(10, 'Initializing 3D neural assets...');
+        }
+
+        const loader = new GLTFLoader();
+        loader.register((parser) => new VRMLoaderPlugin(parser));
+
+        let simulatedPct = 12;
+        const gltf = await new Promise((resolve, reject) => {
+          loader.load(
+            url,
+            (g) => {
+              if (this.onLoadProgress) {
+                this.onLoadProgress(90, 'Compiling shaders & spring bones...');
               }
-            }
-          },
-          (err) => reject(err)
-        );
-      });
+              resolve(g);
+            },
+            (progress) => {
+              if (this.onLoadProgress) {
+                if (progress.total > 0) {
+                  const pct = Math.min(88, Math.round((progress.loaded / progress.total) * 88));
+                  this.onLoadProgress(pct, `Downloading model assets (${pct}%)...`);
+                } else {
+                  simulatedPct = Math.min(85, simulatedPct + 6);
+                  this.onLoadProgress(simulatedPct, `Downloading character neural mesh (${simulatedPct}%)...`);
+                }
+              }
+            },
+            (err) => reject(err)
+          );
+        });
 
-      const vrm = gltf.userData.vrm;
-      if (!vrm) {
-        throw new Error('GLTF loaded is not a valid VRM model.');
-      }
+        vrm = gltf.userData.vrm;
+        if (!vrm) {
+          throw new Error('GLTF loaded is not a valid VRM model.');
+        }
 
-      if (this.onLoadProgress) {
-        this.onLoadProgress(95, 'Optimizing humanoid skeleton...');
-      }
+        if (this.onLoadProgress) {
+          this.onLoadProgress(95, 'Optimizing humanoid skeleton...');
+        }
 
-      // Optimize VRM performance & orientation (matching My Portfolio VRMCharacterEngine)
-      VRMUtils.removeUnnecessaryVertices(gltf.scene);
-      VRMUtils.removeUnnecessaryJoints(gltf.scene);
-      if (VRMUtils?.rotateVRM0) {
-        VRMUtils.rotateVRM0(vrm);
+        // Optimize VRM performance & orientation (matching My Portfolio VRMCharacterEngine)
+        VRMUtils.removeUnnecessaryVertices(gltf.scene);
+        VRMUtils.removeUnnecessaryJoints(gltf.scene);
+        if (VRMUtils?.rotateVRM0) {
+          VRMUtils.rotateVRM0(vrm);
+        }
       }
 
       // Clean up previous model if any
       if (this.currentVrm) {
         this.scene.remove(this.currentVrm.scene);
-        VRMUtils.deepDispose(this.currentVrm.scene);
+        if (this.currentVrm.isFBX) {
+          this.currentVrm.scene.traverse((obj) => {
+            if (obj.geometry) obj.geometry.dispose();
+            if (obj.material) {
+              const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+              mats.forEach((m) => {
+                if (m.map) m.map.dispose();
+                m.dispose();
+              });
+            }
+          });
+        } else {
+          VRMUtils.deepDispose(this.currentVrm.scene);
+        }
       }
 
       this.currentVrm = vrm;
-      this.currentModelUrl = url;
+      this.currentModelUrl = typeof urlOrFile === 'string' ? urlOrFile : (vrm.meta?.title || 'Custom Avatar');
 
       // Position model: centered, standing on floor, facing user directly
       vrm.scene.position.set(0, 0, 0);
-      vrm.scene.rotation.y = Math.PI; // Face user/camera by default
+      if (!vrm.isFBX) {
+        vrm.scene.rotation.y = Math.PI; // Face user/camera by default
+      }
 
       // Initial natural arm drop so character is not in stiff T-pose
       this.poseRestingArms(vrm);
@@ -612,7 +647,7 @@ export class VRMManager {
       return vrm;
     } catch (err) {
       this.isLoading = false;
-      console.error('Failed to load VRM model:', err);
+      console.error('Failed to load model:', err);
       if (this.onError) this.onError(err);
       throw err;
     }
