@@ -220,6 +220,29 @@ export class FBXAvatarLoader {
       console.warn('[FBXAvatarLoader] VRMHumanoid creation warning:', e);
     }
 
+    // Measure upper arm rest angle relative to horizontal T-pose for A-pose compensation
+    let armCompensationAngle = 0;
+    try {
+      const lUpper = humanBones.leftUpperArm?.node;
+      const lLower = humanBones.leftLowerArm?.node;
+      if (lUpper && lLower) {
+        lUpper.updateWorldMatrix(true, false);
+        lLower.updateWorldMatrix(true, false);
+        const pUpper = new THREE.Vector3();
+        const pLower = new THREE.Vector3();
+        lUpper.getWorldPosition(pUpper);
+        lLower.getWorldPosition(pLower);
+        const vArm = new THREE.Vector3().subVectors(pLower, pUpper);
+        const lenXY = Math.hypot(vArm.x, vArm.y);
+        if (lenXY > 0.001 && vArm.y < -0.05) {
+          // Downward inclination from horizontal (in radians)
+          armCompensationAngle = Math.asin(Math.min(1, Math.max(-1, -vArm.y / lenXY)));
+        }
+      }
+    } catch (e) {
+      console.warn('[FBXAvatarLoader] Could not compute arm rest angle:', e);
+    }
+
     // 3. Texture Binding & Material Setup
     const baseDir = url ? url.substring(0, url.lastIndexOf('/') + 1) : '';
     await this.setupMaterials(asset, baseDir, localTextureFiles);
@@ -246,8 +269,9 @@ export class FBXAvatarLoader {
       scene: wrapperGroup,
       humanoid,
       expressionManager,
+      armCompensationAngle,
       meta: {
-        metaVersion: '0',
+        metaVersion: '1',
         title: url ? url.split('/').pop().replace('.fbx', '') : 'FBX Avatar'
       },
       springBoneManager: {

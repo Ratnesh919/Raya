@@ -442,9 +442,25 @@ export class AnimationEngine {
 
         if (track instanceof THREE.QuaternionKeyframeTrack) {
           const values = track.values.slice();
-          const isVrm0 = this.vrm.meta?.metaVersion === '0';
+          const isVrm0 = !this.vrm.isFBX && this.vrm.meta?.metaVersion === '0';
+
+          // Compensate A-pose to T-pose angle difference for FBX avatars on upper arms
+          const hasArmComp = this.vrm.isFBX && Boolean(this.vrm.armCompensationAngle);
+          let qArmComp = null;
+          if (hasArmComp) {
+            if (vrmBone === 'leftUpperArm') {
+              qArmComp = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), this.vrm.armCompensationAngle);
+            } else if (vrmBone === 'rightUpperArm') {
+              qArmComp = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -this.vrm.armCompensationAngle);
+            }
+          }
+
           for (let i = 0; i < values.length; i += 4) {
-            _qA.fromArray(values, i).premultiply(pRWR).multiply(rRI).toArray(values, i);
+            _qA.fromArray(values, i).premultiply(pRWR).multiply(rRI);
+            if (qArmComp) {
+              _qA.multiply(qArmComp);
+            }
+            _qA.toArray(values, i);
             // Invert coordinate frame for body bones only; finger bones are local to the hand and must NOT be flipped
             if (isVrm0 && !isFinger) {
               values[i] = -values[i];
@@ -459,7 +475,7 @@ export class AnimationEngine {
             )
           );
         } else if (track instanceof THREE.VectorKeyframeTrack) {
-          const isVrm0 = this.vrm.meta?.metaVersion === '0';
+          const isVrm0 = !this.vrm.isFBX && this.vrm.meta?.metaVersion === '0';
           const values = new Float32Array(track.values.length);
           for (let i = 0; i < track.values.length; i += 3) {
             values[i] = (isVrm0 ? -track.values[i] : track.values[i]) * hScale;
