@@ -48,9 +48,9 @@
     "semantic_hash": "8f4a3c62f81356534885aaf69781b02e"
   },
   "src/main.js": {
-    "mtime": 1790253835.4000216,
-    "seen": 1790253882.2161272,
-    "ast_hash": "247617eca7f11ef6379a7073e36aec83",
+    "mtime": 1792657098.8226776,
+    "seen": 1792657274.714377,
+    "ast_hash": "067c82eee1a73316edc12042e1000e8e",
     "semantic_hash": ""
   },
   "src/ui/ChatUI.js": {
@@ -60,9 +60,9 @@
     "semantic_hash": "f7167d7dbbd1586402236d1112cb32a7"
   },
   "src/ui/ControlsHUD.js": {
-    "mtime": 1790514138.1394567,
-    "seen": 1792646970.8382218,
-    "ast_hash": "fff9d53134ae1d84bae9c1463d2f92a3",
+    "mtime": 1792657126.96294,
+    "seen": 1792657274.7143798,
+    "ast_hash": "216fd3958f0ab35042ccea23e96bdb7e",
     "semantic_hash": ""
   },
   "src/ui/LoaderAnimation.js": {
@@ -90,16 +90,16 @@
     "semantic_hash": "df9c2b808bbcafb08414a58e3d293851"
   },
   "src/vrm/ExpressionManager.js": {
-    "mtime": 1790253737.2015502,
-    "seen": 1790253882.2161562,
-    "ast_hash": "bc1a431c7d365e236b1962d252d97d61",
+    "mtime": 1792657072.1122036,
+    "seen": 1792657274.7143855,
+    "ast_hash": "e1dc396451591b3e7609b24cb831f4ed",
     "semantic_hash": ""
   },
   "src/vrm/LifeSimulator.js": {
-    "mtime": 1790167906.650874,
-    "seen": 1790224350.819767,
-    "ast_hash": "bbb657ba7d0bbd59db2557cb814beddb",
-    "semantic_hash": "bbb657ba7d0bbd59db2557cb814beddb"
+    "mtime": 1792656995.9121983,
+    "seen": 1792657274.7143877,
+    "ast_hash": "ed3892b69f09cdd731bfae38be5de778",
+    "semantic_hash": ""
   },
   "src/vrm/LipSyncEngine.js": {
     "mtime": 1790137545.5524106,
@@ -138,9 +138,9 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1790514152.6876118,
-    "seen": 1792646970.8382397,
-    "ast_hash": "07616a4bcf6fef9995d8e2f566c5ea8f",
+    "mtime": 1792657217.2623792,
+    "seen": 1792657274.7143965,
+    "ast_hash": "5b294a97e4ab2738b2a3f8fccff76625",
     "semantic_hash": ""
   },
   "components.json": {

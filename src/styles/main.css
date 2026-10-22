@@ -1501,6 +1501,63 @@ body.drawer-open .bottom-controls,
   box-shadow: 0 0 12px rgba(0, 242, 254, 0.45);
 }
 
+/* ─── REAL-TIME EXPRESSION & FULL-BODY BEHAVIORS QUICK-BAR ──────────────── */
+.expressions-quick-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.75rem;
+  margin-bottom: 0.55rem;
+  border-radius: 9999px;
+  background: rgba(13, 17, 34, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 15px rgba(0, 242, 254, 0.1);
+  overflow-x: auto;
+  max-width: 95vw;
+  scrollbar-width: none;
+}
+
+.expressions-quick-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.expr-quick-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  color: #f1f5f9;
+  border-radius: 9999px;
+  padding: 0.32rem 0.72rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  user-select: none;
+}
+
+.expr-quick-btn:hover {
+  background: rgba(168, 85, 247, 0.3);
+  border-color: rgba(168, 85, 247, 0.65);
+  color: #ffffff;
+  transform: translateY(-1.5px);
+  box-shadow: 0 4px 14px rgba(168, 85, 247, 0.3);
+}
+
+.expr-quick-btn:active,
+.expr-quick-btn.active {
+  background: linear-gradient(135deg, rgba(0, 242, 254, 0.5), rgba(168, 85, 247, 0.6));
+  border-color: var(--accent-cyan);
+  color: #ffffff;
+  transform: scale(0.96);
+  box-shadow: 0 0 14px rgba(0, 242, 254, 0.6);
+}
+
 /* ─── SELECT DROPDOWN DARKENING & READABILITY FIX ────────────────────────── */
 select, select option {
   background-color: #1a1235 !important;

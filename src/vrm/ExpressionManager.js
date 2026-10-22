@@ -28,6 +28,7 @@ export class ExpressionManager {
     this.transitionProgress = 0;
     this.blendDuration = 0.35; // smooth natural transition in seconds
 
+    this.lifeSimulator = null;
     this.currentValues = new Map();
     this.targetValues = new Map();
     this.resetTimer = null;
@@ -37,9 +38,11 @@ export class ExpressionManager {
       neutral: {},
       happy: { happy: 0.85, relaxed: 0.85 },
       joy: { happy: 0.95, relaxed: 0.95 },
-      caring: { sad: 0.45, relaxed: 0.45 },
+      caring: { sad: 0.50, relaxed: 0.45 },
+      concern: { sad: 0.65, relaxed: 0.25, angry: 0.15 },
+      shy: { blush: 0.95, happy: 0.45, relaxed: 0.40 },
       console: { sad: 0.55, relaxed: 0.35 },
-      empathy: { sad: 0.45, relaxed: 0.35 },
+      empathy: { sad: 0.50, relaxed: 0.35 },
       advice: { relaxed: 0.50, surprised: 0.25 },
       surprised: { surprised: 0.85 },
       sad: { sad: 0.85 },
@@ -51,10 +54,10 @@ export class ExpressionManager {
       curiosity: { surprised: 0.65, relaxed: 0.35 },
       amusement: { happy: 0.80, relaxed: 0.80 },
       admiration: { relaxed: 0.50, happy: 0.50, surprised: 0.20 },
-      love: { blush: 0.85, happy: 0.70, relaxed: 0.70 },
+      love: { blush: 0.85, happy: 0.75, relaxed: 0.70 },
       gratitude: { relaxed: 0.60, happy: 0.70 },
       optimism: { happy: 0.75, relaxed: 0.75 },
-      embarrassment: { blush: 0.85, wink: 0.50, happy: 0.40, relaxed: 0.40 },
+      embarrassment: { blush: 0.95, happy: 0.40, relaxed: 0.40 },
       disappointment: { sad: 0.65, angry: 0.20 },
       confusion: { surprised: 0.50, angry: 0.15 }
     };
@@ -146,7 +149,7 @@ export class ExpressionManager {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
-  setEmotion(name, intensity = 1.0) {
+  setEmotion(name, intensity = 1.0, syncBehavior = true) {
     const manager = this.getManager();
     if (!manager) return;
 
@@ -171,12 +174,24 @@ export class ExpressionManager {
       const targetVal = preset[key] !== undefined ? preset[key] * THREE.MathUtils.clamp(intensity, 0, 1) : 0;
       this.targetValues.set(key, targetVal);
     });
+
+    if (syncBehavior && this.lifeSimulator && typeof this.lifeSimulator.triggerBehavior === 'function') {
+      const cleanName = (name || '').toLowerCase().trim();
+      if (['shy', 'concern', 'caring', 'empathy', 'console', 'love', 'admiration', 'think', 'curiosity'].includes(cleanName)) {
+        this.lifeSimulator.triggerBehavior(cleanName, 5.0);
+      } else if (cleanName === 'neutral') {
+        this.lifeSimulator.clearBehavior();
+      }
+    }
   }
 
   setEmotionWithAutoReset(name, resetAfterMs = 4500, intensity = 1.0) {
-    this.setEmotion(name, intensity);
+    this.setEmotion(name, intensity, true);
+    if (this.lifeSimulator && typeof this.lifeSimulator.triggerBehavior === 'function') {
+      this.lifeSimulator.triggerBehavior(name, resetAfterMs / 1000);
+    }
     this.resetTimer = setTimeout(() => {
-      this.setEmotion('neutral');
+      this.setEmotion('neutral', 1.0, true);
       this.resetTimer = null;
     }, resetAfterMs);
   }

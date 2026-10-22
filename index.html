@@ -58,7 +58,7 @@
             <option value="/models/CamellyaV1.vrm">Camellya</option>
             <option value="/models/yangyang.vrm">Yangyang</option>
             <option value="/models/yinlin.vrm">Yinlin</option>
-            <option value="/models/Cantarella/Cantarella.fbx">Cantarella (FBX)</option>
+            <option value="/models/Cantarella.vrm">Cantarella</option>
             <option value="custom">+ Load Custom 3D Model...</option>
           </select>
 
@@ -155,13 +155,14 @@
             <div style="display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 6px;">
               <span>🎭 Facial Expressions</span>
             </div>
-            <div class="emotion-chips-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;">
+            <div class="emotion-chips-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;">
+              <button class="emotion-chip-btn" data-emotion="shy" type="button">😳 Shy (Tilt & Peek)</button>
+              <button class="emotion-chip-btn" data-emotion="concern" type="button">🥺 Concern (Lean)</button>
+              <button class="emotion-chip-btn" data-emotion="love" type="button">💖 Love (Soft Gaze)</button>
               <button class="emotion-chip-btn" data-emotion="happy" type="button">😊 Happy</button>
+              <button class="emotion-chip-btn" data-emotion="think" type="button">🤔 Think (Look Up)</button>
               <button class="emotion-chip-btn" data-emotion="wink" type="button">😉 Wink</button>
               <button class="emotion-chip-btn" data-emotion="surprised" type="button">😮 Surprise</button>
-              <button class="emotion-chip-btn" data-emotion="blush" type="button">😳 Blush</button>
-              <button class="emotion-chip-btn" data-emotion="caring" type="button">🥺 Caring</button>
-              <button class="emotion-chip-btn" data-emotion="love" type="button">💖 Love</button>
               <button class="emotion-chip-btn" data-emotion="sad" type="button">😢 Sad</button>
               <button class="emotion-chip-btn" data-emotion="angry" type="button">😠 Angry</button>
               <button class="emotion-chip-btn" data-emotion="neutral" type="button">😐 Reset</button>
@@ -176,6 +177,17 @@
 
       <!-- BOTTOM CONTROL HUD & CHAT DOCK -->
       <footer class="bottom-controls">
+        <!-- REAL-TIME EXPRESSIONS & FULL-BODY BEHAVIORS QUICK-BAR -->
+        <div class="expressions-quick-bar glass-card interactive" title="Click to trigger real-time human expressions and body movements">
+          <button class="expr-quick-btn" data-emotion="shy" type="button" title="Shy: Head & body tilt, look away down, then peek back up at you">😳 Shy</button>
+          <button class="expr-quick-btn" data-emotion="concern" type="button" title="Concern: Empathetic head tilt, active listening body lean">🥺 Concern</button>
+          <button class="expr-quick-btn" data-emotion="love" type="button" title="Love: Gentle head tilt, soft bedroom eyes, deep calm breathing">💖 Love</button>
+          <button class="expr-quick-btn" data-emotion="happy" type="button" title="Happy: Joyful Duchenne smile">😊 Happy</button>
+          <button class="expr-quick-btn" data-emotion="think" type="button" title="Think: Head tilt up, eyes look away thinking">🤔 Think</button>
+          <button class="expr-quick-btn" data-emotion="wink" type="button" title="Wink: Playful eye wink">😉 Wink</button>
+          <button class="expr-quick-btn" data-emotion="neutral" type="button" title="Reset: Return to natural eye contact and idle tracking">😐 Reset</button>
+        </div>
+
         <!-- CHAT INPUT DOCK -->
         <div class="chat-dock glass-card interactive">
           <input

@@ -20,5 +20,6 @@
   "18": "dependencies",
   "19": "MemoryService",
   "20": "lib/utils.ts",
-  "21": "src/lib/utils.ts"
+  "21": "src/lib/utils.ts",
+  "22": "KokoroService"
 }

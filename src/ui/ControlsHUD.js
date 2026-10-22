@@ -1,10 +1,11 @@
 import { LoaderAnimation } from './LoaderAnimation.js';
 
 export class ControlsHUD {
-  constructor({ vrmManager, animationEngine, expressionManager }) {
+  constructor({ vrmManager, animationEngine, expressionManager, lifeSimulator }) {
     this.vrmManager = vrmManager;
     this.animationEngine = animationEngine;
     this.expressionManager = expressionManager;
+    this.lifeSimulator = lifeSimulator;
 
     this.modelSelectEl = document.getElementById('model-select');
     this.fileInputEl = document.getElementById('file-input-vrm');
@@ -62,10 +63,17 @@ export class ControlsHUD {
       });
     }
 
-    // Emotion chips
+    // Emotion & Behavioral Movement Chips
     document.querySelectorAll('[data-emotion]').forEach((el) => {
       el.addEventListener('click', (e) => {
         const emotion = el.getAttribute('data-emotion');
+        document.querySelectorAll('[data-emotion]').forEach((b) => b.classList.remove('active'));
+        el.classList.add('active');
+        setTimeout(() => el.classList.remove('active'), 4500);
+
+        if (this.lifeSimulator && typeof this.lifeSimulator.triggerBehavior === 'function') {
+          this.lifeSimulator.triggerBehavior(emotion, 5.0);
+        }
         this.expressionManager.setEmotionWithAutoReset(emotion, 5000);
       });
     });

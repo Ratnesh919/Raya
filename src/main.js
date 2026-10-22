@@ -25,8 +25,13 @@ async function bootstrap() {
   const animationEngine = new AnimationEngine(vrmManager);
   const expressionManager = new ExpressionManager(vrmManager);
   const lipSyncEngine = new LipSyncEngine(vrmManager);
-  const lifeSimulator = new LifeSimulator(vrmManager);
+  const lifeSimulator = new LifeSimulator(vrmManager, expressionManager);
   const chestPhysics = new ChestPhysics(vrmManager);
+
+  // Link lifeSimulator & expressionManager across subsystems
+  expressionManager.lifeSimulator = lifeSimulator;
+  vrmManager.expressionManager = expressionManager;
+  vrmManager.lifeSimulator = lifeSimulator;
 
   // 2. AI, Voice, Netlify Database Memory & Flexible Personality Services
   const personalityEngine = new PersonalityEngine();
@@ -54,7 +59,8 @@ async function bootstrap() {
   const controlsHUD = new ControlsHUD({
     vrmManager,
     animationEngine,
-    expressionManager
+    expressionManager,
+    lifeSimulator
   });
 
   const settingsModal = new SettingsModal({
@@ -63,15 +69,18 @@ async function bootstrap() {
     personalityEngine
   });
 
-  // Attach to window for diagnostics and runtime access
+  // Attach to window for diagnostics, real-time expression triggers, and runtime access
   window.Raya = {
     vrmManager,
     animationEngine,
     expressionManager,
+    lifeSimulator,
     chestPhysics,
     personalityEngine,
     chatUI,
-    controlsHUD
+    controlsHUD,
+    triggerBehavior: (name, duration = 4.5) => lifeSimulator.triggerBehavior(name, duration),
+    setEmotion: (name, dur = 5000) => expressionManager.setEmotionWithAutoReset(name, dur)
   };
 
   // 4. Main Render Loop
