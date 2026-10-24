@@ -1,7 +1,7 @@
 import { PERSONALITY_PROFILES } from '../ai/PersonalityEngine.js';
 
 export class ChatUI {
-  constructor({ llmService, voiceService, expressionManager, animationEngine, vrmManager, memoryService, personalityEngine }) {
+  constructor({ llmService, voiceService, expressionManager, animationEngine, vrmManager, memoryService, personalityEngine, lifeSimulator }) {
     this.llmService = llmService;
     this.voiceService = voiceService;
     this.expressionManager = expressionManager;
@@ -9,6 +9,7 @@ export class ChatUI {
     this.vrmManager = vrmManager;
     this.memoryService = memoryService;
     this.personalityEngine = personalityEngine;
+    this.lifeSimulator = lifeSimulator;
 
     this.chatDrawerEl = document.getElementById('chat-drawer');
     this.messagesListEl = document.getElementById('messages-list');
@@ -81,10 +82,24 @@ export class ChatUI {
     this.voiceService.onSpeechStatus = (status) => {
       if (status === 'listening') {
         this.micBtnEl?.classList.add('listening');
+        this.lifeSimulator?.startListening();
       } else {
         this.micBtnEl?.classList.remove('listening');
+        if (status !== 'speaking') {
+          this.lifeSimulator?.stopListening();
+        }
       }
     };
+
+    // Chat input focus listeners for active listening instinct
+    this.chatInputEl?.addEventListener('focus', () => {
+      this.lifeSimulator?.startListening();
+    });
+    this.chatInputEl?.addEventListener('blur', () => {
+      if (!this.isProcessing) {
+        this.lifeSimulator?.stopListening();
+      }
+    });
 
     this.voiceService.onInterimTranscript = (text) => {
       if (text) {
@@ -103,6 +118,7 @@ export class ChatUI {
     if (!text || this.isProcessing) return;
 
     this.isProcessing = true;
+    this.lifeSimulator?.startListening();
     this.chatInputEl.value = '';
 
     // Automatically detect and adapt personality based on user conversation
@@ -205,6 +221,7 @@ export class ChatUI {
       }
     } finally {
       this.isProcessing = false;
+      this.lifeSimulator?.stopListening();
     }
   }
 

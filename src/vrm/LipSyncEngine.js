@@ -8,6 +8,9 @@ const VISEME_ALIASES = {
   ou: ['ou', 'u', 'U', 'OU', 'vrc.v_ou', 'viseme_ou', 'Fcl_MTH_U', 'mouth_u', 'Mouth_U']
 };
 
+// Bilabial consonants requiring complete lip closure (open-annie mouth.js)
+const BILABIAL_REGEX = /^[pbm\u092A\u092B\u092C\u092D\u092E\u09AA\u09AB\u09AC\u09AD\u09AE]/i;
+
 export class LipSyncEngine {
   constructor(vrmManager) {
     this.vrmManager = vrmManager;
@@ -27,6 +30,15 @@ export class LipSyncEngine {
     this.speechCadence = 19.0; // ~3.0 Hz natural conversational syllable rhythm
     this.lastWordTime = 0;
 
+    // Open-Annie bilabial closures (fast closure for plosives: P, B, M)
+    this.bilabialClosureTimer = 0;
+    this.bilabialDuration = 0.055; // 55ms closure
+
+    // Speech energy & co-speech metrics for LifeSimulator
+    this.speechEnergy = 0.0;
+    this.isStressedSyllable = false;
+    this.stressDecay = 0.0;
+
     // Smoothed blendshape weights
     this.weights = {
       aa: 0,
@@ -36,14 +48,18 @@ export class LipSyncEngine {
       ou: 0
     };
 
-    // Soft-tissue lip damping parameters (calm, organic, realistic)
-    this.attack = 18.0;
-    this.release = 14.0;
+    // Soft-tissue lip damping parameters
+    this.attack = 22.0;
+    this.release = 15.0;
 
     this.vrmManager.addModelLoadedListener((vrm) => {
       this.vrm = vrm;
       this._cachedTargets = null;
     });
+  }
+
+  get isSpeaking() {
+    return this.isAudioActive || this.isSyntheticSpeaking;
   }
 
   getManager() {
@@ -128,14 +144,19 @@ export class LipSyncEngine {
 
   /**
    * Called on every spoken word from TTS onboundary events.
-   * Matches mouth vowel shapes and timings directly to the actual words being voiced.
+   * Matches mouth vowel shapes and triggers bilabial closure for P, B, M.
    */
   onWord(word = '') {
     this.isSyntheticSpeaking = true;
     this.lastWordTime = performance.now();
 
-    const clean = (word || '').toLowerCase();
+    const clean = (word || '').toLowerCase().trim();
     if (!clean) return;
+
+    // Check for bilabial plosive onset (P, B, M) -> instant closure
+    if (BILABIAL_REGEX.test(clean)) {
+      this.bilabialClosureTimer = this.bilabialDuration;
+    }
 
     let aa = 0, ee = 0, ih = 0, oh = 0, ou = 0;
 
@@ -157,14 +178,15 @@ export class LipSyncEngine {
 
     const total = aa + ee + ih + oh + ou;
     if (total === 0) {
-      // Consonants or short function words: natural open jaw balance
+      // Consonants or short function words: natural relaxed open jaw balance
       this.targetVowels = {
-        aa: 0.40,
-        ee: 0.25,
+        aa: 0.38,
+        ee: 0.22,
         ih: 0.15,
         oh: 0.15,
         ou: 0.10
       };
+      this.speechEnergy = 0.40;
     } else {
       // Normalized vowel weighting tailored to the spoken word
       this.targetVowels = {
@@ -174,6 +196,12 @@ export class LipSyncEngine {
         oh: (oh / total) * 0.80,
         ou: (ou / total) * 0.65
       };
+      this.speechEnergy = Math.min(1.0, 0.45 + (total / clean.length) * 0.55);
+      // Trigger syllable stress on words with prominent vowel content
+      if (total >= 2.0) {
+        this.isStressedSyllable = true;
+        this.stressDecay = 0.25; // 250ms duration
+      }
     }
   }
 
@@ -184,6 +212,7 @@ export class LipSyncEngine {
     if (!this.targetVowels) {
       this.targetVowels = { aa: 0.45, ee: 0.25, ih: 0.15, oh: 0.20, ou: 0.15 };
     }
+    this.speechEnergy = 0.5;
   }
 
   stopSyntheticSpeech() {
@@ -191,6 +220,8 @@ export class LipSyncEngine {
     this.isAudioActive = false;
     this.speechStartTime = 0;
     this.lastWordTime = 0;
+    this.speechEnergy = 0;
+    this.isStressedSyllable = false;
     this.targetVowels = null;
     this.weights.aa = 0;
     this.weights.ee = 0;
@@ -212,7 +243,22 @@ export class LipSyncEngine {
     const manager = this.getManager();
     if (!manager) return;
 
-    // Early exit when completely silent and mouth is fully closed (saves ~300 blendshape lookups/sec)
+    // Decay syllable stress pulse
+    if (this.stressDecay > 0) {
+      this.stressDecay -= delta;
+      if (this.stressDecay <= 0) {
+        this.isStressedSyllable = false;
+      }
+    }
+
+    // Decay bilabial closure timer
+    let inBilabialClosure = false;
+    if (this.bilabialClosureTimer > 0) {
+      this.bilabialClosureTimer -= delta;
+      inBilabialClosure = true;
+    }
+
+    // Early exit when completely silent and mouth is fully closed
     if (!this.isAudioActive && !this.isSyntheticSpeaking) {
       if (
         this.weights.aa === 0 &&
@@ -242,6 +288,7 @@ export class LipSyncEngine {
       }
       const avg = sum / this.dataArray.length;
       const vol = THREE.MathUtils.clamp(avg / 128, 0, 1);
+      this.speechEnergy = vol;
 
       if (vol > 0.04) {
         hasAudioVolume = true;
@@ -257,53 +304,77 @@ export class LipSyncEngine {
         for (let i = 48; i < 90; i++) highSum += this.dataArray[i];
         const high = highSum / 42 / 255;
 
+        // Vowel aperture modulated by audio volume
         targetAa = Math.min(low * 1.4, 0.85);
         targetOh = Math.min(low * 0.7 + mid * 0.35, 0.70);
         targetEe = Math.min(mid * 1.0 + high * 0.4, 0.75);
         targetIh = Math.min(mid * 0.7, 0.55);
         targetOu = Math.min(high * 0.8 + low * 0.25, 0.60);
+
+        if (vol > 0.5) {
+          this.isStressedSyllable = true;
+          this.stressDecay = 0.15;
+        }
       }
     }
 
     // 2. Synthetic Speech Mode (Web Speech API & continuous phonation fallback)
     if (!hasAudioVolume && this.isSyntheticSpeaking) {
       const now = performance.now();
-      // Generous 25-second absolute timeout to protect against frozen browser threads
+      // 25-second absolute timeout protection
       if (this.speechStartTime && now - this.speechStartTime > 25000) {
         this.stopSyntheticSpeech();
       } else {
         // Active speaking: drive vowels by syllable cadence and harmonic rhythm
         this.speechPhase += delta * this.speechCadence;
-        const jawCycle = 0.5 + 0.5 * Math.sin(this.speechPhase);
-        const harmonic = 0.10 * Math.sin(this.speechPhase * 0.4 + 0.8);
-        const jawAperture = THREE.MathUtils.clamp(0.24 + 0.54 * jawCycle + harmonic, 0.18, 0.85);
 
-        // Organic vowel modulation to articulate natural syllable shapes even when mobile browsers drop onboundary
-        const vCycle = (this.speechPhase * 0.35) % (Math.PI * 2);
-        const aaMod = 0.40 + 0.25 * Math.sin(vCycle);
-        const eeMod = 0.25 + 0.15 * Math.sin(vCycle + 1.2);
-        const ohMod = 0.25 + 0.18 * Math.cos(vCycle);
-        const ihMod = 0.18 + 0.10 * Math.sin(vCycle + 2.4);
-        const ouMod = 0.15 + 0.10 * Math.cos(vCycle + 1.8);
-
-        if (this.targetVowels) {
-          targetAa = this.targetVowels.aa * jawAperture;
-          targetEe = this.targetVowels.ee * jawAperture;
-          targetIh = this.targetVowels.ih * jawAperture;
-          targetOh = this.targetVowels.oh * jawAperture;
-          targetOu = this.targetVowels.ou * jawAperture;
+        // Bilabial plosive closure: clamp jaw and vowel aperture completely to 0
+        if (inBilabialClosure) {
+          targetAa = 0;
+          targetEe = 0;
+          targetIh = 0;
+          targetOh = 0;
+          targetOu = 0;
         } else {
-          targetAa = aaMod * jawAperture;
-          targetEe = eeMod * jawAperture;
-          targetIh = ihMod * jawAperture;
-          targetOh = ohMod * jawAperture;
-          targetOu = ouMod * jawAperture;
+          // Pause between words: If > 300ms since last word boundary, ease mouth closed
+          const timeSinceWord = now - this.lastWordTime;
+          const isPaused = timeSinceWord > 300;
+          const pauseFactor = isPaused ? Math.max(0, 1.0 - (timeSinceWord - 300) / 250) : 1.0;
+
+          const jawCycle = 0.5 + 0.5 * Math.sin(this.speechPhase);
+          const harmonic = 0.10 * Math.sin(this.speechPhase * 0.4 + 0.8);
+          const jawAperture = THREE.MathUtils.clamp(0.24 + 0.54 * jawCycle + harmonic, 0.18, 0.85) * pauseFactor;
+
+          // Organic vowel modulation
+          const vCycle = (this.speechPhase * 0.35) % (Math.PI * 2);
+          const aaMod = 0.40 + 0.25 * Math.sin(vCycle);
+          const eeMod = 0.25 + 0.15 * Math.sin(vCycle + 1.2);
+          const ohMod = 0.25 + 0.18 * Math.cos(vCycle);
+          const ihMod = 0.18 + 0.10 * Math.sin(vCycle + 2.4);
+          const ouMod = 0.15 + 0.10 * Math.cos(vCycle + 1.8);
+
+          if (this.targetVowels) {
+            targetAa = this.targetVowels.aa * jawAperture;
+            targetEe = this.targetVowels.ee * jawAperture;
+            targetIh = this.targetVowels.ih * jawAperture;
+            targetOh = this.targetVowels.oh * jawAperture;
+            targetOu = this.targetVowels.ou * jawAperture;
+          } else {
+            targetAa = aaMod * jawAperture;
+            targetEe = eeMod * jawAperture;
+            targetIh = ihMod * jawAperture;
+            targetOh = ohMod * jawAperture;
+            targetOu = ouMod * jawAperture;
+          }
         }
       }
     }
 
+    // Faster attack during bilabials to achieve crisp human lip plosives
+    const activeAttack = inBilabialClosure ? 40.0 : this.attack;
+
     const smoothViseme = (curr, target) => {
-      const rate = target > curr ? this.attack : this.release;
+      const rate = target > curr ? activeAttack : this.release;
       const factor = 1 - Math.exp(-rate * delta);
       const val = curr + (target - curr) * factor;
       return val < 0.005 ? 0 : val;

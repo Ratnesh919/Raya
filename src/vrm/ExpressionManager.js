@@ -18,15 +18,44 @@ const EXPR_ALIASES = {
   ou: ['ou', 'U', 'u', 'OU']
 };
 
+// Emotion families inspired by open-annie faces.js
+export const EMOTION_FAMILIES = {
+  warm: ['happy', 'joy', 'relaxed', 'caring', 'love', 'gratitude', 'optimism', 'amusement'],
+  down: ['sad', 'concern', 'empathy', 'console', 'disappointment'],
+  alert: ['surprised', 'curiosity', 'think', 'confusion'],
+  hot: ['angry', 'embarrassment', 'shy'],
+  calm: ['neutral', 'advice']
+};
+
+// Mouth-influencing emotion blendshapes that must be ducked during speech to avoid viseme fighting
+const MOUTH_AFFECTING_EMOTIONS = new Set(['happy', 'relaxed']);
+
 export class ExpressionManager {
   constructor(vrmManager) {
     this.vrmManager = vrmManager;
     this.vrm = null;
 
     this.currentEmotion = 'neutral';
-    this.isTransitioning = false;
-    this.transitionProgress = 0;
-    this.blendDuration = 0.35; // smooth natural transition in seconds
+    this.targetEmotion = 'neutral';
+    this.currentIntensity = 1.0;
+    this.targetIntensity = 1.0;
+
+    // Expression Director & Envelope (open-annie faces.js)
+    this.minDwellTime = 1.1; // Minimum dwell gating (seconds) to prevent high-frequency emotional flicker
+    this.lastEmotionChangeTime = -10.0;
+    this.envelopePhase = 'idle'; // 'attack', 'hold', 'release', 'idle'
+    this.attackDuration = 0.30;
+    this.releaseDuration = 0.75;
+    this.envelopeTimer = 0;
+    this.holdDuration = 0;
+
+    // Talking-Face Splitter (open-annie mouth.js)
+    this.lipSyncEngine = null;
+    this.mouthDuckFactor = 0.0; // 0 = full emotion smile, 1 = mouth freed 100% for phonemes
+    this.speechDuckingSpeed = 16.0;
+
+    // Living micro-flutter (subtle biological micro-expressions)
+    this.flutterTime = 0;
 
     this.lifeSimulator = null;
     this.currentValues = new Map();
@@ -34,7 +63,7 @@ export class ExpressionManager {
     this.resetTimer = null;
 
     this.emotionPresets = {
-      // Core companion emotions (Pure facial emotions; mouth blendshapes left free for LipSync)
+      // Core companion emotions (Upper face brow/eyes distinct from mouth)
       neutral: {},
       happy: { happy: 0.85, relaxed: 0.85 },
       joy: { happy: 0.95, relaxed: 0.95 },
@@ -86,6 +115,14 @@ export class ExpressionManager {
     return this.vrm?.expressionManager || this.vrm?.blendShapeProxy;
   }
 
+  getEmotionFamily(emotionName) {
+    const clean = (emotionName || '').toLowerCase().trim();
+    for (const [family, list] of Object.entries(EMOTION_FAMILIES)) {
+      if (list.includes(clean)) return family;
+    }
+    return 'calm';
+  }
+
   setExpressionValue(name, value) {
     const manager = this.getManager();
     if (!manager) return;
@@ -121,7 +158,6 @@ export class ExpressionManager {
       } catch (e) {}
     }
 
-    // Push immediate update to morph targets
     if (typeof manager.update === 'function') {
       manager.update();
     }
@@ -149,6 +185,10 @@ export class ExpressionManager {
     return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
   }
 
+  /**
+   * Expression Director setEmotion:
+   * Enforces dwell gating, sets attack envelope, and dispatches bodily behaviors
+   */
   setEmotion(name, intensity = 1.0, syncBehavior = true) {
     const manager = this.getManager();
     if (!manager) return;
@@ -158,20 +198,32 @@ export class ExpressionManager {
       this.resetTimer = null;
     }
 
+    const now = performance.now() / 1000;
+    const timeSinceLastChange = now - this.lastEmotionChangeTime;
+
+    // Dwell Gating: if less than minDwellTime has elapsed, allow transition only if moving to neutral or high priority
+    if (timeSinceLastChange < this.minDwellTime && name !== 'neutral' && name !== this.currentEmotion) {
+      // Smoothly queue or blend into the target without sudden jerking
+      this.attackDuration = Math.max(0.4, this.minDwellTime - timeSinceLastChange);
+    } else {
+      this.attackDuration = 0.30;
+    }
+    this.lastEmotionChangeTime = now;
+
     const preset = this.emotionPresets[name] || this.emotionPresets.neutral;
     this.currentEmotion = name;
-    this.isTransitioning = true;
-    this.transitionProgress = 0;
+    this.targetEmotion = name;
+    this.targetIntensity = THREE.MathUtils.clamp(intensity, 0, 1);
 
-    this.currentValues.clear();
-    this.targetValues.clear();
+    this.envelopePhase = 'attack';
+    this.envelopeTimer = 0;
 
+    // Snapshot current values as envelope starting baseline
     const allKeys = ['happy', 'sad', 'angry', 'surprised', 'relaxed', 'wink', 'blush'];
-
     allKeys.forEach((key) => {
       const currentVal = this.getExpressionValue(key);
       this.currentValues.set(key, currentVal);
-      const targetVal = preset[key] !== undefined ? preset[key] * THREE.MathUtils.clamp(intensity, 0, 1) : 0;
+      const targetVal = preset[key] !== undefined ? preset[key] * this.targetIntensity : 0;
       this.targetValues.set(key, targetVal);
     });
 
@@ -191,26 +243,88 @@ export class ExpressionManager {
       this.lifeSimulator.triggerBehavior(name, resetAfterMs / 1000);
     }
     this.resetTimer = setTimeout(() => {
-      this.setEmotion('neutral', 1.0, true);
+      this.releaseEmotion();
       this.resetTimer = null;
     }, resetAfterMs);
   }
 
-  update(delta) {
-    if (!this.isTransitioning || !this.getManager()) return;
+  /**
+   * Smoothly releases current emotion back to neutral via organic decay
+   */
+  releaseEmotion() {
+    this.envelopePhase = 'release';
+    this.envelopeTimer = 0;
+    this.targetEmotion = 'neutral';
+    this.targetIntensity = 0;
 
-    this.transitionProgress += delta / this.blendDuration;
-    if (this.transitionProgress >= 1.0) {
-      this.transitionProgress = 1.0;
-      this.isTransitioning = false;
+    const allKeys = ['happy', 'sad', 'angry', 'surprised', 'relaxed', 'wink', 'blush'];
+    allKeys.forEach((key) => {
+      this.currentValues.set(key, this.getExpressionValue(key));
+      this.targetValues.set(key, 0);
+    });
+  }
+
+  /**
+   * Main per-frame expression director update:
+   * 1. Evaluates envelope progress (attack -> hold -> release)
+   * 2. Talking-Face Split: ducks mouth morphs when speech is active so visemes articulate cleanly
+   * 3. Micro-flutter: subtle organic living twitches in brows/cheeks
+   */
+  update(delta) {
+    const manager = this.getManager();
+    if (!manager) return;
+
+    this.flutterTime += delta;
+
+    // 1. Talking-Face Splitter: Check if LipSyncEngine is speaking
+    const isSpeaking = this.lipSyncEngine?.isSyntheticSpeaking || this.lipSyncEngine?.isAudioActive || false;
+    const targetMouthDuck = isSpeaking ? 0.85 : 0.0;
+    const duckSpeed = 1.0 - Math.exp(-this.speechDuckingSpeed * delta);
+    this.mouthDuckFactor += (targetMouthDuck - this.mouthDuckFactor) * duckSpeed;
+
+    // 2. Expression Envelope Processing
+    let envelopeWeight = 1.0;
+    if (this.envelopePhase === 'attack') {
+      this.envelopeTimer += delta;
+      const progress = Math.min(1.0, this.envelopeTimer / this.attackDuration);
+      envelopeWeight = this.easeInOutCubic(progress);
+      if (progress >= 1.0) {
+        this.envelopePhase = 'hold';
+        this.envelopeTimer = 0;
+      }
+    } else if (this.envelopePhase === 'release') {
+      this.envelopeTimer += delta;
+      const progress = Math.min(1.0, this.envelopeTimer / this.releaseDuration);
+      envelopeWeight = 1.0 - this.easeInOutCubic(progress);
+      if (progress >= 1.0) {
+        this.envelopePhase = 'idle';
+        this.currentEmotion = 'neutral';
+      }
+    } else if (this.envelopePhase === 'idle') {
+      envelopeWeight = 0.0;
     }
 
-    const ease = this.easeInOutCubic(this.transitionProgress);
+    // 3. Subtle organic micro-flutter during holds (subconscious living breathing in face)
+    const microFlutter = this.envelopePhase === 'hold' && this.currentEmotion !== 'neutral'
+      ? Math.sin(this.flutterTime * 1.6) * 0.025
+      : 0;
 
-    for (const [key, target] of this.targetValues.entries()) {
-      const start = this.currentValues.get(key) || 0;
-      const val = THREE.MathUtils.lerp(start, target, ease);
-      this.setExpressionValue(key, val);
+    // 4. Apply blended values with Talking-Face Split
+    for (const [key, targetVal] of this.targetValues.entries()) {
+      const startVal = this.currentValues.get(key) || 0;
+      let blended = THREE.MathUtils.lerp(startVal, targetVal, envelopeWeight);
+
+      // Talking-Face Splitter: If this morph affects mouth corners/lips, duck it during speech
+      if (MOUTH_AFFECTING_EMOTIONS.has(key) && this.mouthDuckFactor > 0.01) {
+        blended *= (1.0 - this.mouthDuckFactor * 0.82);
+      }
+
+      // Add gentle micro-flutter to upper face (sad, angry, surprised, blush)
+      if (!MOUTH_AFFECTING_EMOTIONS.has(key) && blended > 0.1) {
+        blended = THREE.MathUtils.clamp(blended + microFlutter, 0, 1);
+      }
+
+      this.setExpressionValue(key, blended);
     }
   }
 }

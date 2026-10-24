@@ -4,32 +4,52 @@ export class LifeSimulator {
   constructor(vrmManager, expressionManager = null) {
     this.vrmManager = vrmManager;
     this.expressionManager = expressionManager || vrmManager?.expressionManager || null;
+    this.lipSyncEngine = null; // Connected in bootstrap/main.js
     this.vrm = null;
 
-    // 1. Breathing parameters (organic human respiration cycle)
+    // 1. Guaranteed Motion Floor (open-annie floor.js)
+    this.floorTime = 0;
+    this.swayHipsAmp = 0.006; // Organic weight shifting (~0.35 deg)
+    this.swaySpineAmp = 0.004;
+
+    // 2. Breathing parameters (organic human respiration cycle)
     this.breatheTime = 0;
     this.breatheFreq = 0.75; // Calm, relaxed resting respiratory rate (~12-14 breaths/min)
-    this.breatheSpineAmp = 0.0; // Keep spine stable to eliminate head and upper-body wobbling
-    this.breatheChestAmp = 0.018; // Subtle, natural chest pitch breathing motion (~1.0 deg)
+    this.breatheSpineAmp = 0.0;
+    this.breatheChestAmp = 0.018; // Natural chest pitch breathing motion (~1.0 deg)
 
-    // 2. Natural Blinking
+    // 3. Natural Blinking
     this.isBlinking = false;
     this.blinkProgress = 0;
     this.blinkDuration = 0.18;
     this.timeSinceLastBlink = 0;
     this.nextBlinkInterval = 2.5;
 
-    // 3. Eye Saccades
+    // 4. Eye Saccades
     this.saccadeTimer = 0;
     this.nextSaccadeInterval = 1.8;
     this.saccadeOffset = new THREE.Vector2(0, 0);
     this.saccadeTarget = new THREE.Vector2(0, 0);
 
-    // 4. Cursor / Gaze Tracking & Camera Head Tracking
+    // 5. Cursor / Gaze Tracking & Camera Head Tracking
     this.cursorNorm = new THREE.Vector2(0, 0);
     this.smoothedGaze = new THREE.Vector2(0, 0);
 
-    // 5. Emotional Behavioral Movement & Gaze Aversion Engine
+    // 6. Active Listening "Instinct" Mode (open-annie instinct.js)
+    this.isListening = false;
+    this.listeningNodTimer = 0;
+    this.listeningNodInterval = 2.6; // Rhythmic receptive nod every 2.6s
+    this.listeningCurrent = {
+      spinePitch: 0,
+      headRoll: 0,
+      nodPitch: 0
+    };
+
+    // 7. Co-Speech Gestures & Syllable Stress Accents (open-annie gestures.js)
+    this.speechNodCurrent = 0;
+    this.speechChestCurrent = 0;
+
+    // 8. Emotional Behavioral Movement & Gaze Aversion Engine
     this.activeBehavior = null; // { name, elapsed, duration }
     this.behaviorTarget = {
       headPitch: 0,
@@ -98,6 +118,26 @@ export class LifeSimulator {
     return this.vrm?.expressionManager || this.vrm?.blendShapeProxy;
   }
 
+  /**
+   * Active Listening Mode:
+   * Called when the user starts speaking (mic active or user typing)
+   */
+  startListening() {
+    if (this.isListening) return;
+    this.isListening = true;
+    this.listeningNodTimer = 0.5; // Start with a brief welcoming acknowledgment nod
+    // Attentive soft blink
+    if (!this.isBlinking) {
+      this.isBlinking = true;
+      this.blinkProgress = 0;
+    }
+  }
+
+  stopListening() {
+    this.isListening = false;
+    this.listeningNodTimer = 0;
+  }
+
   triggerBehavior(name, duration = 4.5) {
     const cleanName = (name || '').toLowerCase().trim();
     this.activeBehavior = {
@@ -139,7 +179,6 @@ export class LifeSimulator {
 
   updateBehavior(delta) {
     if (!this.activeBehavior) {
-      // Smoothly relax posture back to baseline forward user-tracking
       const returnSpeed = THREE.MathUtils.clamp(delta * 4.0, 0, 1);
       for (const k in this.behaviorCurrent) {
         const target = (k === 'breatheFreqMult' || k === 'breatheAmpMult') ? 1.0 : 0.0;
@@ -170,7 +209,6 @@ export class LifeSimulator {
       const tHold = Math.min(3.0, dur * 0.67);
 
       if (t < tNotice) {
-        // Stage 1: Notices attention, direct gaze
         this.behaviorTarget.headPitch = 0;
         this.behaviorTarget.headYaw = 0;
         this.behaviorTarget.headRoll = 0;
@@ -180,28 +218,22 @@ export class LifeSimulator {
         this.behaviorTarget.gazeOffsetX = 0;
         this.behaviorTarget.gazeOffsetY = 0;
       } else if (t < tTilt) {
-        // Stage 2: Gaze aversion & head tilts down & to the side
         const p = (t - tNotice) / (tTilt - tNotice);
-        const ease = p * p * (3 - 2 * p); // smoothstep
-        // Eyes dart down and away first
+        const ease = p * p * (3 - 2 * p);
         this.behaviorTarget.gazeOffsetY = -0.55 * ease;
         this.behaviorTarget.gazeOffsetX = 0.28 * ease;
-        // Head follows
-        this.behaviorTarget.headPitch = -0.22 * ease; // ~ -13 deg pitch down
-        this.behaviorTarget.headYaw = 0.20 * ease;    // ~ +11.5 deg turn away
-        this.behaviorTarget.headRoll = 0.16 * ease;   // ~ +9 deg lateral tilt
+        this.behaviorTarget.headPitch = -0.22 * ease;
+        this.behaviorTarget.headYaw = 0.20 * ease;
+        this.behaviorTarget.headRoll = 0.16 * ease;
         this.behaviorTarget.neckRoll = 0.08 * ease;
-        // Body posture: modest inward hunch & slight shoulder elevation
         this.behaviorTarget.spinePitch = -0.05 * ease;
         this.behaviorTarget.leftShoulderZ = 0.05 * ease;
 
-        // Trigger a bashful blink midway through the gaze break
         if (p > 0.4 && p < 0.6 && !this.isBlinking && this.timeSinceLastBlink > 1.0) {
           this.isBlinking = true;
           this.blinkProgress = 0;
         }
       } else if (t < tHold) {
-        // Stage 3: Bashful hold with living micro-flutter
         this.behaviorTarget.gazeOffsetY = -0.55;
         this.behaviorTarget.gazeOffsetX = 0.28;
         this.behaviorTarget.headPitch = -0.22;
@@ -211,15 +243,12 @@ export class LifeSimulator {
         this.behaviorTarget.spinePitch = -0.05;
         this.behaviorTarget.leftShoulderZ = 0.05;
       } else {
-        // Stage 4: Eyes dart back up FIRST to look at user through eyelashes, then head gently recovers
         const pTotal = (t - tHold) / (dur - tHold);
-        // Eyes return rapidly in first 40% of phase 4
         const eyeP = Math.min(1.0, pTotal / 0.45);
         const eyeEase = eyeP * eyeP * (3 - 2 * eyeP);
         this.behaviorTarget.gazeOffsetY = -0.55 * (1 - eyeEase);
         this.behaviorTarget.gazeOffsetX = 0.28 * (1 - eyeEase);
 
-        // Head and spine follow smoothly
         const headP = Math.max(0, (pTotal - 0.25) / 0.75);
         const headEase = headP * headP * (3 - 2 * headP);
         this.behaviorTarget.headPitch = -0.22 * (1 - headEase);
@@ -237,17 +266,14 @@ export class LifeSimulator {
       }
       const ease = p * p * (3 - 2 * p);
 
-      // Sympathetic lateral head tilt (-11.5 deg)
       this.behaviorTarget.headRoll = -0.20 * ease;
       this.behaviorTarget.neckRoll = -0.08 * ease;
       this.behaviorTarget.headPitch = 0.04 * ease;
       this.behaviorTarget.headYaw = 0.02 * ease;
 
-      // Active empathetic listening: lean body forward towards user/camera
-      this.behaviorTarget.spinePitch = 0.08 * ease; // forward lean (+4.6 deg)
+      this.behaviorTarget.spinePitch = 0.08 * ease;
       this.behaviorTarget.chestPitch = 0.04 * ease;
 
-      // Subtle empathetic nod at midpoint
       if (t >= 1.8 && t <= 2.6) {
         const nodSin = Math.sin((t - 1.8) * Math.PI * 2.5);
         this.behaviorTarget.headPitch += nodSin * 0.05;
@@ -256,21 +282,20 @@ export class LifeSimulator {
       this.behaviorTarget.gazeOffsetX = 0;
       this.behaviorTarget.gazeOffsetY = 0;
     } else if (name === 'love' || name === 'admiration') {
-      // 3. LOVE / FONDNESS SEQUENCE (Warm head tilt exposing neck, relaxed chest expansion, soft eyes)
+      // 3. LOVE / FONDNESS SEQUENCE (Warm head tilt exposing neck, relaxed chest expansion)
       let p = Math.min(1.0, t / 0.9);
       if (t > dur - 1.1) {
         p = Math.max(0, (dur - t) / 1.1);
       }
       const ease = p * p * (3 - 2 * p);
 
-      this.behaviorTarget.headRoll = 0.14 * ease; // gentle +8 deg head tilt exposing neck
+      this.behaviorTarget.headRoll = 0.14 * ease;
       this.behaviorTarget.neckRoll = 0.06 * ease;
       this.behaviorTarget.headPitch = -0.03 * ease;
       this.behaviorTarget.headYaw = -0.04 * ease;
 
-      // Deep, soothing breathing cycle
-      this.behaviorTarget.breatheFreqMult = 1.0 - (0.35 * ease); // slower rate
-      this.behaviorTarget.breatheAmpMult = 1.0 + (0.55 * ease);  // deeper breaths
+      this.behaviorTarget.breatheFreqMult = 1.0 - (0.35 * ease);
+      this.behaviorTarget.breatheAmpMult = 1.0 + (0.55 * ease);
       this.behaviorTarget.spinePitch = 0.02 * ease;
       this.behaviorTarget.chestPitch = 0.03 * ease;
 
@@ -284,15 +309,14 @@ export class LifeSimulator {
       }
       const ease = p * p * (3 - 2 * p);
 
-      this.behaviorTarget.headPitch = 0.14 * ease; // +8 deg up
-      this.behaviorTarget.headYaw = -0.20 * ease;  // -11.5 deg turn
+      this.behaviorTarget.headPitch = 0.14 * ease;
+      this.behaviorTarget.headYaw = -0.20 * ease;
       this.behaviorTarget.headRoll = -0.06 * ease;
-      this.behaviorTarget.gazeOffsetY = 0.38 * ease; // look up
-      this.behaviorTarget.gazeOffsetX = -0.28 * ease; // look left
+      this.behaviorTarget.gazeOffsetY = 0.38 * ease;
+      this.behaviorTarget.gazeOffsetX = -0.28 * ease;
       this.behaviorTarget.spinePitch = -0.03 * ease;
     }
 
-    // Smooth lerp to target for fluid 60fps motion
     const blendSpeed = THREE.MathUtils.clamp(delta * 6.0, 0, 1);
     for (const k in this.behaviorCurrent) {
       this.behaviorCurrent[k] = THREE.MathUtils.lerp(
@@ -303,10 +327,56 @@ export class LifeSimulator {
     }
   }
 
+  /**
+   * Updates Active Listening Instinct Mode & Co-Speech Gestures
+   */
+  updateInstinctAndGestures(delta) {
+    // 1. Active Listening Mode
+    const targetSpinePitch = this.isListening ? 0.065 : 0; // ~3.7 deg forward attentive lean
+    const targetHeadRoll = this.isListening ? 0.075 : 0; // ~4.3 deg curious lateral tilt
+
+    const listenLerp = THREE.MathUtils.clamp(delta * 4.5, 0, 1);
+    this.listeningCurrent.spinePitch = THREE.MathUtils.lerp(this.listeningCurrent.spinePitch, targetSpinePitch, listenLerp);
+    this.listeningCurrent.headRoll = THREE.MathUtils.lerp(this.listeningCurrent.headRoll, targetHeadRoll, listenLerp);
+
+    if (this.isListening) {
+      this.listeningNodTimer += delta;
+      if (this.listeningNodTimer >= this.listeningNodInterval) {
+        this.listeningNodTimer = 0;
+      }
+      // Gentle receptive micro-nod over 0.5s window
+      if (this.listeningNodTimer < 0.5) {
+        const nodPhase = (this.listeningNodTimer / 0.5) * Math.PI * 2;
+        this.listeningCurrent.nodPitch = Math.sin(nodPhase) * 0.035; // ~2.0 deg nod
+      } else {
+        this.listeningCurrent.nodPitch = 0;
+      }
+    } else {
+      this.listeningCurrent.nodPitch = THREE.MathUtils.lerp(this.listeningCurrent.nodPitch, 0, listenLerp);
+    }
+
+    // 2. Co-Speech Gestures & Syllable Stress Timing
+    let targetSpeechNod = 0;
+    let targetSpeechChest = 0;
+
+    if (this.lipSyncEngine?.isSpeaking) {
+      if (this.lipSyncEngine.isStressedSyllable) {
+        targetSpeechNod = 0.028; // ~1.6 deg downward speech nod accent
+        targetSpeechChest = 0.015;
+      }
+    }
+
+    const speechLerp = THREE.MathUtils.clamp(delta * 12.0, 0, 1);
+    this.speechNodCurrent = THREE.MathUtils.lerp(this.speechNodCurrent, targetSpeechNod, speechLerp);
+    this.speechChestCurrent = THREE.MathUtils.lerp(this.speechChestCurrent, targetSpeechChest, speechLerp);
+  }
+
   update(delta) {
     if (!this.vrm) return;
 
+    this.floorTime += delta;
     this.updateBehavior(delta);
+    this.updateInstinctAndGestures(delta);
     this.updateBreathing(delta);
     this.updateBlinking(delta);
     this.updateSaccades(delta);
@@ -314,21 +384,31 @@ export class LifeSimulator {
   }
 
   updateBreathing(delta) {
-    const freq = this.breatheFreq * (this.behaviorCurrent.breatheFreqMult || 1.0);
+    // Breathing rate slightly increases during vocalization
+    const vocalRateMult = (this.lipSyncEngine?.isSpeaking) ? 1.15 : 1.0;
+    const freq = this.breatheFreq * (this.behaviorCurrent.breatheFreqMult || 1.0) * vocalRateMult;
     const amp = this.breatheChestAmp * (this.behaviorCurrent.breatheAmpMult || 1.0);
     this.breatheTime += delta * freq * Math.PI * 2;
     const breatheSin = Math.sin(this.breatheTime);
 
+    // Guaranteed Motion Floor: subtle biological sway
+    const swayYaw = Math.sin(this.floorTime * 0.45) * this.swayHipsAmp;
+    const swayRoll = Math.cos(this.floorTime * 0.25) * this.swaySpineAmp;
+
     if (this.vrm.humanoid) {
+      const hips = this.vrm.humanoid.getNormalizedBoneNode('hips');
+      if (hips) {
+        hips.rotation.y += swayYaw;
+      }
+
       const chest = this.vrm.humanoid.getNormalizedBoneNode('chest');
       if (chest) {
-        // Natural gentle chest pitch + breathing amplitude + emotional posture pitch
-        chest.rotation.x += breatheSin * amp + (this.behaviorCurrent.chestPitch || 0);
+        chest.rotation.x += breatheSin * amp + (this.behaviorCurrent.chestPitch || 0) + this.speechChestCurrent;
       }
       const spine = this.vrm.humanoid.getNormalizedBoneNode('spine');
       if (spine) {
-        spine.rotation.x += (this.behaviorCurrent.spinePitch || 0);
-        spine.rotation.z += (this.behaviorCurrent.spineRoll || 0);
+        spine.rotation.x += (this.behaviorCurrent.spinePitch || 0) + this.listeningCurrent.spinePitch;
+        spine.rotation.z += (this.behaviorCurrent.spineRoll || 0) + swayRoll;
       }
       const leftShoulder = this.vrm.humanoid.getNormalizedBoneNode('leftShoulder');
       if (leftShoulder) {
@@ -358,7 +438,9 @@ export class LifeSimulator {
         this.blinkProgress = 1.0;
         this.isBlinking = false;
         this.timeSinceLastBlink = 0;
-        this.nextBlinkInterval = 1.8 + Math.random() * 2.7;
+        // In active listening mode, blinks are slightly calmer and more frequent
+        const baseInterval = this.isListening ? 1.5 : 2.0;
+        this.nextBlinkInterval = baseInterval + Math.random() * 2.2;
       }
 
       const blinkVal = Math.sin(this.blinkProgress * Math.PI);
@@ -381,9 +463,11 @@ export class LifeSimulator {
     if (this.saccadeTimer >= this.nextSaccadeInterval) {
       this.saccadeTimer = 0;
       this.nextSaccadeInterval = 0.8 + Math.random() * 2.2;
+      // In active listening mode, eyes lock tighter on user with 50% reduced wander
+      const saccadeMult = this.isListening ? 0.05 : 0.12;
       this.saccadeTarget.set(
-        (Math.random() - 0.5) * 0.12,
-        (Math.random() - 0.5) * 0.08
+        (Math.random() - 0.5) * saccadeMult,
+        (Math.random() - 0.5) * (saccadeMult * 0.7)
       );
     }
 
@@ -397,33 +481,27 @@ export class LifeSimulator {
     const neck = this.vrm.humanoid.getNormalizedBoneNode('neck');
     if (!head || !neck) return;
 
-    // Smooth cursor/touch gaze tracking
     this.smoothedGaze.lerp(this.cursorNorm, THREE.MathUtils.clamp(delta * 4, 0, 1));
 
     const camera = this.vrmManager?.camera;
     if (camera && this.vrm.scene) {
       head.getWorldPosition(this._headWorldPos);
 
-      // Target position in world space = Camera position + cursor micro-offset + natural saccade jitter + emotional behavioral offset
       this._camTargetPos.copy(camera.position);
       this._camTargetPos.x += (this.smoothedGaze.x * 0.28) + this.saccadeOffset.x + (this.behaviorCurrent.gazeOffsetX || 0);
       this._camTargetPos.y += (this.smoothedGaze.y * 0.18) + this.saccadeOffset.y + (this.behaviorCurrent.gazeOffsetY || 0);
 
-      // Direction from head to camera in world space (reusing scratch vector)
       this._toCamWorld.copy(this._camTargetPos).sub(this._headWorldPos).normalize();
 
-      // Transform to the avatar's body/scene space (reusing scratch quaternion and vector)
       this._invSceneQuat.copy(this.vrm.scene.quaternion).invert();
       this._toCamLocal.copy(this._toCamWorld).applyQuaternion(this._invSceneQuat);
 
-      // In avatar's local coordinates, facing direction is -Z.
       const localYaw = -Math.atan2(this._toCamLocal.x, -this._toCamLocal.z);
       const horizDist = Math.hypot(this._toCamLocal.x, this._toCamLocal.z);
       const localPitch = Math.atan2(this._toCamLocal.y, Math.max(horizDist, 0.001));
 
-      // Realistic human cervical spine turning limits:
-      const MAX_YAW = 68 * (Math.PI / 180); // 68 degrees anatomical limit
-      const CEASE_YAW = 95 * (Math.PI / 180); // 95 degrees cease threshold
+      const MAX_YAW = 68 * (Math.PI / 180);
+      const CEASE_YAW = 95 * (Math.PI / 180);
 
       const absYaw = Math.abs(localYaw);
       const signYaw = Math.sign(localYaw) || 1;
@@ -438,24 +516,24 @@ export class LifeSimulator {
         targetYaw = signYaw * MAX_YAW * returnFactor;
       }
 
-      // Vertical pitch limits (~20° up / down)
       const targetPitch = THREE.MathUtils.clamp(localPitch, -0.35, 0.35);
 
-      // Smooth interpolation using frame delta
       const lerpSpeed = THREE.MathUtils.clamp(delta * 5.5, 0, 1);
       this.currentHeadYaw = THREE.MathUtils.lerp(this.currentHeadYaw, targetYaw, lerpSpeed);
       this.currentHeadPitch = THREE.MathUtils.lerp(this.currentHeadPitch, targetPitch, lerpSpeed);
 
-      // Biomechanical distribution: 35% cervical neck, 65% head + behavioral head & neck tilts
+      // Biomechanical distribution + Instinct Listening Nods & Co-Speech Nod Accents
+      const totalNodPitch = this.listeningCurrent.nodPitch + this.speechNodCurrent;
+      const totalRoll = (this.behaviorCurrent.headRoll || 0) + this.listeningCurrent.headRoll;
+
       neck.rotation.y = this.currentHeadYaw * 0.35 + (this.behaviorCurrent.headYaw * 0.35);
-      neck.rotation.x = this.currentHeadPitch * 0.35 + (this.behaviorCurrent.headPitch * 0.35);
-      neck.rotation.z = (this.behaviorCurrent.neckRoll || 0);
+      neck.rotation.x = this.currentHeadPitch * 0.35 + (this.behaviorCurrent.headPitch * 0.35) + totalNodPitch * 0.35;
+      neck.rotation.z = (this.behaviorCurrent.neckRoll || 0) + totalRoll * 0.35;
 
       head.rotation.y = this.currentHeadYaw * 0.65 + (this.behaviorCurrent.headYaw * 0.65);
-      head.rotation.x = this.currentHeadPitch * 0.65 + (this.behaviorCurrent.headPitch * 0.65);
-      head.rotation.z = (this.behaviorCurrent.headRoll || 0);
+      head.rotation.x = this.currentHeadPitch * 0.65 + (this.behaviorCurrent.headPitch * 0.65) + totalNodPitch * 0.65;
+      head.rotation.z = totalRoll * 0.65;
 
-      // Eye Tracking: keep eyes fixed on the target throughout line of sight
       if (this.vrm.lookAt) {
         if (absYaw <= 88 * (Math.PI / 180)) {
           this.vrm.lookAt.lookAt(this._camTargetPos);
@@ -466,15 +544,17 @@ export class LifeSimulator {
         }
       }
     } else {
-      // Fallback if no camera
       const headX = THREE.MathUtils.clamp(-this.smoothedGaze.y * 0.22, -0.25, 0.25);
       const headY = THREE.MathUtils.clamp(-this.smoothedGaze.x * 0.35, -0.35, 0.35);
-      neck.rotation.x = THREE.MathUtils.lerp(neck.rotation.x, headX * 0.4 + (this.behaviorCurrent.headPitch * 0.35), 0.1);
+      const totalNodPitch = this.listeningCurrent.nodPitch + this.speechNodCurrent;
+      const totalRoll = (this.behaviorCurrent.headRoll || 0) + this.listeningCurrent.headRoll;
+
+      neck.rotation.x = THREE.MathUtils.lerp(neck.rotation.x, headX * 0.4 + (this.behaviorCurrent.headPitch * 0.35) + totalNodPitch * 0.35, 0.1);
       neck.rotation.y = THREE.MathUtils.lerp(neck.rotation.y, headY * 0.4 + (this.behaviorCurrent.headYaw * 0.35), 0.1);
-      neck.rotation.z = (this.behaviorCurrent.neckRoll || 0);
-      head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, headX * 0.6 + (this.behaviorCurrent.headPitch * 0.65), 0.1);
+      neck.rotation.z = (this.behaviorCurrent.neckRoll || 0) + totalRoll * 0.35;
+      head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, headX * 0.6 + (this.behaviorCurrent.headPitch * 0.65) + totalNodPitch * 0.65, 0.1);
       head.rotation.y = THREE.MathUtils.lerp(head.rotation.y, headY * 0.6 + (this.behaviorCurrent.headYaw * 0.65), 0.1);
-      head.rotation.z = (this.behaviorCurrent.headRoll || 0);
+      head.rotation.z = totalRoll * 0.65;
     }
   }
 }

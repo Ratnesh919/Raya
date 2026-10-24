@@ -1,0 +1,446 @@
+{
+  "netlify/functions/memory.mts": {
+    "mtime": 1789540667.1062405,
+    "seen": 1790224350.819747,
+    "ast_hash": "3250a09dfb8cec13e53047a3b111590d",
+    "semantic_hash": "3250a09dfb8cec13e53047a3b111590d"
+  },
+  "package.json": {
+    "mtime": 1790399338.633928,
+    "seen": 1792646970.8382046,
+    "ast_hash": "a70501b41a0a6b59418d32ad7c96b8f8",
+    "semantic_hash": ""
+  },
+  "src/ai/KokoroService.js": {
+    "mtime": 1790051125.7391312,
+    "seen": 1790224350.8197546,
+    "ast_hash": "127c5a33811844af8942c15b5151df7e",
+    "semantic_hash": "127c5a33811844af8942c15b5151df7e"
+  },
+  "src/ai/LLMService.js": {
+    "mtime": 1790169405.63414,
+    "seen": 1790224350.8197556,
+    "ast_hash": "d518c1a73f282cfb171d8e380bfb8005",
+    "semantic_hash": "d518c1a73f282cfb171d8e380bfb8005"
+  },
+  "src/ai/MemoryService.js": {
+    "mtime": 1789969573.1129248,
+    "seen": 1790224350.8197565,
+    "ast_hash": "d64993025c86ef9d096199370bafa6da",
+    "semantic_hash": "d64993025c86ef9d096199370bafa6da"
+  },
+  "src/ai/PersonalityEngine.js": {
+    "mtime": 1790169331.4650543,
+    "seen": 1790224350.8197572,
+    "ast_hash": "2efd33f896c808b8f6baa0763f91659d",
+    "semantic_hash": "2efd33f896c808b8f6baa0763f91659d"
+  },
+  "src/ai/PromptEngine.js": {
+    "mtime": 1790169077.531403,
+    "seen": 1790224350.8197584,
+    "ast_hash": "0219555a15a1d6c8a8490756748cda97",
+    "semantic_hash": "0219555a15a1d6c8a8490756748cda97"
+  },
+  "src/ai/VoiceService.js": {
+    "mtime": 1790137569.9005558,
+    "seen": 1790224350.8197594,
+    "ast_hash": "8f4a3c62f81356534885aaf69781b02e",
+    "semantic_hash": "8f4a3c62f81356534885aaf69781b02e"
+  },
+  "src/main.js": {
+    "mtime": 1792657098.8226776,
+    "seen": 1792657274.714377,
+    "ast_hash": "067c82eee1a73316edc12042e1000e8e",
+    "semantic_hash": ""
+  },
+  "src/ui/ChatUI.js": {
+    "mtime": 1790170681.2140114,
+    "seen": 1790224350.819761,
+    "ast_hash": "f7167d7dbbd1586402236d1112cb32a7",
+    "semantic_hash": "f7167d7dbbd1586402236d1112cb32a7"
+  },
+  "src/ui/ControlsHUD.js": {
+    "mtime": 1792657126.96294,
+    "seen": 1792657274.7143798,
+    "ast_hash": "216fd3958f0ab35042ccea23e96bdb7e",
+    "semantic_hash": ""
+  },
+  "src/ui/LoaderAnimation.js": {
+    "mtime": 1790399472.553026,
+    "seen": 1792646970.8382227,
+    "ast_hash": "8f6f20f08b976f08c3aa700f1b96cb2b",
+    "semantic_hash": ""
+  },
+  "src/ui/SettingsModal.js": {
+    "mtime": 1790170248.8898766,
+    "seen": 1790224350.819764,
+    "ast_hash": "22d20c88126d8dcd2c97686564b5d733",
+    "semantic_hash": "22d20c88126d8dcd2c97686564b5d733"
+  },
+  "src/vrm/AnimationEngine.js": {
+    "mtime": 1792646884.216696,
+    "seen": 1792646970.8382256,
+    "ast_hash": "cc0ec1996e98109f16b1b163b6e8b96d",
+    "semantic_hash": ""
+  },
+  "src/vrm/ChestPhysics.js": {
+    "mtime": 1790167959.567492,
+    "seen": 1790224350.8197656,
+    "ast_hash": "df9c2b808bbcafb08414a58e3d293851",
+    "semantic_hash": "df9c2b808bbcafb08414a58e3d293851"
+  },
+  "src/vrm/ExpressionManager.js": {
+    "mtime": 1792657072.1122036,
+    "seen": 1792657274.7143855,
+    "ast_hash": "e1dc396451591b3e7609b24cb831f4ed",
+    "semantic_hash": ""
+  },
+  "src/vrm/LifeSimulator.js": {
+    "mtime": 1792656995.9121983,
+    "seen": 1792657274.7143877,
+    "ast_hash": "ed3892b69f09cdd731bfae38be5de778",
+    "semantic_hash": ""
+  },
+  "src/vrm/LipSyncEngine.js": {
+    "mtime": 1790137545.5524106,
+    "seen": 1790224350.8197677,
+    "ast_hash": "cc4a2905600e912711c5688d28540117",
+    "semantic_hash": "cc4a2905600e912711c5688d28540117"
+  },
+  "src/vrm/VRMManager.js": {
+    "mtime": 1790514120.0956697,
+    "seen": 1792646970.8382323,
+    "ast_hash": "feed2e6387d131fca3fbccb2921fea5b",
+    "semantic_hash": ""
+  },
+  "vercel.json": {
+    "mtime": 1789395422.97646,
+    "seen": 1790224350.8197696,
+    "ast_hash": "7d1a868af9cdd43fd87430a2783094ca",
+    "semantic_hash": "7d1a868af9cdd43fd87430a2783094ca"
+  },
+  "vite.config.js": {
+    "mtime": 1790399420.3912463,
+    "seen": 1792646970.8382354,
+    "ast_hash": "b8f0759f7b0912df208c9d59bb67a727",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1790225606.25154,
+    "seen": 1790253882.2161782,
+    "ast_hash": "22c0fb6fd6eede3cff6931274da89735",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1790171061.663595,
+    "seen": 1790253882.2161825,
+    "ast_hash": "cb581ed664ad5cdd35bea5d46b78c3e9",
+    "semantic_hash": ""
+  },
+  "index.html": {
+    "mtime": 1792657217.2623792,
+    "seen": 1792657274.7143965,
+    "ast_hash": "5b294a97e4ab2738b2a3f8fccff76625",
+    "semantic_hash": ""
+  },
+  "components.json": {
+    "mtime": 1790399394.3859394,
+    "seen": 1792646970.8381827,
+    "ast_hash": "fefa62b7e91a799df89557eb3fff0b56",
+    "semantic_hash": ""
+  },
+  "components/ui/demo.tsx": {
+    "mtime": 1790399356.272225,
+    "seen": 1792646970.83819,
+    "ast_hash": "a0555f1d20f6eb2a2858aabdb1862b6c",
+    "semantic_hash": ""
+  },
+  "components/ui/thinking-orbs.tsx": {
+    "mtime": 1790399348.6050112,
+    "seen": 1792646970.838193,
+    "ast_hash": "5be898b99b754183388eead0e5e32cb8",
+    "semantic_hash": ""
+  },
+  "lib/utils.ts": {
+    "mtime": 1790399411.8171296,
+    "seen": 1792646970.8381946,
+    "ast_hash": "ffe10c33c673dfe91467dfa4119a07bd",
+    "semantic_hash": ""
+  },
+  "src/components/ui/demo.tsx": {
+    "mtime": 1790399368.550771,
+    "seen": 1792646970.8382163,
+    "ast_hash": "a0555f1d20f6eb2a2858aabdb1862b6c",
+    "semantic_hash": ""
+  },
+  "src/components/ui/thinking-orbs.tsx": {
+    "mtime": 1790399362.8070886,
+    "seen": 1792646970.8382173,
+    "ast_hash": "5be898b99b754183388eead0e5e32cb8",
+    "semantic_hash": ""
+  },
+  "src/lib/utils.ts": {
+    "mtime": 1790399406.2321777,
+    "seen": 1792646970.838218,
+    "ast_hash": "ffe10c33c673dfe91467dfa4119a07bd",
+    "semantic_hash": ""
+  },
+  "src/vrm/FBXAvatarLoader.js": {
+    "mtime": 1792646865.09033,
+    "seen": 1792646970.8382287,
+    "ast_hash": "f5005197d5fd35cba428dbe105abf183",
+    "semantic_hash": ""
+  },
+  "tsconfig.json": {
+    "mtime": 1790399386.684463,
+    "seen": 1792646970.8382332,
+    "ast_hash": "c3889b789665abf12e55ae9631b880c0",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_DefaultMaskGreen_M.png": {
+    "mtime": 1768515447.261779,
+    "seen": 1792646970.8382406,
+    "ast_hash": "61d9e38e13b88d13851828467f49d560",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Alpha_D.png": {
+    "mtime": 1768515478.0065453,
+    "seen": 1792646970.8382416,
+    "ast_hash": "0d6f9f566d863e20c0ce662eddd4f5f0",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Alpha_ID.png": {
+    "mtime": 1768515478.0377822,
+    "seen": 1792646970.8382425,
+    "ast_hash": "8cabc42daa26c09ed32b6de7dfea793d",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Alpha_N.png": {
+    "mtime": 1768515478.330622,
+    "seen": 1792646970.8382432,
+    "ast_hash": "534718acb9ea61c629504c82e16e6474",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Bangs_D.png": {
+    "mtime": 1768515478.9695258,
+    "seen": 1792646970.8382442,
+    "ast_hash": "db4a28e398f2a639300f0c271ee2b842",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Bangs_HM.png": {
+    "mtime": 1768515479.271392,
+    "seen": 1792646970.838245,
+    "ast_hash": "f56c4af79c85c1bccdd07d95f0ca285e",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Bangs_Switch02_D.png": {
+    "mtime": 1768515480.0728023,
+    "seen": 1792646970.8382454,
+    "ast_hash": "cf27c6a3601510d5ed383f47f13bb8cf",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Bangs_Switch03_D.png": {
+    "mtime": 1768515480.9127026,
+    "seen": 1792646970.8382466,
+    "ast_hash": "26d3bdbce6ee1a2a016cfbdf97c09201",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Bangs_Switch_D.png": {
+    "mtime": 1768515481.5942614,
+    "seen": 1792646970.8382475,
+    "ast_hash": "b1cc703951ae0755c4ba9edd5d39bf19",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Cloth_D.png": {
+    "mtime": 1768515482.7829905,
+    "seen": 1792646970.8382483,
+    "ast_hash": "b8e9e563b560b6046639bc92be46312f",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Cloth_ID.png": {
+    "mtime": 1768515482.8174582,
+    "seen": 1792646970.8382494,
+    "ast_hash": "684a1e5d4b20f25828fe63ce4971682f",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Cloth_N.png": {
+    "mtime": 1768515484.2879977,
+    "seen": 1792646970.8382502,
+    "ast_hash": "00377a24401a4c9906e2fb6126258872",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Cloth_Switch02_D.png": {
+    "mtime": 1768515485.5666845,
+    "seen": 1792646970.838251,
+    "ast_hash": "1043b659060dd490125923bdb9282169",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Cloth_Switch03_D.png": {
+    "mtime": 1768515486.8492107,
+    "seen": 1792646970.8382518,
+    "ast_hash": "909e0ef4980b3dc983bea709a18ecd44",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Cloth_Switch_D.png": {
+    "mtime": 1768515488.057241,
+    "seen": 1792646970.8382525,
+    "ast_hash": "8a3d6b70f6c01e0ec8edcbbd24ef51f2",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Down_D.png": {
+    "mtime": 1768515489.0235095,
+    "seen": 1792646970.8382533,
+    "ast_hash": "b618c27ad538e2a67bc5a03d3370e904",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Down_ID.png": {
+    "mtime": 1768515489.0594113,
+    "seen": 1792646970.8382547,
+    "ast_hash": "79997cb40d9d72fb5b81fe43371fd836",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Down_N.png": {
+    "mtime": 1768515489.8957176,
+    "seen": 1792646970.8382552,
+    "ast_hash": "4a2993c4897d237312129747123557b5",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Down_Switch02_D.png": {
+    "mtime": 1768515490.9755845,
+    "seen": 1792646970.838256,
+    "ast_hash": "009de3817dcb33334addb92afeb8a1ae",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Down_Switch03_D.png": {
+    "mtime": 1768515492.0781662,
+    "seen": 1792646970.8382566,
+    "ast_hash": "5f88044b5192e0621cb578b8629c0d80",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Down_Switch_D.png": {
+    "mtime": 1768515493.0854824,
+    "seen": 1792646970.8382573,
+    "ast_hash": "72e6e1903f97c64c26664c64df6e6fd4",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Eye_D.png": {
+    "mtime": 1768515494.0129237,
+    "seen": 1792646970.8382602,
+    "ast_hash": "8f249a0c00fe3357475cacc5de8804d6",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Eye_HET.png": {
+    "mtime": 1768515494.0169227,
+    "seen": 1792646970.838262,
+    "ast_hash": "ac860a03baadcea9b5f20aa5e249683b",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Face_D.png": {
+    "mtime": 1768515494.365678,
+    "seen": 1792646970.838263,
+    "ast_hash": "28599d525eac74c093d16ffca34b902a",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Face_HET.png": {
+    "mtime": 1768515494.3701706,
+    "seen": 1792646970.8382638,
+    "ast_hash": "ab049eaddb83a057acbc3c5ab14994bd",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Face_ID.png": {
+    "mtime": 1768515494.4020998,
+    "seen": 1792646970.838265,
+    "ast_hash": "ea1fd84860e52632204dcfcd53c67093",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Face_Switch02_D.png": {
+    "mtime": 1768515494.7674317,
+    "seen": 1792646970.8382657,
+    "ast_hash": "66fd2dde777e5f6fbc05641a17629d5d",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Face_Switch03_D.png": {
+    "mtime": 1768515495.1447003,
+    "seen": 1792646970.8382666,
+    "ast_hash": "a0502d48e369253ec1bec96f4dd94f4c",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Face_Switch_D.png": {
+    "mtime": 1768515495.5083883,
+    "seen": 1792646970.8382678,
+    "ast_hash": "ae4d8bdc534dd8d432a98cc1532cac63",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Hair_D.png": {
+    "mtime": 1768515496.1503873,
+    "seen": 1792646970.8382692,
+    "ast_hash": "9fd334597fcde528d8bf29ac0121ac0a",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Hair_HM.png": {
+    "mtime": 1768515496.409983,
+    "seen": 1792646970.83827,
+    "ast_hash": "11858be801dbf775ccfcc7893fc18bd4",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Hair_Switch02_D.png": {
+    "mtime": 1768515497.0911648,
+    "seen": 1792646970.838271,
+    "ast_hash": "85187d0ed7e531cc50ff3c189fe7ae98",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Hair_Switch03_D.png": {
+    "mtime": 1768515497.80116,
+    "seen": 1792646970.8382714,
+    "ast_hash": "a91969a710ac5e2f46c9b2a7ef7e7281",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Hair_Switch_D.png": {
+    "mtime": 1768515498.481758,
+    "seen": 1792646970.8382723,
+    "ast_hash": "a2ca8397dcbf5dd96f1bf099e5a98c30",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Up_D.png": {
+    "mtime": 1768515499.5799763,
+    "seen": 1792646970.838273,
+    "ast_hash": "f84510205891f315169afe4c4d761bba",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Up_ID.png": {
+    "mtime": 1768515499.724528,
+    "seen": 1792646970.8382738,
+    "ast_hash": "397ab39f0dec6d9e0dd0e5603cfae9c1",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Up_N.png": {
+    "mtime": 1768515500.578192,
+    "seen": 1792646970.8382745,
+    "ast_hash": "7597ced857a9162de873316586fe2197",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Up_Switch02_D.png": {
+    "mtime": 1768515501.8143778,
+    "seen": 1792646970.8382754,
+    "ast_hash": "c3632d5424dddb9603b97120a804d027",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Up_Switch03_D.png": {
+    "mtime": 1768515503.0235558,
+    "seen": 1792646970.8382761,
+    "ast_hash": "38c449cabae8c87f5600ddd32c3ec49c",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011Up_Switch_D.png": {
+    "mtime": 1768515504.153345,
+    "seen": 1792646970.8382769,
+    "ast_hash": "11b2d4154e8cf0f821390b1ef65aa570",
+    "semantic_hash": ""
+  },
+  "public/models/Cantarella/Textures/T_R2T1KanteleilaMd10011_Skin.png": {
+    "mtime": 1768515477.690215,
+    "seen": 1792646970.8382776,
+    "ast_hash": "15bcd318cd2e47107e40fc48ec6f6bfb",
+    "semantic_hash": ""
+  }
+}

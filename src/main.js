@@ -5,6 +5,7 @@ import { ExpressionManager } from './vrm/ExpressionManager.js';
 import { LipSyncEngine } from './vrm/LipSyncEngine.js';
 import { LifeSimulator } from './vrm/LifeSimulator.js';
 import { ChestPhysics } from './vrm/ChestPhysics.js';
+import { BodyCollisionGuard } from './vrm/BodyCollisionGuard.js';
 
 import { LLMService } from './ai/LLMService.js';
 import { VoiceService } from './ai/VoiceService.js';
@@ -27,9 +28,12 @@ async function bootstrap() {
   const lipSyncEngine = new LipSyncEngine(vrmManager);
   const lifeSimulator = new LifeSimulator(vrmManager, expressionManager);
   const chestPhysics = new ChestPhysics(vrmManager);
+  const bodyCollisionGuard = new BodyCollisionGuard(vrmManager);
 
-  // Link lifeSimulator & expressionManager across subsystems
+  // Link subsystems (Talking-Face Split, Active Listening & Co-speech)
   expressionManager.lifeSimulator = lifeSimulator;
+  expressionManager.lipSyncEngine = lipSyncEngine;
+  lifeSimulator.lipSyncEngine = lipSyncEngine;
   vrmManager.expressionManager = expressionManager;
   vrmManager.lifeSimulator = lifeSimulator;
 
@@ -53,7 +57,8 @@ async function bootstrap() {
     animationEngine,
     vrmManager,
     memoryService,
-    personalityEngine
+    personalityEngine,
+    lifeSimulator
   });
 
   const controlsHUD = new ControlsHUD({
@@ -74,8 +79,10 @@ async function bootstrap() {
     vrmManager,
     animationEngine,
     expressionManager,
+    lipSyncEngine,
     lifeSimulator,
     chestPhysics,
+    bodyCollisionGuard,
     personalityEngine,
     chatUI,
     controlsHUD,
@@ -110,6 +117,9 @@ async function bootstrap() {
 
     // Update physics-based secondary motion for chest/breast bones
     chestPhysics.update(delta);
+
+    // Anti-clipping collision guard pushes penetrating arms/hands outward
+    bodyCollisionGuard.update(delta);
 
     // Render VRM scene
     vrmManager.render(delta);

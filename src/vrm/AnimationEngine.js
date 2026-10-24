@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+import { InertiaBlender } from './InertiaBlender.js';
 
 // Mixamo to VRM normalized bone mapping
 const MIXAMO_VRM_RIG_MAP = {
@@ -137,6 +138,9 @@ export class AnimationEngine {
     this.gestureCooldownMs = 10000;
     this.isIdlePreloaded = false;
 
+    // Open-Annie Inertialized Animation Blender
+    this.inertiaBlender = new InertiaBlender(this.vrmManager);
+
     // Root elevation tracking to keep avatar centered
     this.targetRootY = 0.0;
     this.currentRootY = 0.0;
@@ -218,6 +222,7 @@ export class AnimationEngine {
     this.mixer = new THREE.AnimationMixer(vrm.scene);
     this.actions.clear();
     this.retargetedClipsCache.clear();
+    this.inertiaBlender?.reset();
 
     this.mixer.addEventListener('finished', (e) => {
       // Loop back to idle when a one-shot animation finishes
@@ -693,12 +698,21 @@ export class AnimationEngine {
 
       if (this.currentAction === action && action.isRunning()) return;
 
+      // Start inertial transition if transitioning between different actions
+      if (this.currentAction && this.currentAction !== action) {
+        this.inertiaBlender.startTransition(fadeDuration);
+      }
+
       action.reset();
       action.fadeIn(fadeDuration);
       action.play();
 
       if (this.currentAction && this.currentAction !== action) {
         this.currentAction.fadeOut(fadeDuration);
+        if (this.mixer) {
+          this.mixer.update(0);
+          this.inertiaBlender.postTargetSample();
+        }
       }
 
       this.currentAction = action;
@@ -712,6 +726,9 @@ export class AnimationEngine {
     if (this.mixer) {
       this.mixer.update(delta);
     }
+
+    // Inertialized animation blending (open-annie inertia.js)
+    this.inertiaBlender.update(delta);
 
     // Smoothly maintain avatar root alignment (gated by epsilon threshold to avoid invalidating scene matrix every frame)
     if (this.vrm?.scene) {
