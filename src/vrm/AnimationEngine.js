@@ -637,6 +637,12 @@ export class AnimationEngine {
     }
 
     let targetAnim = animName || 'idle';
+    if (targetAnim === 'shy' || targetAnim === 'blush') {
+      if (this.vrmManager?.lifeSimulator && typeof this.vrmManager.lifeSimulator.triggerBehavior === 'function') {
+        this.vrmManager.lifeSimulator.triggerBehavior('shy', 5.5);
+      }
+      targetAnim = 'idle';
+    }
     if (targetAnim === 'thinking') targetAnim = 'think';
     if (targetAnim === 'sadIdle' || targetAnim === 'sad1') targetAnim = 'sad';
     if (!this.animations[targetAnim]) {

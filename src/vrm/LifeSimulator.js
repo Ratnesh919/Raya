@@ -64,7 +64,8 @@ export class LifeSimulator {
       gazeOffsetX: 0,
       gazeOffsetY: 0,
       breatheFreqMult: 1.0,
-      breatheAmpMult: 1.0
+      breatheAmpMult: 1.0,
+      handsJoinedWeight: 0
     };
     this.behaviorCurrent = {
       headPitch: 0,
@@ -79,8 +80,19 @@ export class LifeSimulator {
       gazeOffsetX: 0,
       gazeOffsetY: 0,
       breatheFreqMult: 1.0,
-      breatheAmpMult: 1.0
+      breatheAmpMult: 1.0,
+      handsJoinedWeight: 0
     };
+
+    // Humanoid arm, elbow, hand & finger bone caches for full-body postures
+    this.leftUpperArm = null;
+    this.rightUpperArm = null;
+    this.leftLowerArm = null;
+    this.rightLowerArm = null;
+    this.leftHand = null;
+    this.rightHand = null;
+    this.leftFingers = [];
+    this.rightFingers = [];
 
     // Anatomical head and eye rotation tracking state
     this.currentHeadYaw = 0;
@@ -97,8 +109,51 @@ export class LifeSimulator {
     this.setupListeners();
 
     this.vrmManager.addModelLoadedListener((vrm) => {
-      this.vrm = vrm;
+      this.bindModel(vrm);
     });
+  }
+
+  bindModel(vrm) {
+    this.vrm = vrm;
+    if (!vrm?.humanoid) return;
+
+    this.leftUpperArm = vrm.humanoid.getNormalizedBoneNode('leftUpperArm');
+    this.rightUpperArm = vrm.humanoid.getNormalizedBoneNode('rightUpperArm');
+    this.leftLowerArm = vrm.humanoid.getNormalizedBoneNode('leftLowerArm');
+    this.rightLowerArm = vrm.humanoid.getNormalizedBoneNode('rightLowerArm');
+    this.leftHand = vrm.humanoid.getNormalizedBoneNode('leftHand');
+    this.rightHand = vrm.humanoid.getNormalizedBoneNode('rightHand');
+
+    this.leftFingers = this.cacheFingerBones('left');
+    this.rightFingers = this.cacheFingerBones('right');
+  }
+
+  cacheFingerBones(side) {
+    if (!this.vrm?.humanoid) return [];
+    const fingers = [];
+    const fingerNames = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
+
+    fingerNames.forEach((fname) => {
+      const isThumb = fname === 'Thumb';
+      if (isThumb) {
+        const t1 = this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbMetacarpal`) ||
+                   this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbProximal`);
+        const t2 = this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbProximal`) ||
+                   this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbIntermediate`);
+        const t3 = this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbDistal`);
+        if (t1) fingers.push({ node: t1, isThumb: true, seg: 'prox', side });
+        if (t2) fingers.push({ node: t2, isThumb: true, seg: 'inter', side });
+        if (t3) fingers.push({ node: t3, isThumb: true, seg: 'dist', side });
+      } else {
+        const p = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Proximal`);
+        const i = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Intermediate`);
+        const d = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Distal`);
+        if (p) fingers.push({ node: p, isThumb: false, seg: 'prox', side });
+        if (i) fingers.push({ node: i, isThumb: false, seg: 'inter', side });
+        if (d) fingers.push({ node: d, isThumb: false, seg: 'dist', side });
+      }
+    });
+    return fingers;
   }
 
   setupListeners() {
@@ -175,6 +230,7 @@ export class LifeSimulator {
     this.behaviorTarget.gazeOffsetY = 0;
     this.behaviorTarget.breatheFreqMult = 1.0;
     this.behaviorTarget.breatheAmpMult = 1.0;
+    this.behaviorTarget.handsJoinedWeight = 0;
   }
 
   updateBehavior(delta) {
@@ -203,60 +259,92 @@ export class LifeSimulator {
     const name = this.activeBehavior.name;
 
     if (name === 'shy' || name === 'embarrassment' || name === 'blush') {
-      // 1. SHY SEQUENCE (Bashful head tilt, looks at user, breaks gaze downward, holds, then peeks back up)
-      const tNotice = Math.min(0.7, dur * 0.16);
-      const tTilt = Math.min(1.9, dur * 0.42);
-      const tHold = Math.min(3.0, dur * 0.67);
+      // 1. SHY SEQUENCE (User-specified multi-phase behavior):
+      // - Head tilts slightly down to her left
+      // - Eyes look directly at the user
+      // - Eyes look down away while KEEPING THE HEAD AT THE SAME PLACE
+      // - Moving her eyes back towards the user while KEEPING THE HEAD AT THE SAME PLACE
+      // - Hands kept joined to the front with proper elbow and finger movement
+      const tTilt = 0.9;
+      const tLookDown = 2.4;
+      const tLookUp = 4.2;
 
-      if (t < tNotice) {
-        this.behaviorTarget.headPitch = 0;
-        this.behaviorTarget.headYaw = 0;
-        this.behaviorTarget.headRoll = 0;
-        this.behaviorTarget.neckRoll = 0;
-        this.behaviorTarget.spinePitch = 0;
-        this.behaviorTarget.leftShoulderZ = 0;
-        this.behaviorTarget.gazeOffsetX = 0;
-        this.behaviorTarget.gazeOffsetY = 0;
-      } else if (t < tTilt) {
-        const p = (t - tNotice) / (tTilt - tNotice);
+      const headPitchTarget = -0.18;
+      const headRollTarget = -0.16; // Tilted slightly down to her left
+      const headYawTarget = -0.10;  // Turned slightly to her left
+      const neckRollTarget = -0.08;
+      const spinePitchTarget = -0.04;
+      const shoulderZTarget = 0.04;
+
+      if (t < tTilt) {
+        // Step 1: Head tilts slightly down to her left, hands join in front, eyes lock onto user
+        const p = t / tTilt;
         const ease = p * p * (3 - 2 * p);
-        this.behaviorTarget.gazeOffsetY = -0.55 * ease;
-        this.behaviorTarget.gazeOffsetX = 0.28 * ease;
-        this.behaviorTarget.headPitch = -0.22 * ease;
-        this.behaviorTarget.headYaw = 0.20 * ease;
-        this.behaviorTarget.headRoll = 0.16 * ease;
-        this.behaviorTarget.neckRoll = 0.08 * ease;
-        this.behaviorTarget.spinePitch = -0.05 * ease;
-        this.behaviorTarget.leftShoulderZ = 0.05 * ease;
+        this.behaviorTarget.headPitch = headPitchTarget * ease;
+        this.behaviorTarget.headRoll = headRollTarget * ease;
+        this.behaviorTarget.headYaw = headYawTarget * ease;
+        this.behaviorTarget.neckRoll = neckRollTarget * ease;
+        this.behaviorTarget.spinePitch = spinePitchTarget * ease;
+        this.behaviorTarget.leftShoulderZ = shoulderZTarget * ease;
+        this.behaviorTarget.handsJoinedWeight = ease;
 
-        if (p > 0.4 && p < 0.6 && !this.isBlinking && this.timeSinceLastBlink > 1.0) {
+        // Eyes look at the user (+0.22 upward offset counteracts the -0.18 downward head tilt)
+        this.behaviorTarget.gazeOffsetY = 0.22 * ease;
+        this.behaviorTarget.gazeOffsetX = 0;
+        this.behaviorTarget.breatheFreqMult = 1.0 + 0.25 * ease;
+      } else if (t < tLookDown) {
+        // Step 2: KEEP HEAD AT EXACT SAME PLACE, while eyes break gaze and look down away bashfully
+        this.behaviorTarget.headPitch = headPitchTarget;
+        this.behaviorTarget.headRoll = headRollTarget;
+        this.behaviorTarget.headYaw = headYawTarget;
+        this.behaviorTarget.neckRoll = neckRollTarget;
+        this.behaviorTarget.spinePitch = spinePitchTarget;
+        this.behaviorTarget.leftShoulderZ = shoulderZTarget;
+        this.behaviorTarget.handsJoinedWeight = 1.0;
+
+        const pDown = Math.min(1.0, (t - tTilt) / 0.55);
+        const easeDown = pDown * pDown * (3 - 2 * pDown);
+        this.behaviorTarget.gazeOffsetY = THREE.MathUtils.lerp(0.22, -0.65, easeDown);
+        this.behaviorTarget.gazeOffsetX = THREE.MathUtils.lerp(0.0, 0.24, easeDown);
+        this.behaviorTarget.breatheFreqMult = 1.25;
+
+        // Gentle bashful blink mid-way down
+        if (pDown > 0.35 && pDown < 0.65 && !this.isBlinking && this.timeSinceLastBlink > 0.8) {
           this.isBlinking = true;
           this.blinkProgress = 0;
         }
-      } else if (t < tHold) {
-        this.behaviorTarget.gazeOffsetY = -0.55;
-        this.behaviorTarget.gazeOffsetX = 0.28;
-        this.behaviorTarget.headPitch = -0.22;
-        this.behaviorTarget.headYaw = 0.20;
-        this.behaviorTarget.headRoll = 0.16;
-        this.behaviorTarget.neckRoll = 0.08;
-        this.behaviorTarget.spinePitch = -0.05;
-        this.behaviorTarget.leftShoulderZ = 0.05;
-      } else {
-        const pTotal = (t - tHold) / (dur - tHold);
-        const eyeP = Math.min(1.0, pTotal / 0.45);
-        const eyeEase = eyeP * eyeP * (3 - 2 * eyeP);
-        this.behaviorTarget.gazeOffsetY = -0.55 * (1 - eyeEase);
-        this.behaviorTarget.gazeOffsetX = 0.28 * (1 - eyeEase);
+      } else if (t < tLookUp) {
+        // Step 3: KEEP HEAD AT EXACT SAME PLACE, while moving eyes back towards the user
+        this.behaviorTarget.headPitch = headPitchTarget;
+        this.behaviorTarget.headRoll = headRollTarget;
+        this.behaviorTarget.headYaw = headYawTarget;
+        this.behaviorTarget.neckRoll = neckRollTarget;
+        this.behaviorTarget.spinePitch = spinePitchTarget;
+        this.behaviorTarget.leftShoulderZ = shoulderZTarget;
+        this.behaviorTarget.handsJoinedWeight = 1.0;
 
-        const headP = Math.max(0, (pTotal - 0.25) / 0.75);
-        const headEase = headP * headP * (3 - 2 * headP);
-        this.behaviorTarget.headPitch = -0.22 * (1 - headEase);
-        this.behaviorTarget.headYaw = 0.20 * (1 - headEase);
-        this.behaviorTarget.headRoll = 0.16 * (1 - headEase);
-        this.behaviorTarget.neckRoll = 0.08 * (1 - headEase);
-        this.behaviorTarget.spinePitch = -0.05 * (1 - headEase);
-        this.behaviorTarget.leftShoulderZ = 0.05 * (1 - headEase);
+        const pUp = Math.min(1.0, (t - tLookDown) / 0.70);
+        const easeUp = pUp * pUp * (3 - 2 * pUp);
+        this.behaviorTarget.gazeOffsetY = THREE.MathUtils.lerp(-0.65, 0.22, easeUp);
+        this.behaviorTarget.gazeOffsetX = THREE.MathUtils.lerp(0.24, 0.0, easeUp);
+        this.behaviorTarget.breatheFreqMult = 1.15;
+      } else {
+        // Step 4: Gracefully ease back to neutral posture
+        const pTotal = (t - tLookUp) / Math.max(0.001, dur - tLookUp);
+        const easeOut = pTotal * pTotal * (3 - 2 * pTotal);
+        const remain = 1.0 - easeOut;
+
+        this.behaviorTarget.headPitch = headPitchTarget * remain;
+        this.behaviorTarget.headRoll = headRollTarget * remain;
+        this.behaviorTarget.headYaw = headYawTarget * remain;
+        this.behaviorTarget.neckRoll = neckRollTarget * remain;
+        this.behaviorTarget.spinePitch = spinePitchTarget * remain;
+        this.behaviorTarget.leftShoulderZ = shoulderZTarget * remain;
+        this.behaviorTarget.handsJoinedWeight = remain;
+
+        this.behaviorTarget.gazeOffsetY = 0.22 * remain;
+        this.behaviorTarget.gazeOffsetX = 0;
+        this.behaviorTarget.breatheFreqMult = 1.0 + 0.15 * remain;
       }
     } else if (name === 'concern' || name === 'caring' || name === 'empathy' || name === 'console') {
       // 2. CONCERN SEQUENCE (Empathetic lateral head tilt, forward body lean, focused gaze)
@@ -381,6 +469,94 @@ export class LifeSimulator {
     this.updateBlinking(delta);
     this.updateSaccades(delta);
     this.updateGaze(delta);
+    this.updateHandsAndFingers(delta);
+  }
+
+  updateHandsAndFingers(delta) {
+    if (!this.vrm?.humanoid) return;
+
+    // Smooth handsJoinedWeight
+    const targetW = this.behaviorTarget.handsJoinedWeight || 0;
+    const lerpSpeed = THREE.MathUtils.clamp(delta * 6.0, 0, 1);
+    this.behaviorCurrent.handsJoinedWeight = THREE.MathUtils.lerp(
+      this.behaviorCurrent.handsJoinedWeight || 0,
+      targetW,
+      lerpSpeed
+    );
+    const w = this.behaviorCurrent.handsJoinedWeight;
+
+    // 1. Arm and Elbow Kinematics (bringing hands joined together in front of lower chest / upper abdomen)
+    if (w > 0.0005) {
+      if (this.leftUpperArm) {
+        this.leftUpperArm.rotation.x += 0.58 * w; // Pitch forward
+        this.leftUpperArm.rotation.y += 0.22 * w; // Yaw inward towards center
+        this.leftUpperArm.rotation.z += 0.26 * w; // Lift slightly
+      }
+      if (this.rightUpperArm) {
+        this.rightUpperArm.rotation.x += 0.58 * w; // Pitch forward
+        this.rightUpperArm.rotation.y -= 0.22 * w; // Yaw inward towards center
+        this.rightUpperArm.rotation.z -= 0.26 * w; // Lift slightly
+      }
+
+      if (this.leftLowerArm) {
+        this.leftLowerArm.rotation.y += 0.54 * w; // Inward elbow fold
+        this.leftLowerArm.rotation.z += 0.76 * w; // Forearm crossed inward
+      }
+      if (this.rightLowerArm) {
+        this.rightLowerArm.rotation.y -= 0.54 * w; // Inward elbow fold
+        this.rightLowerArm.rotation.z -= 0.76 * w; // Forearm crossed inward
+      }
+
+      if (this.leftHand) {
+        this.leftHand.rotation.x -= 0.14 * w; // Soft wrist clasp
+        this.leftHand.rotation.y += 0.32 * w;
+        this.leftHand.rotation.z += 0.18 * w;
+      }
+      if (this.rightHand) {
+        this.rightHand.rotation.x -= 0.14 * w; // Soft wrist clasp
+        this.rightHand.rotation.y -= 0.32 * w;
+        this.rightHand.rotation.z -= 0.18 * w;
+      }
+    }
+
+    // 2. All 10 Finger Bones: Gentle Clasp + Biological Micro-Fidgeting + Resting Breathing
+    // Eliminates the "hands and fingers are stiff/stuck" mannequin feel completely
+    const fidgetL = Math.sin(this.floorTime * 2.8) * 0.03 * w;
+    const fidgetR = Math.cos(this.floorTime * 2.4 + 0.3) * 0.03 * w;
+    const idleBreatheL = Math.sin(this.breatheTime * 0.9) * 0.016;
+    const idleBreatheR = Math.cos(this.breatheTime * 0.9 + 0.2) * 0.016;
+
+    // Left hand fingers (+Z curl in standard normalized VRM humanoid space)
+    if (this.leftFingers && this.leftFingers.length > 0) {
+      for (let i = 0; i < this.leftFingers.length; i++) {
+        const f = this.leftFingers[i];
+        let angle = 0;
+        if (f.isThumb) {
+          angle = f.seg === 'dist' ? (0.16 * w + fidgetL * 0.5) : (0.22 * w + fidgetL * 0.5);
+        } else {
+          if (f.seg === 'prox') angle = 0.36 * w + fidgetL + idleBreatheL;
+          else if (f.seg === 'inter') angle = 0.44 * w + fidgetL + idleBreatheL;
+          else angle = 0.24 * w + fidgetL * 0.5;
+        }
+        f.node.rotation.z += angle;
+      }
+    }
+
+    // Right hand fingers (-Z curl in standard normalized VRM humanoid space)
+    if (this.rightFingers && this.rightFingers.length > 0) {
+      for (let i = 0; i < this.rightFingers.length; i++) {
+        const f = this.rightFingers[i];
+        let angle = 0;
+        if (f.isThumb) {
+          angle = f.seg === 'dist' ? (0.16 * w + fidgetR * 0.5) : (0.22 * w + fidgetR * 0.5);
+        } else {
+          if (f.seg === 'prox') angle = 0.36 * w + fidgetR + idleBreatheR;
+          else if (f.seg === 'inter') angle = 0.44 * w + fidgetR + idleBreatheR;
+          else angle = 0.24 * w + fidgetR * 0.5;
+        }
+        f.node.rotation.z -= angle;
+      }
+    }
   }
 
   updateBreathing(delta) {

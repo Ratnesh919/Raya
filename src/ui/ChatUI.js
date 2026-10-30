@@ -189,7 +189,13 @@ export class ChatUI {
           actionToPlay = null; // Strictly avoid sitting
         }
 
-        if (actionToPlay) {
+        if (actionToPlay === 'shy' || finalEmotion === 'blush' || finalEmotion === 'shy') {
+          // Play calm idle as foundation while full-body shy kinematic behavior executes
+          this.animationEngine.playAnimation('idle', 0.4);
+          if (this.lifeSimulator && typeof this.lifeSimulator.triggerBehavior === 'function') {
+            this.lifeSimulator.triggerBehavior('shy', Math.max(5.5, speechDurationMs / 1000));
+          }
+        } else if (actionToPlay) {
           this.animationEngine.playAnimation(actionToPlay, 0.4);
         } else if (finalEmotion === 'think' || finalEmotion === 'advice' || finalEmotion === 'curiosity') {
           this.animationEngine.playAnimation('think', 0.4);
@@ -301,7 +307,7 @@ export class ChatUI {
 
     // 6. Compliments / Flirting / Blushing
     if (/\b(blush|flattered|thank you so much|sweet of you|you're sweet|making me blush|shy|flirt|giggle|aww|awww|sharma)\b/i.test(combined)) {
-      return { emotion: 'blush', action: 'happy' };
+      return { emotion: 'blush', action: 'shy' };
     }
 
     // 7. Surprise / Wonder / Amazement

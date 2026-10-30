@@ -30,12 +30,13 @@ async function bootstrap() {
   const chestPhysics = new ChestPhysics(vrmManager);
   const bodyCollisionGuard = new BodyCollisionGuard(vrmManager);
 
-  // Link subsystems (Talking-Face Split, Active Listening & Co-speech)
+  // Link subsystems (Talking-Face Split, Active Listening & Co-speech, Chest Physics)
   expressionManager.lifeSimulator = lifeSimulator;
   expressionManager.lipSyncEngine = lipSyncEngine;
   lifeSimulator.lipSyncEngine = lipSyncEngine;
   vrmManager.expressionManager = expressionManager;
   vrmManager.lifeSimulator = lifeSimulator;
+  vrmManager.chestPhysics = chestPhysics;
 
   // 2. AI, Voice, Netlify Database Memory & Flexible Personality Services
   const personalityEngine = new PersonalityEngine();
@@ -115,13 +116,10 @@ async function bootstrap() {
     // Update procedural life simulations (breathing, saccades, gaze, blinking)
     lifeSimulator.update(delta);
 
-    // Update physics-based secondary motion for chest/breast bones
-    chestPhysics.update(delta);
-
     // Anti-clipping collision guard pushes penetrating arms/hands outward
     bodyCollisionGuard.update(delta);
 
-    // Render VRM scene
+    // Render VRM scene (vrmManager.render updates VRM spring bones, then runs chestPhysics dynamically)
     vrmManager.render(delta);
   }
 
@@ -130,7 +128,11 @@ async function bootstrap() {
   // 5. Load Initial Model
   controlsHUD.showLoading('Connecting to 3D Viewport...');
   try {
-    const defaultModelUrl = '/models/changli.vrm';
+    const defaultModelUrl = '/models/iuno.vrm';
+    const modelSelectEl = document.getElementById('model-select');
+    if (modelSelectEl) {
+      modelSelectEl.value = defaultModelUrl;
+    }
     await vrmManager.loadModel(defaultModelUrl);
 
     // Add welcoming greeting to chat drawer with happy expression

@@ -11,16 +11,16 @@ export class VRMManager {
     this.isLoading = false;
     this.fbxAvatarLoader = new FBXAvatarLoader();
 
-    // Visual adjustment settings matching user configuration (70% skin, 50% hair, 55% lighting)
-    if (!localStorage.getItem('raya_visual_defaults_v5')) {
-      localStorage.setItem('raya_visual_defaults_v5', 'true');
-      localStorage.setItem('raya_skin_brightness', '0.70');
-      localStorage.setItem('raya_hair_brightness', '0.50');
-      localStorage.setItem('raya_overall_brightness', '0.55');
+    // Visual adjustment settings: 100% hair brightness to preserve true character hair colors (pinkish, blue, etc.)
+    if (!localStorage.getItem('raya_visual_defaults_v7')) {
+      localStorage.setItem('raya_visual_defaults_v7', 'true');
+      localStorage.setItem('raya_skin_brightness', '0.90');
+      localStorage.setItem('raya_hair_brightness', '1.00');
+      localStorage.setItem('raya_overall_brightness', '0.85');
     }
-    this.skinBrightness = parseFloat(localStorage.getItem('raya_skin_brightness') || '0.70');
-    this.hairBrightness = parseFloat(localStorage.getItem('raya_hair_brightness') || '0.50');
-    this.overallBrightness = parseFloat(localStorage.getItem('raya_overall_brightness') || '0.55');
+    this.skinBrightness = parseFloat(localStorage.getItem('raya_skin_brightness') || '0.90');
+    this.hairBrightness = parseFloat(localStorage.getItem('raya_hair_brightness') || '1.00');
+    this.overallBrightness = parseFloat(localStorage.getItem('raya_overall_brightness') || '0.85');
 
     // Model loaded listener array (ensures multiple consumers all receive loaded VRM)
     this.modelLoadedListeners = [];
@@ -113,6 +113,8 @@ export class VRMManager {
     // 6. Orbit & Drag state (with mobile touch & pinch zoom)
     this.isDragging = false;
     this.previousMousePosition = { x: 0, y: 0 };
+    this.turnDeltaY = 0;
+    this.chestPhysics = null;
     this.setupInteractions();
 
     // 7. Resize listener
@@ -249,7 +251,9 @@ export class VRMManager {
       if (this.dragButton === 0 && this.currentVrm) {
         // Left click drag: rotate avatar model horizontally (around local Y axis)
         const deltaX = e.clientX - this.previousMousePosition.x;
-        this.currentVrm.scene.rotation.y += deltaX * 0.008;
+        const turn = deltaX * 0.008;
+        this.currentVrm.scene.rotation.y += turn;
+        this.turnDeltaY += turn;
       } else if (this.dragButton === 2) {
         // Right click drag: full 3D orbital camera angle control
         const deltaX = e.clientX - this.previousMousePosition.x;
@@ -323,7 +327,9 @@ export class VRMManager {
 
         // 1-Finger Horizontal: rotate avatar model around Y axis
         if (this.currentVrm) {
-          this.currentVrm.scene.rotation.y += deltaX * 0.009;
+          const turn = deltaX * 0.009;
+          this.currentVrm.scene.rotation.y += turn;
+          this.turnDeltaY += turn;
         }
 
         // 1-Finger Vertical: tilt the 3D camera elevation (phi) on mobile!
@@ -693,6 +699,12 @@ export class VRMManager {
 
     const joints = this.currentVrm.springBoneManager.joints;
     for (let i = 0; i < joints.length; i++) {
+      const boneName = (joints[i].bone?.name || '').toLowerCase();
+      // Exclude breast bones so ambient wind breeze does not pull or distort them
+      if (boneName.includes('breast') || boneName.includes('mune') || boneName.includes('bust')) {
+        continue;
+      }
+
       const settings = joints[i].settings;
       if (!settings) continue;
 
@@ -718,6 +730,12 @@ export class VRMManager {
       // 2. VRM update: @pixiv/three-vrm already updates humanoid, lookAt, and springBoneManager
       // (Redundant second springBoneManager.update call eliminated to save 50% physics CPU)
       this.currentVrm.update(deltaTime);
+
+      // 3. Apply physics-based rotational inertia & dynamic secondary motion for chest/breast bones
+      // Executes directly after currentVrm.update so it blends dynamically on top of spring bones & animations!
+      if (this.chestPhysics) {
+        this.chestPhysics.update(deltaTime);
+      }
     }
 
     // Adaptive FPS watchdog: dynamically optimize pixel ratio if low-end device is dropping frames

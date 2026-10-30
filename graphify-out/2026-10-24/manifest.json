@@ -48,16 +48,16 @@
     "semantic_hash": "8f4a3c62f81356534885aaf69781b02e"
   },
   "src/main.js": {
-    "mtime": 1792657098.8226776,
-    "seen": 1792657274.714377,
-    "ast_hash": "067c82eee1a73316edc12042e1000e8e",
+    "mtime": 1792815630.8623314,
+    "seen": 1792815836.9830625,
+    "ast_hash": "e3248507d8f3bfbd4be12a93d85d72c0",
     "semantic_hash": ""
   },
   "src/ui/ChatUI.js": {
-    "mtime": 1790170681.2140114,
-    "seen": 1790224350.819761,
-    "ast_hash": "f7167d7dbbd1586402236d1112cb32a7",
-    "semantic_hash": "f7167d7dbbd1586402236d1112cb32a7"
+    "mtime": 1792815590.887684,
+    "seen": 1792815836.9830706,
+    "ast_hash": "dafe44f552da7be49b5cddfc98575882",
+    "semantic_hash": ""
   },
   "src/ui/ControlsHUD.js": {
     "mtime": 1792657126.96294,
@@ -78,9 +78,9 @@
     "semantic_hash": "22d20c88126d8dcd2c97686564b5d733"
   },
   "src/vrm/AnimationEngine.js": {
-    "mtime": 1792646884.216696,
-    "seen": 1792646970.8382256,
-    "ast_hash": "cc0ec1996e98109f16b1b163b6e8b96d",
+    "mtime": 1792815466.7649944,
+    "seen": 1792815836.9830914,
+    "ast_hash": "fd5ae2071336db1be39415c79a0094f9",
     "semantic_hash": ""
   },
   "src/vrm/ChestPhysics.js": {
@@ -90,22 +90,22 @@
     "semantic_hash": ""
   },
   "src/vrm/ExpressionManager.js": {
-    "mtime": 1792657072.1122036,
-    "seen": 1792657274.7143855,
-    "ast_hash": "e1dc396451591b3e7609b24cb831f4ed",
+    "mtime": 1792815223.5297825,
+    "seen": 1792815836.9831088,
+    "ast_hash": "0fc5f9be858b42882c4117dac2c393b4",
     "semantic_hash": ""
   },
   "src/vrm/LifeSimulator.js": {
-    "mtime": 1792656995.9121983,
-    "seen": 1792657274.7143877,
-    "ast_hash": "ed3892b69f09cdd731bfae38be5de778",
+    "mtime": 1792815322.0523005,
+    "seen": 1792815836.9831345,
+    "ast_hash": "1e8055550e7fcb0c1cd181dcca7269cd",
     "semantic_hash": ""
   },
   "src/vrm/LipSyncEngine.js": {
-    "mtime": 1790137545.5524106,
-    "seen": 1790224350.8197677,
-    "ast_hash": "cc4a2905600e912711c5688d28540117",
-    "semantic_hash": "cc4a2905600e912711c5688d28540117"
+    "mtime": 1792815262.713293,
+    "seen": 1792815836.9831383,
+    "ast_hash": "4ec206a25dfcc78fc5f59c716224b072",
+    "semantic_hash": ""
   },
   "src/vrm/VRMManager.js": {
     "mtime": 1790514120.0956697,
@@ -441,6 +441,24 @@
     "mtime": 1768515477.690215,
     "seen": 1792646970.8382776,
     "ast_hash": "15bcd318cd2e47107e40fc48ec6f6bfb",
+    "semantic_hash": ""
+  },
+  "src/vrm/BodyCollisionGuard.js": {
+    "mtime": 1792815177.746425,
+    "seen": 1792815836.9830983,
+    "ast_hash": "b499cb648063b9c0d0e8836c9e34bcb8",
+    "semantic_hash": ""
+  },
+  "src/vrm/InertiaBlender.js": {
+    "mtime": 1792815346.6631012,
+    "seen": 1792815836.983119,
+    "ast_hash": "ef94a8ccc962d9b194b0face144a62c0",
+    "semantic_hash": ""
+  },
+  "blender_live_bridge.py": {
+    "mtime": 1792817298.6594458,
+    "seen": 1792820053.3897479,
+    "ast_hash": "e0554e98a337176079b248f7b5926c44",
     "semantic_hash": ""
   }
 }

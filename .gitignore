@@ -1,4 +1,4 @@
-﻿# Logs
+# Logs
 logs
 *.log
 npm-debug.log*
@@ -32,3 +32,12 @@ Thumbs.db
 
 # Graphify cache
 graphify-out/cache/
+
+# Large binaries exceeding GitHub 100MB limit & temp files
+public/models/iuno.vrm
+public/models/*.bak
+public/models/test_*.vrm
+*.blend
+*.blend1
+headless_blender_log.txt
+__pycache__/

@@ -5,12 +5,13 @@ import * as THREE from 'three';
  * for character chest, breast, and thoracic spine bones.
  * 
  * Physics Capabilities:
- * 1. Rotational Inertia (Newton's 1st Law): When the model rotates left/right,
+ * 1. Rotational Inertia (Newton's 1st Law): When the avatar or scene rotates left/right,
  *    soft-body mass lags behind the angular acceleration, then rebounds with
  *    damped harmonic oscillation.
- * 2. Centrifugal Outward Force (F_c = m * omega^2 * r): Radial expansion during rotation.
- * 3. Coriolis 3D Gyroscopic Coupling: Cross-axis orbital deflection.
- * 4. Torso Torsional Compliance: Natural spinal elasticity of the thoracic ribcage.
+ * 2. Centrifugal Outward Force (F_c = m * omega^2 * r): Radial expansion and upward lift during rotation.
+ * 3. Smooth Exponential Filtering: Eliminates mouse polling jitter so rotations feel silky and continuous.
+ * 4. Dual-Mode Integration: Operates harmoniously on top of VRM Spring Bones (Yinlin, Changli, Iuno)
+ *    and direct bone hierarchies without accumulation or interference.
  * 5. Organic Respiration Coupling: Sinusoidal chest expansion and relaxation.
  */
 export class ChestPhysics {
@@ -19,20 +20,23 @@ export class ChestPhysics {
     this.vrm = null;
     this.breastBones = [];
 
-    // Physics parameters (grounded in human biomechanics & soft-tissue elasticity)
-    this.stiffness = 32.0;          // Spring restoring force coefficient (k)
-    this.damping = 4.8;             // Viscous damping coefficient (c)
+    // Zero Garbage Collection scratch objects
+    this._scratchEuler = new THREE.Euler(0, 0, 0, 'YXZ');
+    this._scratchQuat = new THREE.Quaternion();
+
+    // Physics parameters (grounded in biomechanics & soft-tissue elasticity)
+    this.stiffness = 26.0;          // Spring restoring force coefficient (k)
+    this.damping = 4.0;             // Viscous damping coefficient (c) (underdamped ~0.39 for natural rebound ripples)
     this.mass = 1.0;                // Normalized mass (m)
-    this.breathingCoupling = 0.024; // Sinusoidal breathing coupling
-    this.inertiaGain = 0.60;        // Sensitivity to torso linear acceleration
-    this.rotInertiaGain = 0.028;    // Rotational inertia lag on left/right turn
-    this.rotDragGain = 0.012;       // Angular velocity drag/sway
-    this.centrifugalGain = 0.0012;  // Radial outward centrifugal expansion
-    this.coriolisGain = 0.16;       // 3D gyroscopic cross-axis coupling
+    this.breatheCoupling = 0.015;   // Sinusoidal breathing coupling
+    this.rotInertiaGain = 1.25;     // Dynamic rotational inertia lag on left/right turn
+    this.rotDragGain = 0.35;        // Sustained angular velocity drag
+    this.rotAccelGain = 0.055;      // Sudden flick acceleration response
+    this.centrifugalGain = 0.0022;  // Radial outward centrifugal expansion and lift
 
     // Torso Torsional Compliance (whole ribcage flexibility when rotating)
-    this.torsoStiffness = 42.0;
-    this.torsoDamping = 6.2;
+    this.torsoStiffness = 38.0;
+    this.torsoDamping = 5.8;
     this.torsoMass = 1.0;
     this.torsoDisplacementY = 0;
     this.torsoVelocityY = 0;
@@ -48,6 +52,7 @@ export class ChestPhysics {
     this.prevChestRotY = 0;
     this.chestVelX = 0;
     this.chestVelY = 0;
+    this.prevChestVelY = 0;
 
     this.time = 0;
 
@@ -63,6 +68,9 @@ export class ChestPhysics {
     this.torsoVelocityY = 0;
     this.sceneAngVelY = 0;
     this.prevSceneAngVelY = 0;
+    this.chestVelX = 0;
+    this.chestVelY = 0;
+    this.prevChestVelY = 0;
 
     if (!vrm?.scene) return;
 
@@ -81,15 +89,19 @@ export class ChestPhysics {
       this.prevChestRotY = this.chestBone.rotation.y;
     }
 
-    // Discover all chest/breast bones across model conventions (Changli, Cantarella, VRoid, MMD, etc.)
+    // Set of bones managed by VRMSpringBone
+    const springJoints = vrm.springBoneManager?.joints || [];
+    const springBoneSet = new Set(springJoints.map((j) => j.bone));
+
+    // Discover all chest/breast bones across model conventions (Changli, Yinlin, Iuno, Cantarella, etc.)
     const discovered = [];
 
     vrm.scene.traverse((node) => {
       if (!node.isBone && !node.isObject3D) return;
       const lower = node.name.toLowerCase();
 
-      // Exclude leaf tips (which only serve as zero-length end points)
-      if (lower.includes('tip') || lower.includes('saki') || lower.includes('end')) return;
+      // Exclude leaf tips (zero-length end points) and auxiliary corrective bones (henkei)
+      if (lower.includes('tip') || lower.includes('saki') || lower.includes('end') || lower.includes('henkei')) return;
 
       const isBreast =
         lower.includes('breast') ||
@@ -116,18 +128,22 @@ export class ChestPhysics {
 
         // Segment chain depth weighting (root carries primary inertia, child segments flex smoothly)
         let chainWeight = 1.0;
-        if (lower.includes('002') || lower.includes('02') || lower.includes('mid')) {
-          chainWeight = 0.65;
+        if (lower.includes('002') || lower.includes('02') || lower.includes('mid') || lower.includes('breast2')) {
+          chainWeight = 0.70;
         } else if (lower.includes('003') || lower.includes('03')) {
-          chainWeight = 0.35;
+          chainWeight = 0.40;
         }
+
+        const isSpringBone = springBoneSet.has(node);
 
         discovered.push({
           node,
           name: node.name,
           isLeft,
+          isSpringBone,
           chainWeight,
-          // Store rest local rotation
+          // Store rest local rotation and clean base quaternion
+          baseLocalQuaternion: node.quaternion.clone(),
           restRotation: node.rotation.clone(),
           // Spring physics state
           displacementX: 0, // Pitch (up/down bounce & centrifugal lift)
@@ -141,11 +157,16 @@ export class ChestPhysics {
     });
 
     this.breastBones = discovered;
-    console.log(`[ChestPhysics] Initialized ${this.breastBones.length} secondary physics bones:`, this.breastBones.map((b) => b.name));
+    console.log(
+      `[ChestPhysics] Initialized ${this.breastBones.length} secondary physics bones:`,
+      this.breastBones.map((b) => `${b.name} (${b.isLeft ? 'L' : 'R'}, spring=${b.isSpringBone})`)
+    );
   }
 
   /**
-   * Physics update step called every animation frame with delta time
+   * Physics update step called every animation frame with delta time.
+   * Runs right after vrm.update() so it blends dynamically on top of
+   * VRM spring bones and animations without being overwritten.
    */
   update(delta) {
     if (!this.vrm) return;
@@ -157,96 +178,104 @@ export class ChestPhysics {
     this.time += dt;
 
     // 1. Calculate Model / Scene rotation velocity & acceleration (mouse drag, touch rotate, root turn)
-    let sceneDeltaY = 0;
+    let sceneDeltaY = this.vrmManager.turnDeltaY || 0;
+    this.vrmManager.turnDeltaY = 0;
+
     if (this.vrm.scene) {
       const curSceneY = this.vrm.scene.rotation.y;
-      sceneDeltaY = curSceneY - this.prevSceneRotY;
-      while (sceneDeltaY > Math.PI) sceneDeltaY -= Math.PI * 2;
-      while (sceneDeltaY < -Math.PI) sceneDeltaY += Math.PI * 2;
+      let autoDelta = curSceneY - this.prevSceneRotY;
+      while (autoDelta > Math.PI) autoDelta -= Math.PI * 2;
+      while (autoDelta < -Math.PI) autoDelta += Math.PI * 2;
       this.prevSceneRotY = curSceneY;
+
+      // If no explicit drag this frame, use automatic scene rotation delta
+      if (Math.abs(sceneDeltaY) < 0.0001) {
+        sceneDeltaY = autoDelta;
+      }
     }
-    const rawSceneAngVelY = sceneDeltaY / dt;
-    const sceneAngVelY = THREE.MathUtils.clamp(rawSceneAngVelY, -30, 30);
-    const sceneAngAccelY = THREE.MathUtils.clamp((sceneAngVelY - this.prevSceneAngVelY) / dt, -150, 150);
-    this.prevSceneAngVelY = sceneAngVelY;
+
+    const rawSceneAngVelY = THREE.MathUtils.clamp(sceneDeltaY / dt, -35, 35);
+    // Smooth angular velocity with exponential filter to eliminate mouse polling jitter
+    this.sceneAngVelY += (rawSceneAngVelY - this.sceneAngVelY) * Math.min(1.0, dt * 20.0);
+    const sceneAngAccelY = THREE.MathUtils.clamp((this.sceneAngVelY - this.prevSceneAngVelY) / dt, -180, 180);
+    this.prevSceneAngVelY = this.sceneAngVelY;
 
     // 2. Calculate Torso / Chest bone movement & acceleration (animations, life simulation, behavioral turns)
-    let chestDeltaX = 0;
     let chestDeltaY = 0;
+    let chestDeltaX = 0;
 
     if (this.chestBone) {
       const currentRotX = this.chestBone.rotation.x;
       const currentRotY = this.chestBone.rotation.y;
 
-      chestDeltaX = currentRotX - this.prevChestRotX;
-      chestDeltaY = currentRotY - this.prevChestRotY;
+      let dX = currentRotX - this.prevChestRotX;
+      let dY = currentRotY - this.prevChestRotY;
+      while (dY > Math.PI) dY -= Math.PI * 2;
+      while (dY < -Math.PI) dY += Math.PI * 2;
+
+      chestDeltaX = dX;
+      chestDeltaY = dY;
 
       this.prevChestRotX = currentRotX;
       this.prevChestRotY = currentRotY;
     }
 
-    const chestVelX = THREE.MathUtils.clamp(chestDeltaX / dt, -20, 20);
-    const chestVelY = THREE.MathUtils.clamp(chestDeltaY / dt, -20, 20);
+    const rawChestVelY = THREE.MathUtils.clamp(chestDeltaY / dt, -20, 20);
+    this.chestVelY += (rawChestVelY - this.chestVelY) * Math.min(1.0, dt * 20.0);
+    const chestAccelY = (this.chestVelY - this.prevChestVelY) / dt;
+    this.prevChestVelY = this.chestVelY;
 
-    const chestAccelX = THREE.MathUtils.clamp((chestVelX - this.chestVelX) / dt, -45, 45);
-    const chestAccelY = THREE.MathUtils.clamp((chestVelY - this.chestVelY) / dt, -45, 45);
+    // Combined angular kinematics experienced by the upper torso
+    const totalAngVelY = this.sceneAngVelY + this.chestVelY;
+    const totalAngAccelY = THREE.MathUtils.clamp(sceneAngAccelY + chestAccelY, -160, 160);
 
-    this.chestVelX = chestVelX;
-    this.chestVelY = chestVelY;
-
-    // Combined angular kinematics experienced by the upper chest
-    const totalAngVelY = sceneAngVelY + chestVelY;
-    const totalAngAccelY = THREE.MathUtils.clamp(sceneAngAccelY + chestAccelY, -120, 120);
-
-    // 3. Torso Torsional Compliance (Realistic human ribcage flexibility when rotating)
-    const torsoInertiaForce = -totalAngAccelY * 0.035 - totalAngVelY * 0.015;
+    // 3. Torso Torsional Compliance (ribcage elasticity when rotating)
+    const torsoInertiaForce = -totalAngAccelY * 0.045 - totalAngVelY * 0.025;
     const torsoA = (-this.torsoStiffness * this.torsoDisplacementY - this.torsoDamping * this.torsoVelocityY + torsoInertiaForce) / this.torsoMass;
     this.torsoVelocityY += torsoA * dt;
     this.torsoDisplacementY += this.torsoVelocityY * dt;
-    this.torsoDisplacementY = THREE.MathUtils.clamp(this.torsoDisplacementY, -0.065, 0.065); // ~3.7 deg natural thoracic compliance
+    this.torsoDisplacementY = THREE.MathUtils.clamp(this.torsoDisplacementY, -0.075, 0.075); // ~4.3 deg natural thoracic compliance
 
     if (this.chestBone) {
       this.chestBone.rotation.y += this.torsoDisplacementY;
     }
 
-    // 4. Harmonic breathing oscillation force
-    const breatheFreq = 0.75 * Math.PI * 2;
-    const breathePhase = Math.sin(this.time * breatheFreq);
-    const breatheForce = Math.cos(this.time * breatheFreq) * this.breathingCoupling;
-
-    // 5. Rotational Soft-Body Physics for Chest / Breast Bones
     if (this.breastBones.length === 0) return;
 
-    // Real-world rotational inertial torque: soft mass opposes angular acceleration & velocity
-    const F_rotY = -this.rotInertiaGain * totalAngAccelY - this.rotDragGain * totalAngVelY;
+    // 4. Force Calculations for Soft-Body Secondary Motion
+    // Rotational inertia: soft mass opposes angular turn speed and acceleration
+    const F_rotLag = -this.rotInertiaGain * totalAngVelY - this.rotAccelGain * totalAngAccelY - this.rotDragGain * Math.sign(totalAngVelY) * Math.min(Math.abs(totalAngVelY), 8.0);
 
-    // Centrifugal force (F_c = m * omega^2 * r): pulls radially outward in both directions
-    const F_cent = this.centrifugalGain * (totalAngVelY * totalAngVelY);
+    // Centrifugal expansion: pushes soft mass radially outward from rotation center and lifts
+    const F_centrifugal = THREE.MathUtils.clamp(this.centrifugalGain * (totalAngVelY * totalAngVelY), 0, 0.28);
 
-    // Update each secondary bone using Euler-Cromer numerical integration
+    // Harmonic breathing cycle:
+    const breatheFreq = 0.85 * Math.PI * 2;
+    const breathePhase = Math.sin(this.time * breatheFreq);
+    const breatheLift = breathePhase * this.breatheCoupling;
+
+    // 5. Update each secondary bone using Euler-Cromer numerical integration
     for (let i = 0; i < this.breastBones.length; i++) {
       const bone = this.breastBones[i];
       const sideSign = bone.isLeft ? 1 : -1;
       const chainScale = bone.chainWeight || 1.0;
 
-      // Coriolis gyroscopic cross-coupling
-      const F_coriolisZ = -2 * this.coriolisGain * totalAngVelY * bone.velocityX;
-      const F_coriolisX = 2 * this.coriolisGain * totalAngVelY * bone.velocityZ;
+      // Net external forces along anatomical axes:
+      // Yaw (Y axis): left/right sway opposite to turn direction, plus outward centrifugal spread
+      const extForceY = (F_rotLag + (F_centrifugal * sideSign * 0.45)) * chainScale;
 
-      // Lateral roll torque induced by horizontal angular shear
-      const F_rollZ = -F_rotY * sideSign * 0.40;
+      // Pitch (X axis): vertical bounce, respiration, and centrifugal lift
+      const extForceX = (F_centrifugal * 0.85 + breatheLift * 18.0) * chainScale;
 
-      // Net external forces along anatomical axes
-      const extForceX = (-chestAccelX * this.inertiaGain * 0.05 + breatheForce + (F_cent * 0.65) + F_coriolisX) * chainScale;
-      const extForceY = (F_rotY + (F_cent * sideSign * 0.85)) * chainScale;
-      const extForceZ = (F_rollZ + (breathePhase * 0.002 * sideSign) + F_coriolisZ) * chainScale;
+      // Roll (Z axis): natural lateral tilt
+      const extForceZ = (-F_rotLag * sideSign * 0.22) * chainScale;
 
-      // Physics equation: a = (-k * x - c * v + F_ext) / m
-      const aX = (-this.stiffness * bone.displacementX - this.damping * bone.velocityX + extForceX) / this.mass;
-      const aY = (-this.stiffness * bone.displacementY - this.damping * bone.velocityY + extForceY) / this.mass;
-      const aZ = (-this.stiffness * bone.displacementZ - this.damping * bone.velocityZ + extForceZ) / this.mass;
+      // Physics equation: a = (F_ext - k * x - c * v) / m
+      const aX = (extForceX - this.stiffness * bone.displacementX - this.damping * bone.velocityX) / this.mass;
+      const aY = (extForceY - this.stiffness * bone.displacementY - this.damping * bone.velocityY) / this.mass;
+      const aZ = (extForceZ - this.stiffness * bone.displacementZ - this.damping * bone.velocityZ) / this.mass;
 
-      // Semi-implicit Euler integration (symplectic: guarantees energy stability without jitter)
+      // Symplectic Euler integration
       bone.velocityX += aX * dt;
       bone.velocityY += aY * dt;
       bone.velocityZ += aZ * dt;
@@ -256,14 +285,30 @@ export class ChestPhysics {
       bone.displacementZ += bone.velocityZ * dt;
 
       // Anatomically grounded safety limits (preserves natural range without clipping)
-      bone.displacementX = THREE.MathUtils.clamp(bone.displacementX, -0.065, 0.080);
-      bone.displacementY = THREE.MathUtils.clamp(bone.displacementY, -0.055, 0.055);
-      bone.displacementZ = THREE.MathUtils.clamp(bone.displacementZ, -0.045, 0.045);
+      bone.displacementX = THREE.MathUtils.clamp(bone.displacementX, -0.16, 0.22); // Up/down pitch
+      bone.displacementY = THREE.MathUtils.clamp(bone.displacementY, -0.26, 0.26); // Left/right yaw (~15 deg)
+      bone.displacementZ = THREE.MathUtils.clamp(bone.displacementZ, -0.12, 0.12); // Roll
 
-      // Apply dynamic rotation relative to rest pose
-      bone.node.rotation.x = bone.restRotation.x + bone.displacementX;
-      bone.node.rotation.y = bone.restRotation.y + bone.displacementY;
-      bone.node.rotation.z = bone.restRotation.z + bone.displacementZ;
+      // Build physical offset quaternion
+      this._scratchEuler.set(
+        bone.displacementX,
+        bone.displacementY,
+        bone.displacementZ,
+        'YXZ'
+      );
+      this._scratchQuat.setFromEuler(this._scratchEuler);
+
+      if (bone.isSpringBone) {
+        // Multiply on top of the VRM spring-simulated pose
+        bone.node.quaternion.multiply(this._scratchQuat);
+      } else {
+        // Restore clean base quaternion and apply dynamic physics offset
+        bone.node.quaternion.copy(bone.baseLocalQuaternion).multiply(this._scratchQuat);
+      }
+
+      // Force Three.js SkinnedMesh to immediately compute the updated matrices
+      bone.node.updateMatrix();
+      bone.node.updateWorldMatrix(true, false);
     }
   }
 }
