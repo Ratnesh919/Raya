@@ -45,6 +45,8 @@ export class ChestPhysics {
     this.prevSceneRotY = 0;
     this.sceneAngVelY = 0;
     this.prevSceneAngVelY = 0;
+    this.sceneAngVelX = 0;
+    this.prevSceneAngVelX = 0;
 
     // Tracking torso / chest bone local movement
     this.chestBone = null;
@@ -52,6 +54,7 @@ export class ChestPhysics {
     this.prevChestRotY = 0;
     this.chestVelX = 0;
     this.chestVelY = 0;
+    this.prevChestVelX = 0;
     this.prevChestVelY = 0;
 
     this.time = 0;
@@ -68,8 +71,11 @@ export class ChestPhysics {
     this.torsoVelocityY = 0;
     this.sceneAngVelY = 0;
     this.prevSceneAngVelY = 0;
+    this.sceneAngVelX = 0;
+    this.prevSceneAngVelX = 0;
     this.chestVelX = 0;
     this.chestVelY = 0;
+    this.prevChestVelX = 0;
     this.prevChestVelY = 0;
 
     if (!vrm?.scene) return;
@@ -180,6 +186,8 @@ export class ChestPhysics {
     // 1. Calculate Model / Scene rotation velocity & acceleration (mouse drag, touch rotate, root turn)
     let sceneDeltaY = this.vrmManager.turnDeltaY || 0;
     this.vrmManager.turnDeltaY = 0;
+    let sceneDeltaX = this.vrmManager.turnDeltaX || 0;
+    this.vrmManager.turnDeltaX = 0;
 
     if (this.vrm.scene) {
       const curSceneY = this.vrm.scene.rotation.y;
@@ -199,6 +207,12 @@ export class ChestPhysics {
     this.sceneAngVelY += (rawSceneAngVelY - this.sceneAngVelY) * Math.min(1.0, dt * 20.0);
     const sceneAngAccelY = THREE.MathUtils.clamp((this.sceneAngVelY - this.prevSceneAngVelY) / dt, -180, 180);
     this.prevSceneAngVelY = this.sceneAngVelY;
+
+    // Pitch angular kinematics (vertical camera tilt / model pitch)
+    const rawSceneAngVelX = THREE.MathUtils.clamp(sceneDeltaX / dt, -35, 35);
+    this.sceneAngVelX += (rawSceneAngVelX - this.sceneAngVelX) * Math.min(1.0, dt * 20.0);
+    const sceneAngAccelX = THREE.MathUtils.clamp((this.sceneAngVelX - this.prevSceneAngVelX) / dt, -180, 180);
+    this.prevSceneAngVelX = this.sceneAngVelX;
 
     // 2. Calculate Torso / Chest bone movement & acceleration (animations, life simulation, behavioral turns)
     let chestDeltaY = 0;
@@ -225,9 +239,17 @@ export class ChestPhysics {
     const chestAccelY = (this.chestVelY - this.prevChestVelY) / dt;
     this.prevChestVelY = this.chestVelY;
 
+    const rawChestVelX = THREE.MathUtils.clamp(chestDeltaX / dt, -20, 20);
+    this.chestVelX += (rawChestVelX - this.chestVelX) * Math.min(1.0, dt * 20.0);
+    const chestAccelX = (this.chestVelX - this.prevChestVelX) / dt;
+    this.prevChestVelX = this.chestVelX;
+
     // Combined angular kinematics experienced by the upper torso
     const totalAngVelY = this.sceneAngVelY + this.chestVelY;
     const totalAngAccelY = THREE.MathUtils.clamp(sceneAngAccelY + chestAccelY, -160, 160);
+
+    const totalAngVelX = this.sceneAngVelX + this.chestVelX;
+    const totalAngAccelX = THREE.MathUtils.clamp(sceneAngAccelX + chestAccelX, -160, 160);
 
     // 3. Torso Torsional Compliance (ribcage elasticity when rotating)
     const torsoInertiaForce = -totalAngAccelY * 0.045 - totalAngVelY * 0.025;
@@ -245,6 +267,9 @@ export class ChestPhysics {
     // 4. Force Calculations for Soft-Body Secondary Motion
     // Rotational inertia: soft mass opposes angular turn speed and acceleration
     const F_rotLag = -this.rotInertiaGain * totalAngVelY - this.rotAccelGain * totalAngAccelY - this.rotDragGain * Math.sign(totalAngVelY) * Math.min(Math.abs(totalAngVelY), 8.0);
+
+    // Pitch rotational inertia (vertical lag and harmonic bounce when tilting up and down)
+    const F_rotPitchLag = -this.rotInertiaGain * 1.35 * totalAngVelX - this.rotAccelGain * totalAngAccelX;
 
     // Centrifugal expansion: pushes soft mass radially outward from rotation center and lifts
     const F_centrifugal = THREE.MathUtils.clamp(this.centrifugalGain * (totalAngVelY * totalAngVelY), 0, 0.28);
@@ -264,8 +289,8 @@ export class ChestPhysics {
       // Yaw (Y axis): left/right sway opposite to turn direction, plus outward centrifugal spread
       const extForceY = (F_rotLag + (F_centrifugal * sideSign * 0.45)) * chainScale;
 
-      // Pitch (X axis): vertical bounce, respiration, and centrifugal lift
-      const extForceX = (F_centrifugal * 0.85 + breatheLift * 18.0) * chainScale;
+      // Pitch (X axis): vertical rotational inertia lag, bounce, respiration, and centrifugal lift
+      const extForceX = (F_rotPitchLag + F_centrifugal * 0.85 + breatheLift * 18.0) * chainScale;
 
       // Roll (Z axis): natural lateral tilt
       const extForceZ = (-F_rotLag * sideSign * 0.22) * chainScale;

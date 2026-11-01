@@ -485,37 +485,29 @@ export class LifeSimulator {
     );
     const w = this.behaviorCurrent.handsJoinedWeight;
 
-    // 1. Arm and Elbow Kinematics (bringing hands joined together in front of lower chest / upper abdomen)
+    // 1. Arm and Elbow Kinematics (gentle natural posture without twisting arms behind the hips)
     if (w > 0.0005) {
       if (this.leftUpperArm) {
-        this.leftUpperArm.rotation.x += 0.58 * w; // Pitch forward
-        this.leftUpperArm.rotation.y += 0.22 * w; // Yaw inward towards center
-        this.leftUpperArm.rotation.z += 0.26 * w; // Lift slightly
+        this.leftUpperArm.rotation.x += 0.12 * w; // Soft forward pitch
+        this.leftUpperArm.rotation.z -= 0.06 * w; // Bring arms gently closer to body
       }
       if (this.rightUpperArm) {
-        this.rightUpperArm.rotation.x += 0.58 * w; // Pitch forward
-        this.rightUpperArm.rotation.y -= 0.22 * w; // Yaw inward towards center
-        this.rightUpperArm.rotation.z -= 0.26 * w; // Lift slightly
+        this.rightUpperArm.rotation.x += 0.12 * w; // Soft forward pitch
+        this.rightUpperArm.rotation.z += 0.06 * w; // Bring arms gently closer to body
       }
 
       if (this.leftLowerArm) {
-        this.leftLowerArm.rotation.y += 0.54 * w; // Inward elbow fold
-        this.leftLowerArm.rotation.z += 0.76 * w; // Forearm crossed inward
+        this.leftLowerArm.rotation.x += 0.18 * w; // Gentle forward elbow bend
       }
       if (this.rightLowerArm) {
-        this.rightLowerArm.rotation.y -= 0.54 * w; // Inward elbow fold
-        this.rightLowerArm.rotation.z -= 0.76 * w; // Forearm crossed inward
+        this.rightLowerArm.rotation.x += 0.18 * w; // Gentle forward elbow bend
       }
 
       if (this.leftHand) {
-        this.leftHand.rotation.x -= 0.14 * w; // Soft wrist clasp
-        this.leftHand.rotation.y += 0.32 * w;
-        this.leftHand.rotation.z += 0.18 * w;
+        this.leftHand.rotation.x -= 0.08 * w; // Natural soft wrist relax
       }
       if (this.rightHand) {
-        this.rightHand.rotation.x -= 0.14 * w; // Soft wrist clasp
-        this.rightHand.rotation.y -= 0.32 * w;
-        this.rightHand.rotation.z -= 0.18 * w;
+        this.rightHand.rotation.x -= 0.08 * w; // Natural soft wrist relax
       }
     }
 

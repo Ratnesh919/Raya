@@ -41,3 +41,5 @@ public/models/test_*.vrm
 *.blend1
 headless_blender_log.txt
 __pycache__/
+*.py
+scratch_crops/

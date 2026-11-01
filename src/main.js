@@ -128,7 +128,7 @@ async function bootstrap() {
   // 5. Load Initial Model
   controlsHUD.showLoading('Connecting to 3D Viewport...');
   try {
-    const defaultModelUrl = '/models/iuno.vrm';
+    const defaultModelUrl = '/models/changli.vrm';
     const modelSelectEl = document.getElementById('model-select');
     if (modelSelectEl) {
       modelSelectEl.value = defaultModelUrl;
@@ -280,17 +280,17 @@ async function bootstrap() {
 
   if (btnResetAppearance) {
     btnResetAppearance.addEventListener('click', () => {
-      // User preferred visual defaults: 70% skin, 50% hair, 55% lighting
-      vrmManager.setSkinBrightness(0.70);
-      vrmManager.setHairBrightness(0.50);
-      vrmManager.setOverallBrightness(0.55);
+      // Default appearance settings: 80% skin, 65% hair, 45% overall lighting (Changli defaults)
+      vrmManager.setSkinBrightness(0.80);
+      vrmManager.setHairBrightness(0.65);
+      vrmManager.setOverallBrightness(0.45);
       vrmManager.setGraphicsQuality('high');
-      if (popSkinSlider) popSkinSlider.value = 0.70;
-      if (popSkinVal) popSkinVal.textContent = '70%';
-      if (popHairSlider) popHairSlider.value = 0.50;
-      if (popHairVal) popHairVal.textContent = '50%';
-      if (popLightSlider) popLightSlider.value = 0.55;
-      if (popLightVal) popLightVal.textContent = '55%';
+      if (popSkinSlider) popSkinSlider.value = 0.80;
+      if (popSkinVal) popSkinVal.textContent = '80%';
+      if (popHairSlider) popHairSlider.value = 0.65;
+      if (popHairVal) popHairVal.textContent = '65%';
+      if (popLightSlider) popLightSlider.value = 0.45;
+      if (popLightVal) popLightVal.textContent = '45%';
       if (popQualitySelect) popQualitySelect.value = 'high';
       if (popQualityTag) popQualityTag.textContent = 'HIGH / GPU';
       emotionChipBtns.forEach((b) => b.classList.remove('active'));

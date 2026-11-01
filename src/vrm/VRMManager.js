@@ -11,16 +11,16 @@ export class VRMManager {
     this.isLoading = false;
     this.fbxAvatarLoader = new FBXAvatarLoader();
 
-    // Visual adjustment settings: 100% hair brightness to preserve true character hair colors (pinkish, blue, etc.)
-    if (!localStorage.getItem('raya_visual_defaults_v7')) {
-      localStorage.setItem('raya_visual_defaults_v7', 'true');
-      localStorage.setItem('raya_skin_brightness', '0.90');
-      localStorage.setItem('raya_hair_brightness', '1.00');
-      localStorage.setItem('raya_overall_brightness', '0.85');
+    // Visual adjustment settings: Changli defaults (Skin 80%, Hair 65%, Lighting 45%) across all models
+    if (!localStorage.getItem('raya_visual_defaults_v8')) {
+      localStorage.setItem('raya_visual_defaults_v8', 'true');
+      localStorage.setItem('raya_skin_brightness', '0.80');
+      localStorage.setItem('raya_hair_brightness', '0.65');
+      localStorage.setItem('raya_overall_brightness', '0.45');
     }
-    this.skinBrightness = parseFloat(localStorage.getItem('raya_skin_brightness') || '0.90');
-    this.hairBrightness = parseFloat(localStorage.getItem('raya_hair_brightness') || '1.00');
-    this.overallBrightness = parseFloat(localStorage.getItem('raya_overall_brightness') || '0.85');
+    this.skinBrightness = parseFloat(localStorage.getItem('raya_skin_brightness') || '0.80');
+    this.hairBrightness = parseFloat(localStorage.getItem('raya_hair_brightness') || '0.65');
+    this.overallBrightness = parseFloat(localStorage.getItem('raya_overall_brightness') || '0.45');
 
     // Model loaded listener array (ensures multiple consumers all receive loaded VRM)
     this.modelLoadedListeners = [];
@@ -114,6 +114,7 @@ export class VRMManager {
     this.isDragging = false;
     this.previousMousePosition = { x: 0, y: 0 };
     this.turnDeltaY = 0;
+    this.turnDeltaX = 0;
     this.chestPhysics = null;
     this.setupInteractions();
 
@@ -265,7 +266,9 @@ export class VRMManager {
         // Elevation / Pitch (vertical 3D tilt angle)
         // Dragging mouse UP (-deltaY) tilts camera UP to view avatar from higher angle
         // Dragging mouse DOWN (+deltaY) tilts camera DOWN to view avatar from lower angle
-        this.cameraSpherical.phi += deltaY * 0.006;
+        const pitchTurn = deltaY * 0.006;
+        this.turnDeltaX += pitchTurn;
+        this.cameraSpherical.phi += pitchTurn;
 
         // Safe clamping on polar angle to prevent gimbal flipping
         this.cameraSpherical.phi = THREE.MathUtils.clamp(
@@ -335,7 +338,9 @@ export class VRMManager {
         // 1-Finger Vertical: tilt the 3D camera elevation (phi) on mobile!
         // Dragging DOWN (+deltaY) tilts camera DOWN to view from lower angle
         // Dragging UP (-deltaY) tilts camera UP to view from higher angle
-        this.cameraSpherical.phi += deltaY * 0.005;
+        const pitchTurn = deltaY * 0.005;
+        this.turnDeltaX += pitchTurn;
+        this.cameraSpherical.phi += pitchTurn;
         this.cameraSpherical.phi = THREE.MathUtils.clamp(
           this.cameraSpherical.phi,
           0.16,
@@ -372,8 +377,10 @@ export class VRMManager {
           const midDeltaX = currentCenter.x - previousTwoTouchCenter.x;
           const midDeltaY = currentCenter.y - previousTwoTouchCenter.y;
 
+          const midPitchTurn = midDeltaY * 0.005;
+          this.turnDeltaX += midPitchTurn;
           this.cameraSpherical.theta -= midDeltaX * 0.008;
-          this.cameraSpherical.phi += midDeltaY * 0.005;
+          this.cameraSpherical.phi += midPitchTurn;
           this.cameraSpherical.phi = THREE.MathUtils.clamp(
             this.cameraSpherical.phi,
             0.16,
@@ -610,9 +617,15 @@ export class VRMManager {
 
       // Position model: centered, standing on floor, facing user directly
       vrm.scene.position.set(0, 0, 0);
-      if (!vrm.isFBX) {
-        vrm.scene.rotation.y = Math.PI; // Face user/camera by default
-      }
+      vrm.scene.rotation.set(0, Math.PI, 0); // Face user/camera directly from front
+
+      // Reset camera azimuth & drag deltas so character is framed dead-center front-facing
+      this.cameraSpherical.theta = 0;
+      this._cameraOffset.setFromSpherical(this.cameraSpherical);
+      this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
+      this.camera.lookAt(this.cameraTarget);
+      this.turnDeltaX = 0;
+      this.turnDeltaY = 0;
 
       // Initial natural arm drop so character is not in stiff T-pose
       this.poseRestingArms(vrm);
@@ -685,17 +698,16 @@ export class VRMManager {
     this.windTime = (this.windTime || 0) + deltaTime;
     const t = this.windTime;
 
-    // Organic multi-harmonic breeze vectors (gentle gusts, direction shifts)
-    const windX = Math.sin(t * 1.5) * 0.38 + Math.sin(t * 3.1) * 0.14 + Math.cos(t * 0.7) * 0.08;
-    const windZ = Math.cos(t * 1.2) * 0.28 + Math.sin(t * 2.6) * 0.12;
-    const windStrength = 0.55 + Math.sin(t * 0.9) * 0.22 + Math.cos(t * 2.2) * 0.10;
+    // Gentle natural micro-breeze: gravity remains primarily downward (-1.0) so hair & ribbons hang naturally
+    // without being blown horizontally sideways
+    const windX = Math.sin(t * 1.5) * 0.028 + Math.cos(t * 0.7) * 0.012;
+    const windZ = Math.cos(t * 1.2) * 0.022 + Math.sin(t * 2.6) * 0.010;
 
     if (!this._breezeDir) {
       this._breezeDir = new THREE.Vector3();
     }
     // Normalize ONCE per frame instead of hundreds of times inside the joint loop
-    this._breezeDir.set(windX, -0.82, windZ).normalize();
-    const windPower = 0.48 * windStrength;
+    this._breezeDir.set(windX, -1.0, windZ).normalize();
 
     const joints = this.currentVrm.springBoneManager.joints;
     for (let i = 0; i < joints.length; i++) {
@@ -709,11 +721,11 @@ export class VRMManager {
       if (!settings) continue;
 
       if (settings._origGravityPower === undefined) {
-        settings._origGravityPower = settings.gravityPower || 0;
+        settings._origGravityPower = (settings.gravityPower !== undefined && settings.gravityPower > 0) ? settings.gravityPower : 1.0;
       }
 
-      // Gently flutter hair and clothing even if model author assigned 0 base gravity
-      settings.gravityPower = Math.max(settings._origGravityPower, windPower);
+      // Preserve natural downward gravity power (ensures hair and ribbons hang down gracefully)
+      settings.gravityPower = settings._origGravityPower;
 
       if (settings.gravityDir) {
         settings.gravityDir.copy(this._breezeDir);
