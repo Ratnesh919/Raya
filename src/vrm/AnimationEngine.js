@@ -426,9 +426,11 @@ export class AnimationEngine {
       if (!vrmBone) return;
 
       const isFinger = /thumb|index|middle|ring|little|pinky/i.test(vrmBone);
-      if (isThinking && isFinger) {
-        // Discard flat Mixamo finger tracks for thinking animation.
-        // We will inject the tailored, natural anime thinking hand pose tracks below.
+      if (isFinger) {
+        // Discard raw Mixamo finger keyframe tracks for ALL animations.
+        // Mixamo FBX animations have incompatible local coordinate axes that stretch
+        // and hyperextend VRM finger bones into stiff spikes.
+        // Beautiful, natural anime finger curves are configured cleanly below.
         return;
       }
 
@@ -507,48 +509,37 @@ export class AnimationEngine {
       // - Thumb rests gracefully supporting the jawline
       // Left hand is relaxed naturally down at the side
       const thinkingPoses = [
-        // Right hand (thinking chin rest)
-        { bone: 'rightIndexProximal', angle: -0.28 },
-        { bone: 'rightIndexIntermediate', angle: -0.42 },
-        { bone: 'rightIndexDistal', angle: -0.24 },
-        { bone: 'rightMiddleProximal', angle: -0.55 },
-        { bone: 'rightMiddleIntermediate', angle: -0.75 },
-        { bone: 'rightMiddleDistal', angle: -0.38 },
-        { bone: 'rightRingProximal', angle: -0.70 },
-        { bone: 'rightRingIntermediate', angle: -0.95 },
-        { bone: 'rightRingDistal', angle: -0.48 },
-        { bone: 'rightLittleProximal', angle: -0.75 },
-        { bone: 'rightLittleIntermediate', angle: -1.05 },
-        { bone: 'rightLittleDistal', angle: -0.52 },
-        { bone: 'rightThumbMetacarpal', angle: -0.20 },
-        { bone: 'rightThumbProximal', angle: -0.30 },
-        { bone: 'rightThumbDistal', angle: -0.18 },
+        // Right hand (thinking chin rest: positive Z curls inward on Right hand)
+        { bone: 'rightIndexProximal', angle: 0.18 },
+        { bone: 'rightIndexIntermediate', angle: 0.28 },
+        { bone: 'rightIndexDistal', angle: 0.16 },
+        { bone: 'rightMiddleProximal', angle: 0.55 },
+        { bone: 'rightMiddleIntermediate', angle: 0.75 },
+        { bone: 'rightMiddleDistal', angle: 0.38 },
+        { bone: 'rightRingProximal', angle: 0.70 },
+        { bone: 'rightRingIntermediate', angle: 0.95 },
+        { bone: 'rightRingDistal', angle: 0.48 },
+        { bone: 'rightLittleProximal', angle: 0.75 },
+        { bone: 'rightLittleIntermediate', angle: 1.05 },
+        { bone: 'rightLittleDistal', angle: 0.52 },
 
-        // Left hand (natural relaxed posture at side)
-        { bone: 'leftIndexProximal', angle: 0.28 },
-        { bone: 'leftIndexIntermediate', angle: 0.38 },
-        { bone: 'leftIndexDistal', angle: 0.20 },
-        { bone: 'leftMiddleProximal', angle: 0.32 },
-        { bone: 'leftMiddleIntermediate', angle: 0.42 },
-        { bone: 'leftMiddleDistal', angle: 0.22 },
-        { bone: 'leftRingProximal', angle: 0.35 },
-        { bone: 'leftRingIntermediate', angle: 0.45 },
-        { bone: 'leftRingDistal', angle: 0.24 },
-        { bone: 'leftLittleProximal', angle: 0.38 },
-        { bone: 'leftLittleIntermediate', angle: 0.48 },
-        { bone: 'leftLittleDistal', angle: 0.26 },
-        { bone: 'leftThumbMetacarpal', angle: 0.15 },
-        { bone: 'leftThumbProximal', angle: 0.20 },
-        { bone: 'leftThumbDistal', angle: 0.15 }
+        // Left hand (natural relaxed posture at side: negative Z curls inward on Left hand)
+        { bone: 'leftIndexProximal', angle: -0.22 },
+        { bone: 'leftIndexIntermediate', angle: -0.28 },
+        { bone: 'leftIndexDistal', angle: -0.16 },
+        { bone: 'leftMiddleProximal', angle: -0.26 },
+        { bone: 'leftMiddleIntermediate', angle: -0.32 },
+        { bone: 'leftMiddleDistal', angle: -0.18 },
+        { bone: 'leftRingProximal', angle: -0.30 },
+        { bone: 'leftRingIntermediate', angle: -0.36 },
+        { bone: 'leftRingDistal', angle: -0.20 },
+        { bone: 'leftLittleProximal', angle: -0.34 },
+        { bone: 'leftLittleIntermediate', angle: -0.40 },
+        { bone: 'leftLittleDistal', angle: -0.22 }
       ];
 
       thinkingPoses.forEach(({ bone, angle }) => {
-        let vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone)?.name;
-        if (!vrmNode && bone.includes('ThumbMetacarpal')) {
-          vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone.replace('Metacarpal', 'Proximal'))?.name;
-        } else if (!vrmNode && bone.includes('ThumbProximal')) {
-          vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone.replace('Proximal', 'Intermediate'))?.name;
-        }
+        const vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone)?.name;
         if (vrmNode) {
           const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), angle);
           tracks.push(
@@ -560,9 +551,38 @@ export class AnimationEngine {
           );
         }
       });
+
+      // Thinking pose thumbs with natural anatomical opposition
+      const thumbPoses = [
+        { bone: 'rightThumbProximal', euler: new THREE.Euler(-0.15, -0.20, 0.35, 'YXZ') },
+        { bone: 'rightThumbIntermediate', euler: new THREE.Euler(-0.10, -0.15, 0.28, 'YXZ') },
+        { bone: 'rightThumbDistal', euler: new THREE.Euler(-0.08, -0.12, 0.20, 'YXZ') },
+        { bone: 'leftThumbProximal', euler: new THREE.Euler(-0.12, 0.18, -0.22, 'YXZ') },
+        { bone: 'leftThumbIntermediate', euler: new THREE.Euler(-0.08, 0.15, -0.25, 'YXZ') },
+        { bone: 'leftThumbDistal', euler: new THREE.Euler(-0.06, 0.12, -0.18, 'YXZ') }
+      ];
+
+      thumbPoses.forEach(({ bone, euler }) => {
+        let vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone)?.name;
+        if (!vrmNode && bone.includes('ThumbProximal')) {
+          vrmNode = this.vrm.humanoid?.getNormalizedBoneNode(bone.replace('Proximal', 'Intermediate'))?.name;
+        }
+        if (vrmNode) {
+          const q = new THREE.Quaternion().setFromEuler(euler);
+          tracks.push(
+            new THREE.QuaternionKeyframeTrack(
+              `${vrmNode}.quaternion`,
+              [0, rawClip.duration],
+              [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]
+            )
+          );
+        }
+      });
     } else {
-      // Ensure all 5 fingers have natural relaxed resting tracks if omitted in the FBX animation
-      const animatedVrmNodes = new Set(tracks.map((t) => t.name.split('.')[0]));
+      // Natural relaxed anime finger curves for all models across ALL idle/speaking animations
+      // In VRM humanoid coordinate space:
+      // Left hand curls inward towards palm with -Z rotation
+      // Right hand curls inward towards palm with +Z rotation
       const fingerDefs = [
         { name: 'Index', prox: 0.22, inter: 0.28, dist: 0.16 },
         { name: 'Middle', prox: 0.26, inter: 0.32, dist: 0.18 },
@@ -572,8 +592,8 @@ export class AnimationEngine {
 
       ['left', 'right'].forEach((side) => {
         const isLeft = side === 'left';
-        // In normalized VRM space: Left hand curls with +Z, Right hand curls with -Z
-        const curlSign = isLeft ? 1 : -1;
+        // Left curls with -Z, Right curls with +Z
+        const curlSign = isLeft ? -1 : 1;
 
         fingerDefs.forEach((f) => {
           const pBone = `${side}${f.name}Proximal`;
@@ -584,35 +604,47 @@ export class AnimationEngine {
           const iNode = this.vrm.humanoid?.getNormalizedBoneNode(iBone)?.name;
           const dNode = this.vrm.humanoid?.getNormalizedBoneNode(dBone)?.name;
 
-          if (pNode && !animatedVrmNodes.has(pNode)) {
+          if (pNode) {
             const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.prox * curlSign);
             tracks.push(new THREE.QuaternionKeyframeTrack(`${pNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
           }
-          if (iNode && !animatedVrmNodes.has(iNode)) {
+          if (iNode) {
             const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.inter * curlSign);
             tracks.push(new THREE.QuaternionKeyframeTrack(`${iNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
           }
-          if (dNode && !animatedVrmNodes.has(dNode)) {
+          if (dNode) {
             const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), f.dist * curlSign);
             tracks.push(new THREE.QuaternionKeyframeTrack(`${dNode}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
           }
         });
 
-        // Natural thumb resting pose: 3 distinct joints, never duplicated on same bone
+        // Natural thumb resting pose: anatomical 3-joint inward curl across palm
         const t1 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name;
         const t2 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbIntermediate`)?.name;
         const t3 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbDistal`)?.name;
 
-        if (t1 && !animatedVrmNodes.has(t1)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.12 * curlSign);
+        const thumbEulers = isLeft
+          ? [
+              new THREE.Euler(-0.12, 0.18, -0.22, 'YXZ'),
+              new THREE.Euler(-0.08, 0.15, -0.25, 'YXZ'),
+              new THREE.Euler(-0.06, 0.12, -0.18, 'YXZ')
+            ]
+          : [
+              new THREE.Euler(-0.12, -0.18, 0.22, 'YXZ'),
+              new THREE.Euler(-0.08, -0.15, 0.25, 'YXZ'),
+              new THREE.Euler(-0.06, -0.12, 0.18, 'YXZ')
+            ];
+
+        if (t1) {
+          const q = new THREE.Quaternion().setFromEuler(thumbEulers[0]);
           tracks.push(new THREE.QuaternionKeyframeTrack(`${t1}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
         }
-        if (t2 && t2 !== t1 && !animatedVrmNodes.has(t2)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
+        if (t2 && t2 !== t1) {
+          const q = new THREE.Quaternion().setFromEuler(thumbEulers[1]);
           tracks.push(new THREE.QuaternionKeyframeTrack(`${t2}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
         }
-        if (t3 && t3 !== t2 && !animatedVrmNodes.has(t3)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.10 * curlSign);
+        if (t3 && t3 !== t2) {
+          const q = new THREE.Quaternion().setFromEuler(thumbEulers[2]);
           tracks.push(new THREE.QuaternionKeyframeTrack(`${t3}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
         }
       });

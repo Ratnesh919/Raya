@@ -222,9 +222,11 @@ export class VRMManager {
     });
 
     // Desktop Pointer Controls (Left-click: avatar rotation, Right-click: camera Y-axis movement)
+    // Touch pointers are strictly excluded here so they never conflict with mobile touch handlers below
     this.dragButton = -1;
 
     el.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') return;
       if (e.button === 0 || e.button === 2) {
         this.isDragging = true;
         this.dragButton = e.button;
@@ -236,6 +238,7 @@ export class VRMManager {
     });
 
     const stopDragging = (e) => {
+      if (e && e.pointerType === 'touch') return;
       this.isDragging = false;
       this.dragButton = -1;
       if (e && e.pointerId) {
@@ -249,6 +252,7 @@ export class VRMManager {
     window.addEventListener('pointercancel', stopDragging);
 
     window.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') return;
       if (!this.isDragging) return;
 
       if (this.dragButton === 0 && this.currentVrm) {
@@ -266,8 +270,6 @@ export class VRMManager {
         this.cameraSpherical.theta -= deltaX * 0.008;
 
         // Elevation / Pitch (vertical 3D tilt angle)
-        // Dragging mouse UP (-deltaY) tilts camera UP to view avatar from higher angle
-        // Dragging mouse DOWN (+deltaY) tilts camera DOWN to view avatar from lower angle
         const pitchTurn = deltaY * 0.006;
         this.turnDeltaX += pitchTurn;
         this.cameraSpherical.phi += pitchTurn;
@@ -301,18 +303,23 @@ export class VRMManager {
       this.camera.lookAt(this.cameraTarget);
     }, { passive: true });
 
-    // Mobile Touch Drag & Pinch-to-Zoom
+    // Dedicated Mobile Touch Controls:
+    // 1-Finger: Smooth, responsive turntable rotation (horizontal) and elevation tilt (vertical)
+    // 2-Finger ONLY: Pinch-to-zoom and two-finger pan (strictly prohibited on single-finger drag)
     let touchStartDist = 0;
     let touchStartRadius = 0;
     let previousTwoTouchCenter = null;
+    let touchPreviousPos = null;
 
     el.addEventListener('touchstart', (e) => {
       if (e.touches.length === 1) {
         this.isDragging = true;
-        this.dragButton = 0;
-        this.previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchPreviousPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchStartDist = 0;
+        previousTwoTouchCenter = null;
       } else if (e.touches.length === 2) {
         this.isDragging = false;
+        touchPreviousPos = null;
         touchStartDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -326,35 +333,35 @@ export class VRMManager {
     }, { passive: true });
 
     window.addEventListener('touchmove', (e) => {
-      if (e.touches.length === 1 && this.isDragging) {
-        const deltaX = e.touches[0].clientX - this.previousMousePosition.x;
-        const deltaY = e.touches[0].clientY - this.previousMousePosition.y;
+      if (e.touches.length === 1 && this.isDragging && touchPreviousPos) {
+        const deltaX = e.touches[0].clientX - touchPreviousPos.x;
+        const deltaY = e.touches[0].clientY - touchPreviousPos.y;
 
-        // 1-Finger Horizontal: rotate avatar model around Y axis
+        // 1-Finger Horizontal: rotate avatar model around Y axis with swift, free turntable responsiveness
         if (this.currentVrm) {
-          const turn = deltaX * 0.009;
+          const turn = deltaX * 0.016; // Responsive rotation speed
           this.currentVrm.scene.rotation.y += turn;
           this.turnDeltaY += turn;
         }
 
-        // 1-Finger Vertical: tilt the 3D camera elevation (phi) on mobile!
-        // Dragging DOWN (+deltaY) tilts camera DOWN to view from lower angle
-        // Dragging UP (-deltaY) tilts camera UP to view from higher angle
-        const pitchTurn = deltaY * 0.005;
+        // 1-Finger Vertical: smooth vertical elevation tilt (up/down camera rotation)
+        // Dragging DOWN tilts camera down (low angle), Dragging UP tilts camera up (high angle)
+        const pitchTurn = deltaY * 0.012; // Responsive pitch sensitivity
         this.turnDeltaX += pitchTurn;
         this.cameraSpherical.phi += pitchTurn;
         this.cameraSpherical.phi = THREE.MathUtils.clamp(
           this.cameraSpherical.phi,
-          0.16,
-          Math.PI / 2 + 0.38
+          0.12,
+          Math.PI / 2 + 0.45
         );
 
         this._cameraOffset.setFromSpherical(this.cameraSpherical);
         this.camera.position.copy(this.cameraTarget).add(this._cameraOffset);
         this.camera.lookAt(this.cameraTarget);
 
-        this.previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchPreviousPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
       } else if (e.touches.length === 2 && touchStartDist > 0) {
+        // Zooming and orbital panning are mathematically restricted to 2-finger touches ONLY
         const currentDist = Math.hypot(
           e.touches[0].clientX - e.touches[1].clientX,
           e.touches[0].clientY - e.touches[1].clientY
@@ -379,14 +386,14 @@ export class VRMManager {
           const midDeltaX = currentCenter.x - previousTwoTouchCenter.x;
           const midDeltaY = currentCenter.y - previousTwoTouchCenter.y;
 
-          const midPitchTurn = midDeltaY * 0.005;
+          const midPitchTurn = midDeltaY * 0.008;
           this.turnDeltaX += midPitchTurn;
-          this.cameraSpherical.theta -= midDeltaX * 0.008;
+          this.cameraSpherical.theta -= midDeltaX * 0.010;
           this.cameraSpherical.phi += midPitchTurn;
           this.cameraSpherical.phi = THREE.MathUtils.clamp(
             this.cameraSpherical.phi,
-            0.16,
-            Math.PI / 2 + 0.38
+            0.12,
+            Math.PI / 2 + 0.45
           );
         }
         previousTwoTouchCenter = currentCenter;
@@ -397,11 +404,23 @@ export class VRMManager {
       }
     }, { passive: true });
 
-    window.addEventListener('touchend', () => {
-      this.isDragging = false;
-      touchStartDist = 0;
-      previousTwoTouchCenter = null;
-    }, { passive: true });
+    const handleTouchEnd = (e) => {
+      if (e.touches.length === 0) {
+        this.isDragging = false;
+        touchPreviousPos = null;
+        touchStartDist = 0;
+        previousTwoTouchCenter = null;
+      } else if (e.touches.length === 1) {
+        // Seamlessly switch from 2-finger pinch back to 1-finger model rotation
+        this.isDragging = true;
+        touchPreviousPos = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        touchStartDist = 0;
+        previousTwoTouchCenter = null;
+      }
+    };
+
+    window.addEventListener('touchend', handleTouchEnd, { passive: true });
+    window.addEventListener('touchcancel', handleTouchEnd, { passive: true });
   }
 
   /**

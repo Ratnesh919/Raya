@@ -154,14 +154,18 @@ export class ChatUI {
       this.chatInputEl.blur();
     }
 
-    // Safety watchdog: ensure isProcessing never hangs for more than 22 seconds
+    // Safety watchdog: ensure isProcessing never hangs for more than 7 seconds (per user requirement)
     const watchdogTimer = setTimeout(() => {
       if (this.isProcessing) {
-        console.warn('[ChatUI] Safety timeout: Resetting isProcessing.');
+        console.warn('[ChatUI] Safety timeout: Resetting isProcessing after 7s.');
         this.isProcessing = false;
         this.removeThinkingIndicator();
+        this.finalizeStreamingBubble();
+        const fallbackMsg = "I'm having a slight delay connecting to my AI brain! Please check your API key or connection and try again. ✨";
+        this.addMessageToDrawer('assistant', fallbackMsg);
+        this.voiceService?.speak(fallbackMsg);
       }
-    }, 22000);
+    }, 7000);
 
     // Automatically detect and adapt personality based on user conversation
     if (this.personalityEngine) {

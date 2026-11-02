@@ -1859,7 +1859,7 @@
       "file_type": "code",
       "norm_label": ".applyvisualadjustments()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L627"
+      "source_location": "L646"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_constructor",
@@ -1895,7 +1895,7 @@
       "file_type": "code",
       "norm_label": ".loadmodel()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L670"
+      "source_location": "L689"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_onwindowresize",
@@ -1907,7 +1907,7 @@
       "file_type": "code",
       "norm_label": ".onwindowresize()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L825"
+      "source_location": "L844"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_poserestingarms",
@@ -1919,7 +1919,7 @@
       "file_type": "code",
       "norm_label": ".poserestingarms()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L603"
+      "source_location": "L622"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_render",
@@ -1931,7 +1931,7 @@
       "file_type": "code",
       "norm_label": ".render()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L886"
+      "source_location": "L905"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setcameramode",
@@ -1943,7 +1943,7 @@
       "file_type": "code",
       "norm_label": ".setcameramode()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L555"
+      "source_location": "L574"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setchairvisible",
@@ -1955,7 +1955,7 @@
       "file_type": "code",
       "norm_label": ".setchairvisible()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L831"
+      "source_location": "L850"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setgraphicsquality",
@@ -1979,7 +1979,7 @@
       "file_type": "code",
       "norm_label": ".sethairbrightness()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L613"
+      "source_location": "L632"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setoverallbrightness",
@@ -1991,7 +1991,7 @@
       "file_type": "code",
       "norm_label": ".setoverallbrightness()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L619"
+      "source_location": "L638"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setskinbrightness",
@@ -2003,7 +2003,7 @@
       "file_type": "code",
       "norm_label": ".setskinbrightness()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L607"
+      "source_location": "L626"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setupgyroscope",
@@ -2015,7 +2015,7 @@
       "file_type": "code",
       "norm_label": ".setupgyroscope()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L412"
+      "source_location": "L431"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setupinteractions",
@@ -2051,7 +2051,7 @@
       "file_type": "code",
       "norm_label": ".setupphoneshake()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L477"
+      "source_location": "L496"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_updatebreeze",
@@ -2063,7 +2063,7 @@
       "file_type": "code",
       "norm_label": ".updatebreeze()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L838"
+      "source_location": "L857"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_updatecameraforscreen",
@@ -2087,7 +2087,7 @@
       "file_type": "code",
       "norm_label": ".updategyro()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L528"
+      "source_location": "L547"
     },
     {
       "id": "src_ui_chatui_chatui_addmessagetodrawer",
@@ -2099,7 +2099,7 @@
       "file_type": "code",
       "norm_label": ".addmessagetodrawer()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L432"
+      "source_location": "L436"
     },
     {
       "id": "src_ui_chatui_chatui_analyzechatsentiment",
@@ -2111,7 +2111,7 @@
       "file_type": "code",
       "norm_label": ".analyzechatsentiment()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L335"
+      "source_location": "L339"
     },
     {
       "id": "src_ui_chatui_chatui_analyzeuserintentemotion",
@@ -2123,7 +2123,7 @@
       "file_type": "code",
       "norm_label": ".analyzeuserintentemotion()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L295"
+      "source_location": "L299"
     },
     {
       "id": "src_ui_chatui_chatui_appendstreamingchunk",
@@ -2135,7 +2135,7 @@
       "file_type": "code",
       "norm_label": ".appendstreamingchunk()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L479"
+      "source_location": "L483"
     },
     {
       "id": "src_ui_chatui_chatui_constructor",
@@ -2159,7 +2159,7 @@
       "file_type": "code",
       "norm_label": ".createstreamingbubble()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L455"
+      "source_location": "L459"
     },
     {
       "id": "src_ui_chatui_chatui_finalizestreamingbubble",
@@ -2171,7 +2171,7 @@
       "file_type": "code",
       "norm_label": ".finalizestreamingbubble()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L488"
+      "source_location": "L492"
     },
     {
       "id": "src_ui_chatui_chatui_handlesendmessage",
@@ -2195,7 +2195,7 @@
       "file_type": "code",
       "norm_label": ".removethinkingindicator()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L418"
+      "source_location": "L422"
     },
     {
       "id": "src_ui_chatui_chatui_rendermemorystatus",
@@ -2207,7 +2207,7 @@
       "file_type": "code",
       "norm_label": ".rendermemorystatus()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L612"
+      "source_location": "L616"
     },
     {
       "id": "src_ui_chatui_chatui_renderpersonalitybadge",
@@ -2219,7 +2219,7 @@
       "file_type": "code",
       "norm_label": ".renderpersonalitybadge()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L533"
+      "source_location": "L537"
     },
     {
       "id": "src_ui_chatui_chatui_renderpersonalityoptions",
@@ -2231,7 +2231,7 @@
       "file_type": "code",
       "norm_label": ".renderpersonalityoptions()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L553"
+      "source_location": "L557"
     },
     {
       "id": "src_ui_chatui_chatui_setuplisteners",
@@ -2255,7 +2255,7 @@
       "file_type": "code",
       "norm_label": ".setupmemoryui()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L592"
+      "source_location": "L596"
     },
     {
       "id": "src_ui_chatui_chatui_setuppersonalityui",
@@ -2267,7 +2267,7 @@
       "file_type": "code",
       "norm_label": ".setuppersonalityui()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L493"
+      "source_location": "L497"
     },
     {
       "id": "src_ui_chatui_chatui_showspeechbubble",
@@ -2279,7 +2279,7 @@
       "file_type": "code",
       "norm_label": ".showspeechbubble()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L426"
+      "source_location": "L430"
     },
     {
       "id": "src_ui_chatui_chatui_showthinkingindicator",
@@ -2291,7 +2291,7 @@
       "file_type": "code",
       "norm_label": ".showthinkingindicator()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L406"
+      "source_location": "L410"
     },
     {
       "id": "src_vrm_animationengine_animationengine_bindmodel",
@@ -2363,7 +2363,7 @@
       "file_type": "code",
       "norm_label": ".playanimation()",
       "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L630"
+      "source_location": "L662"
     },
     {
       "id": "src_vrm_animationengine_animationengine_preloadidle",
@@ -2411,7 +2411,7 @@
       "file_type": "code",
       "norm_label": ".update()",
       "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L731"
+      "source_location": "L763"
     },
     {
       "id": "src_vrm_animationengine_findrignode",
@@ -5373,6 +5373,18 @@
     },
     {
       "source": "src_ui_chatui_chatui_handlesendmessage",
+      "target": "src_ui_chatui_chatui_finalizestreamingbubble",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/ui/ChatUI.js",
+      "source_location": "L163",
+      "weight": 1.0
+    },
+    {
+      "source": "src_ui_chatui_chatui_handlesendmessage",
       "target": "src_ui_chatui_chatui_addmessagetodrawer",
       "relation": "calls",
       "_origin": "ast",
@@ -5380,7 +5392,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L177",
+      "source_location": "L165",
       "weight": 1.0
     },
     {
@@ -5392,7 +5404,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L195",
+      "source_location": "L199",
       "weight": 1.0
     },
     {
@@ -5404,7 +5416,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L198",
+      "source_location": "L202",
       "weight": 1.0
     },
     {
@@ -5416,7 +5428,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L241",
+      "source_location": "L245",
       "weight": 1.0
     },
     {
@@ -5428,19 +5440,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L243",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ui_chatui_chatui_handlesendmessage",
-      "target": "src_ui_chatui_chatui_finalizestreamingbubble",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/ui/ChatUI.js",
-      "source_location": "L257",
+      "source_location": "L247",
       "weight": 1.0
     },
     {
@@ -5452,7 +5452,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L260",
+      "source_location": "L264",
       "weight": 1.0
     },
     {
@@ -5476,7 +5476,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L596",
+      "source_location": "L600",
       "weight": 1.0
     },
     {
@@ -5488,7 +5488,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L607",
+      "source_location": "L611",
       "weight": 1.0
     },
     {
@@ -5500,7 +5500,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L497",
+      "source_location": "L501",
       "weight": 1.0
     },
     {
@@ -5512,7 +5512,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L500",
+      "source_location": "L504",
       "weight": 1.0
     },
     {
@@ -5524,7 +5524,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L428",
+      "source_location": "L432",
       "weight": 1.0
     },
     {
@@ -5536,7 +5536,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L407",
+      "source_location": "L411",
       "weight": 1.0
     },
     {
@@ -5872,7 +5872,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L677",
+      "source_location": "L709",
       "weight": 1.0
     },
     {
@@ -5884,7 +5884,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L680",
+      "source_location": "L712",
       "weight": 1.0
     },
     {
@@ -6532,7 +6532,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L781",
+      "source_location": "L800",
       "weight": 1.0
     },
     {
@@ -6544,7 +6544,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L784",
+      "source_location": "L803",
       "weight": 1.0
     },
     {
@@ -6556,7 +6556,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L826",
+      "source_location": "L845",
       "weight": 1.0
     },
     {
@@ -6568,7 +6568,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L890",
+      "source_location": "L909",
       "weight": 1.0
     },
     {
@@ -6580,7 +6580,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L898",
+      "source_location": "L917",
       "weight": 1.0
     },
     {
@@ -6592,7 +6592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L616",
+      "source_location": "L635",
       "weight": 1.0
     },
     {
@@ -6604,7 +6604,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L610",
+      "source_location": "L629",
       "weight": 1.0
     },
     {
@@ -9826,7 +9826,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L295",
+      "source_location": "L299",
       "weight": 1.0
     },
     {
@@ -9837,7 +9837,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L335",
+      "source_location": "L339",
       "weight": 1.0
     },
     {
@@ -9859,7 +9859,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L406",
+      "source_location": "L410",
       "weight": 1.0
     },
     {
@@ -9870,7 +9870,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L418",
+      "source_location": "L422",
       "weight": 1.0
     },
     {
@@ -9881,7 +9881,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L426",
+      "source_location": "L430",
       "weight": 1.0
     },
     {
@@ -9892,7 +9892,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L432",
+      "source_location": "L436",
       "weight": 1.0
     },
     {
@@ -9903,7 +9903,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L455",
+      "source_location": "L459",
       "weight": 1.0
     },
     {
@@ -9925,7 +9925,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L479",
+      "source_location": "L483",
       "weight": 1.0
     },
     {
@@ -9936,7 +9936,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L488",
+      "source_location": "L492",
       "weight": 1.0
     },
     {
@@ -9947,7 +9947,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L493",
+      "source_location": "L497",
       "weight": 1.0
     },
     {
@@ -9958,7 +9958,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L533",
+      "source_location": "L537",
       "weight": 1.0
     },
     {
@@ -9969,7 +9969,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L553",
+      "source_location": "L557",
       "weight": 1.0
     },
     {
@@ -9980,7 +9980,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L592",
+      "source_location": "L596",
       "weight": 1.0
     },
     {
@@ -9991,7 +9991,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L612",
+      "source_location": "L616",
       "weight": 1.0
     },
     {
@@ -10310,7 +10310,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L630",
+      "source_location": "L662",
       "weight": 1.0
     },
     {
@@ -10321,7 +10321,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L731",
+      "source_location": "L763",
       "weight": 1.0
     },
     {
@@ -10992,7 +10992,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L412",
+      "source_location": "L431",
       "weight": 1.0
     },
     {
@@ -11014,7 +11014,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L477",
+      "source_location": "L496",
       "weight": 1.0
     },
     {
@@ -11025,7 +11025,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L528",
+      "source_location": "L547",
       "weight": 1.0
     },
     {
@@ -11036,7 +11036,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L555",
+      "source_location": "L574",
       "weight": 1.0
     },
     {
@@ -11047,7 +11047,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L603",
+      "source_location": "L622",
       "weight": 1.0
     },
     {
@@ -11058,7 +11058,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L607",
+      "source_location": "L626",
       "weight": 1.0
     },
     {
@@ -11069,7 +11069,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L613",
+      "source_location": "L632",
       "weight": 1.0
     },
     {
@@ -11080,7 +11080,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L619",
+      "source_location": "L638",
       "weight": 1.0
     },
     {
@@ -11091,7 +11091,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L627",
+      "source_location": "L646",
       "weight": 1.0
     },
     {
@@ -11102,7 +11102,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L670",
+      "source_location": "L689",
       "weight": 1.0
     },
     {
@@ -11124,7 +11124,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L825",
+      "source_location": "L844",
       "weight": 1.0
     },
     {
@@ -11135,7 +11135,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L831",
+      "source_location": "L850",
       "weight": 1.0
     },
     {
@@ -11146,7 +11146,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L838",
+      "source_location": "L857",
       "weight": 1.0
     },
     {
@@ -11157,7 +11157,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L886",
+      "source_location": "L905",
       "weight": 1.0
     },
     {
@@ -11366,5 +11366,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "80cd44604fee50e41e5256a7047b2f4f2362b1bb"
+  "built_at_commit": "bb25ae710a06027ed2f471030ed7e7170e26f260"
 }

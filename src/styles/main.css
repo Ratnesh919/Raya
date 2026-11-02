@@ -24,6 +24,8 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  touch-action: none; /* Prevents mobile browser viewport pinch-zoom & double-tap zoom */
+  -webkit-touch-callout: none;
   background-color: var(--bg-dark);
   font-family: var(--font-sans);
   color: var(--text-main);
@@ -40,6 +42,7 @@ html, body {
   height: 100vh;
   z-index: 1;
   cursor: grab;
+  touch-action: none; /* Strictly routes all touch gestures exclusively to 3D Three.js orbit/turn */
 }
 
 #vrm-canvas:active {
@@ -55,6 +58,7 @@ html, body {
   height: 100%;
   z-index: 10;
   pointer-events: none;
+  touch-action: none;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -1706,13 +1710,28 @@ select option:hover, select option:focus, select option:checked {
     min-height: 1.6rem;
   }
 
-  /* Action & Mood Chips & Chat Bar */
+  /* Action & Mood Chips & Chat Bar (Elevated above Netlify watermark badge) */
   .bottom-controls {
     width: 100%;
     gap: 0.4rem;
-    margin-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 3.25rem);
     position: relative;
     z-index: 50;
+  }
+
+  /* Netlify Free-Tier Injected Watermark: prevent touch collision & overlapping UI controls */
+  #netlify-badge,
+  .netlify-badge,
+  [data-netlify-badge],
+  div[style*="z-index: 2147483647"],
+  div[class*="netlify-badge"] {
+    bottom: 0.35rem !important;
+    right: 0.5rem !important;
+    transform: scale(0.72) !important;
+    transform-origin: bottom right !important;
+    opacity: 0.45 !important;
+    pointer-events: none !important;
+    z-index: 5 !important;
   }
 
   .action-chips {

@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "src/ui/ChatUI.js": {
-    "mtime": 1793602505.4750433,
-    "seen": 1793604984.7596595,
-    "ast_hash": "b66307391b98c6a16df0898d60346ae1",
+    "mtime": 1793623243.423987,
+    "seen": 1793625506.914302,
+    "ast_hash": "dcdc5e1050e74be11778cd211b307473",
     "semantic_hash": ""
   },
   "src/ui/ControlsHUD.js": {
@@ -78,9 +78,9 @@
     "semantic_hash": "22d20c88126d8dcd2c97686564b5d733"
   },
   "src/vrm/AnimationEngine.js": {
-    "mtime": 1793602850.1429632,
-    "seen": 1793604984.7596686,
-    "ast_hash": "13731cc0422c764d97b069ea7619b246",
+    "mtime": 1793623770.9468012,
+    "seen": 1793625506.9143088,
+    "ast_hash": "0a3e3c715045a8d9852ad368008bf0b8",
     "semantic_hash": ""
   },
   "src/vrm/ChestPhysics.js": {
@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "src/vrm/LifeSimulator.js": {
-    "mtime": 1793602682.9994752,
-    "seen": 1793604984.7596834,
-    "ast_hash": "d29698afde510d677e56e1dd1e427f72",
+    "mtime": 1793623407.737362,
+    "seen": 1793625506.9143167,
+    "ast_hash": "74bdb1f485abfa6046fc9bad2826f345",
     "semantic_hash": ""
   },
   "src/vrm/LipSyncEngine.js": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/vrm/VRMManager.js": {
-    "mtime": 1793603126.7579439,
-    "seen": 1793604984.7596872,
-    "ast_hash": "7b0c6ffa8720a5bfb29a9d75d55d1aa5",
+    "mtime": 1793624011.764417,
+    "seen": 1793625506.9143193,
+    "ast_hash": "f51f398ec0dc5e175d757c796609cbc7",
     "semantic_hash": ""
   },
   "vercel.json": {

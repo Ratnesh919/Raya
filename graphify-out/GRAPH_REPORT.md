@@ -1,7 +1,7 @@
 # Graph Report - raya ai assistant  (2026-11-02)
 
 ## Corpus Check
-- 34 files · ~36,703 words
+- 34 files · ~36,974 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 25 file(s) not represented in the graph (top: .fbx 15, .vrm 5, (none) 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `80cd4460`
+- Built from commit: `bb25ae71`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 

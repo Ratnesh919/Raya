@@ -513,21 +513,21 @@ export class LifeSimulator {
     }
 
     // 2. All 10 Finger Bones: Gentle Clasp during shy/joined hand postures without unbounded accumulation
-    // Strictly bounds finger rotation so index finger and thumb NEVER stretch or hyperextend
+    // Left hand in VRM humanoid curls inward with -Z; Right hand curls inward with +Z
     if (w > 0.001) {
       if (this.leftFingers && this.leftFingers.length > 0) {
         for (let i = 0; i < this.leftFingers.length; i++) {
           const f = this.leftFingers[i];
-          const angle = f.isThumb ? 0.18 * w : f.isIndex ? 0.28 * w : 0.35 * w;
-          f.node.rotation.z = angle;
+          const angle = f.isThumb ? 0.16 * w : f.isIndex ? 0.24 * w : 0.30 * w;
+          f.node.rotation.z = -angle; // -Z curls inward towards palm on Left hand
         }
       }
 
       if (this.rightFingers && this.rightFingers.length > 0) {
         for (let i = 0; i < this.rightFingers.length; i++) {
           const f = this.rightFingers[i];
-          const angle = f.isThumb ? 0.18 * w : f.isIndex ? 0.28 * w : 0.35 * w;
-          f.node.rotation.z = -angle;
+          const angle = f.isThumb ? 0.16 * w : f.isIndex ? 0.24 * w : 0.30 * w;
+          f.node.rotation.z = angle; // +Z curls inward towards palm on Right hand
         }
       }
     }
