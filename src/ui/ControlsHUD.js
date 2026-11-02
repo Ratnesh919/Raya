@@ -90,7 +90,7 @@ export class ControlsHUD {
       const files = Array.from(e.dataTransfer?.files || []);
       const mainFile = files.find((f) => {
         const n = f.name.toLowerCase();
-        return n.endsWith('.fbx') || n.endsWith('.vrm') || n.endsWith('.glb');
+        return n.endsWith('.fbx') || n.endsWith('.vrm') || n.endsWith('.glb') || n.endsWith('.blend');
       });
 
       if (mainFile) {
@@ -101,6 +101,19 @@ export class ControlsHUD {
   }
 
   async loadModelWithLoader(urlOrFile) {
+    const isBlend = (urlOrFile instanceof File && urlOrFile.name.toLowerCase().endsWith('.blend')) ||
+                    (Array.isArray(urlOrFile) && urlOrFile.some((f) => f.name?.toLowerCase().endsWith('.blend'))) ||
+                    (typeof urlOrFile === 'string' && urlOrFile.toLowerCase().endsWith('.blend'));
+    if (isBlend) {
+      alert(
+        'Blender (.blend) files are raw project files that cannot be rendered directly in a web browser.\n\n' +
+        'To use your model in Raya:\n' +
+        '1. In Blender, select your model and click File → Export → VRM (.vrm) or FBX (.fbx).\n' +
+        '2. Load the exported .vrm or .fbx file into Raya to interact with your avatar!'
+      );
+      return;
+    }
+
     let loadingMsg = 'Initializing 3D Avatar...';
     if (typeof urlOrFile === 'string') {
       loadingMsg = urlOrFile.toLowerCase().includes('.fbx') ? 'Loading FBX Model & Textures...' : 'Loading 3D VRM Model...';

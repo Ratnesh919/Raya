@@ -117,6 +117,7 @@ export class VRMManager {
     this.turnDeltaX = 0;
     this.chestPhysics = null;
     this.setupInteractions();
+    this.setupGyroscope();
 
     // 7. Resize listener
     window.addEventListener('resize', () => this.onWindowResize());
@@ -400,6 +401,97 @@ export class VRMManager {
       touchStartDist = 0;
       previousTwoTouchCenter = null;
     }, { passive: true });
+  }
+
+  /**
+   * Phone Gyroscope Integration:
+   * Rotates avatar head and gaze smoothly as user tilts phone,
+   * strictly clamped to natural human anatomical limits (no 360-degree rotation).
+   */
+  setupGyroscope() {
+    if (typeof window === 'undefined') return;
+
+    this.gyroEnabled = true;
+    this.gyroBaseline = null;
+    this.targetGyroYaw = 0;   // Radians
+    this.targetGyroPitch = 0; // Radians
+    this.currentGyroYaw = 0;
+    this.currentGyroPitch = 0;
+
+    const handleOrientation = (e) => {
+      if (!this.gyroEnabled || !this.currentVrm) return;
+      if (e.gamma === null || e.beta === null) return;
+
+      // gamma: Left-to-right tilt in degrees [-90, 90]
+      // beta: Front-to-back tilt in degrees [-180, 180]
+      if (!this.gyroBaseline) {
+        this.gyroBaseline = { gamma: e.gamma, beta: e.beta };
+        return;
+      }
+
+      // Delta from baseline
+      const deltaGamma = e.gamma - this.gyroBaseline.gamma;
+      const deltaBeta = e.beta - this.gyroBaseline.beta;
+
+      // Convert degrees to radians
+      const rawYaw = (deltaGamma * Math.PI) / 180;
+      const rawPitch = (deltaBeta * Math.PI) / 180;
+
+      // BIOMECHANICAL RANGE CONSTRAINT:
+      // Real human head/neck cannot rotate 360 degrees!
+      // Limit yaw to max ±45° (±0.78 rad) and pitch to max ±25° (±0.44 rad)
+      const maxHumanYaw = 0.78;   // ~45°
+      const maxHumanPitch = 0.44; // ~25°
+
+      this.targetGyroYaw = THREE.MathUtils.clamp(rawYaw, -maxHumanYaw, maxHumanYaw);
+      this.targetGyroPitch = THREE.MathUtils.clamp(-rawPitch, -maxHumanPitch, maxHumanPitch);
+    };
+
+    // Permission handler for iOS 13+ devices
+    const requestGyroPermission = () => {
+      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then((response) => {
+            if (response === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+            }
+          })
+          .catch(() => {});
+      } else if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
+        window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+      }
+    };
+
+    // Request on first user interaction to satisfy browser security policies
+    window.addEventListener('touchstart', requestGyroPermission, { once: true, passive: true });
+    window.addEventListener('click', requestGyroPermission, { once: true, passive: true });
+  }
+
+  updateGyro(deltaTime) {
+    if (!this.currentVrm || !this.gyroEnabled) return;
+
+    // Smooth lerp (soft spring-damped tracking)
+    const lerpSpeed = THREE.MathUtils.clamp(deltaTime * 6.0, 0, 1);
+    const prevYaw = this.currentGyroYaw;
+    this.currentGyroYaw = THREE.MathUtils.lerp(this.currentGyroYaw, this.targetGyroYaw, lerpSpeed);
+    this.currentGyroPitch = THREE.MathUtils.lerp(this.currentGyroPitch, this.targetGyroPitch, lerpSpeed);
+
+    const deltaGyro = this.currentGyroYaw - prevYaw;
+    this.turnDeltaY += deltaGyro;
+
+    // Apply clamped gyro rotation smoothly onto avatar head/neck without exceeding human limits
+    if (this.currentVrm.humanoid) {
+      const neck = this.currentVrm.humanoid.getNormalizedBoneNode('neck');
+      const head = this.currentVrm.humanoid.getNormalizedBoneNode('head');
+      if (neck) {
+        neck.rotation.y = THREE.MathUtils.clamp(neck.rotation.y + this.currentGyroYaw * 0.40, -0.45, 0.45);
+        neck.rotation.x = THREE.MathUtils.clamp(neck.rotation.x + this.currentGyroPitch * 0.40, -0.30, 0.30);
+      }
+      if (head) {
+        head.rotation.y = THREE.MathUtils.clamp(head.rotation.y + this.currentGyroYaw * 0.60, -0.75, 0.75);
+        head.rotation.x = THREE.MathUtils.clamp(head.rotation.x + this.currentGyroPitch * 0.60, -0.35, 0.35);
+      }
+    }
   }
 
   setCameraMode(mode = 'portrait') {
@@ -743,7 +835,12 @@ export class VRMManager {
       // (Redundant second springBoneManager.update call eliminated to save 50% physics CPU)
       this.currentVrm.update(deltaTime);
 
-      // 3. Apply physics-based rotational inertia & dynamic secondary motion for chest/breast bones
+      // 3. Phone Gyroscope Head/Gaze tracking (blends natural head rotation clamped to human limits)
+      if (this.gyroEnabled) {
+        this.updateGyro(deltaTime);
+      }
+
+      // 4. Apply physics-based rotational inertia & dynamic secondary motion for chest/breast bones
       // Executes directly after currentVrm.update so it blends dynamically on top of spring bones & animations!
       if (this.chestPhysics) {
         this.chestPhysics.update(deltaTime);

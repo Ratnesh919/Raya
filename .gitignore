@@ -32,6 +32,7 @@ Thumbs.db
 
 # Graphify cache
 graphify-out/cache/
+graphify-out/2026-*/
 
 # Large binaries exceeding GitHub 100MB limit & temp files
 public/models/iuno.vrm

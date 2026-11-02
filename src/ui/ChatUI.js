@@ -35,6 +35,8 @@ export class ChatUI {
 
     this.thinkingItemEl = null;
     this.isProcessing = false;
+    this.currentStreamingMsgEl = null;
+    this.currentStreamingTextNode = null;
 
     this.setupListeners();
     this.setupMemoryUI();
@@ -42,6 +44,15 @@ export class ChatUI {
   }
 
   setupListeners() {
+    // Voice interruption / barge-in listener
+    this.voiceService.onBargeIn = () => {
+      console.log('[ChatUI] Voice barge-in detected! User spoke, cutting Raya speech & listening.');
+      this.lifeSimulator?.startListening();
+      this.expressionManager?.setEmotion('curiosity', 0.85);
+      if (this.animationEngine) {
+        this.animationEngine.playAnimation('think', 0.3);
+      }
+    };
     // Send message on Enter or Click
     this.sendBtnEl?.addEventListener('click', () => this.handleSendMessage());
     this.chatInputEl?.addEventListener('keydown', (e) => {
@@ -159,66 +170,81 @@ export class ChatUI {
       this.animationEngine.playAnimation('think', 0.5);
     }
 
+    const isUserDistressed = /\b(upset|sad|depressed|cry|crying|tears|unhappy|lonely|alone|heartbreak|heartbroken|loss|hurt|hurting|pain|painful|tired|exhausted|burnout|overwhelmed|failed|fail|lost|bad day|terrible|horrible|hopeless|anxious|anxiety|scared|dukh|dard|pareshan|rona|udas|heavy heart|miserable)\b/i.test(text);
+
+    let firstChunkReceived = false;
+    let accumulatedText = '';
+
     try {
-      const response = await this.llmService.sendMessage(text);
+      await this.llmService.sendMessageStream(
+        text,
+        (sentenceChunk, isFirst, meta) => {
+          accumulatedText += (accumulatedText ? ' ' : '') + sentenceChunk;
 
-      // Analyze conversational sentiment across user query and assistant response
-      const sentiment = this.analyzeChatSentiment(text, response.speechText);
-      let finalEmotion = response.emotion || sentiment.emotion || 'caring';
+          if (isFirst) {
+            firstChunkReceived = true;
+            this.removeThinkingIndicator();
 
-      // Guard against inappropriate happy/joy smiles when the user expresses distress/sadness/upset
-      const isUserDistressed = /\b(upset|sad|depressed|cry|crying|tears|unhappy|lonely|alone|heartbreak|heartbroken|loss|hurt|hurting|pain|painful|tired|exhausted|burnout|overwhelmed|failed|fail|lost|bad day|terrible|horrible|hopeless|anxious|anxiety|scared|dukh|dard|pareshan|rona|udas|heavy heart|miserable)\b/i.test(text);
-      if (isUserDistressed && (finalEmotion === 'happy' || finalEmotion === 'joy' || finalEmotion === 'wink')) {
-        finalEmotion = sentiment.emotion || 'caring';
-      }
+            let initialEmotion = meta?.emotion || userIntent.emotion || 'caring';
+            if (isUserDistressed && (initialEmotion === 'happy' || initialEmotion === 'joy' || initialEmotion === 'wink')) {
+              initialEmotion = 'caring';
+            }
+            this.expressionManager.setEmotion(initialEmotion, 0.85);
 
-      // Clean speech text
-      const cleanSpeech = (response.speechText || '').replace(/\[.*?\]/g, '').replace(/[*_#~`]/g, '').trim();
+            if (this.animationEngine) {
+              let actionToPlay = meta?.action;
+              if (actionToPlay && typeof actionToPlay === 'string' && actionToPlay.toLowerCase().includes('sit')) {
+                actionToPlay = null; // Strictly avoid sitting
+              }
+              if (actionToPlay === 'shy' || initialEmotion === 'blush' || initialEmotion === 'shy') {
+                this.animationEngine.playAnimation('idle', 0.4);
+                if (this.lifeSimulator?.triggerBehavior) {
+                  this.lifeSimulator.triggerBehavior('shy', 6.0);
+                }
+              } else if (actionToPlay) {
+                this.animationEngine.playAnimation(actionToPlay, 0.4);
+              }
+            }
 
-      // Dynamically calculate speech duration for smooth auto-reset matching the spoken duration
-      const wordCount = cleanSpeech.split(/\s+/).length;
-      const speechDurationMs = Math.max(5000, (wordCount / 2.6) * 1000 + 2500);
-
-      // Trigger facial emotion with smooth auto-reset
-      this.expressionManager.setEmotionWithAutoReset(finalEmotion, speechDurationMs);
-
-      // Trigger communicative gesture animation (avoiding any sitting animation)
-      if (this.animationEngine) {
-        let actionToPlay = response.action || sentiment.action;
-        if (actionToPlay && typeof actionToPlay === 'string' && actionToPlay.toLowerCase().includes('sit')) {
-          actionToPlay = null; // Strictly avoid sitting
-        }
-
-        if (actionToPlay === 'shy' || finalEmotion === 'blush' || finalEmotion === 'shy') {
-          // Play calm idle as foundation while full-body shy kinematic behavior executes
-          this.animationEngine.playAnimation('idle', 0.4);
-          if (this.lifeSimulator && typeof this.lifeSimulator.triggerBehavior === 'function') {
-            this.lifeSimulator.triggerBehavior('shy', Math.max(5.5, speechDurationMs / 1000));
+            const activeProfile = this.personalityEngine ? this.personalityEngine.getActiveProfile() : null;
+            this.createStreamingBubble(sentenceChunk, activeProfile);
+          } else {
+            this.appendStreamingChunk(sentenceChunk);
           }
-        } else if (actionToPlay) {
-          this.animationEngine.playAnimation(actionToPlay, 0.4);
-        } else if (finalEmotion === 'think' || finalEmotion === 'advice' || finalEmotion === 'curiosity') {
-          this.animationEngine.playAnimation('think', 0.4);
-        } else if (finalEmotion === 'joy' || finalEmotion === 'excited') {
-          this.animationEngine.playAnimation('happy', 0.4);
-        } else if (finalEmotion === 'sad') {
-          this.animationEngine.playAnimation('sad', 0.4);
-        } else if (finalEmotion === 'angry') {
-          this.animationEngine.playAnimation('angry', 0.4);
-        }
-      }
 
-      // Remove thinking indicator, speak voice synthesis, and display in drawer
-      this.removeThinkingIndicator();
-      this.voiceService.speak(cleanSpeech);
-      const activeProfile = this.personalityEngine ? this.personalityEngine.getActiveProfile() : null;
-      this.addMessageToDrawer('assistant', cleanSpeech, activeProfile);
-      if (!this.chatDrawerEl?.classList.contains('open')) {
-        this.drawerToggleBtn?.classList.add('has-unread');
-      }
+          // Feed chunk immediately to TTS pipeline — starts speaking within ~300ms!
+          this.voiceService.speakChunk(sentenceChunk, isFirst);
+        },
+        (finalParsed) => {
+          if (!firstChunkReceived) {
+            this.removeThinkingIndicator();
+            const clean = (finalParsed.speechText || '').replace(/\[.*?\]/g, '').replace(/[*_#~`]/g, '').trim();
+            const activeProfile = this.personalityEngine ? this.personalityEngine.getActiveProfile() : null;
+            this.addMessageToDrawer('assistant', clean, activeProfile);
+            this.voiceService.speak(clean);
+          } else {
+            this.finalizeStreamingBubble();
+          }
+
+          const sentiment = this.analyzeChatSentiment(text, finalParsed.speechText);
+          let finalEmotion = finalParsed.emotion || sentiment.emotion || 'caring';
+          if (isUserDistressed && (finalEmotion === 'happy' || finalEmotion === 'joy' || finalEmotion === 'wink')) {
+            finalEmotion = sentiment.emotion || 'caring';
+          }
+
+          const wordCount = (finalParsed.speechText || accumulatedText).split(/\s+/).length;
+          const speechDurationMs = Math.max(5000, (wordCount / 2.6) * 1000 + 2500);
+          this.expressionManager.setEmotionWithAutoReset(finalEmotion, speechDurationMs);
+
+          if (!this.chatDrawerEl?.classList.contains('open')) {
+            this.drawerToggleBtn?.classList.add('has-unread');
+          }
+        }
+      );
     } catch (err) {
       console.error('[ChatUI] Message error:', err);
       this.removeThinkingIndicator();
+      this.finalizeStreamingBubble();
       const errMsg = err.message || 'Something went wrong.';
       this.expressionManager.setEmotionWithAutoReset('sad', 4000);
       this.addMessageToDrawer('assistant', `⚠️ ${errMsg}`);
@@ -392,6 +418,44 @@ export class ChatUI {
 
     this.messagesListEl.appendChild(item);
     this.messagesListEl.scrollTop = this.messagesListEl.scrollHeight;
+  }
+
+  createStreamingBubble(initialText, profile = null) {
+    if (!this.messagesListEl || !initialText) return;
+    const item = document.createElement('div');
+    item.className = 'message-item assistant';
+
+    if (profile) {
+      const tag = document.createElement('div');
+      tag.className = 'drawer-personality-badge';
+      tag.style.borderColor = `${profile.color}55`;
+      tag.innerHTML = `<span style="color: ${profile.color};">${profile.emoji} ${profile.name}</span>`;
+      item.appendChild(tag);
+    }
+
+    const textNode = document.createElement('div');
+    textNode.textContent = initialText;
+    item.appendChild(textNode);
+
+    this.messagesListEl.appendChild(item);
+    this.messagesListEl.scrollTop = this.messagesListEl.scrollHeight;
+
+    this.currentStreamingMsgEl = item;
+    this.currentStreamingTextNode = textNode;
+  }
+
+  appendStreamingChunk(textChunk) {
+    if (this.currentStreamingTextNode && textChunk) {
+      this.currentStreamingTextNode.textContent += ' ' + textChunk;
+      if (this.messagesListEl) {
+        this.messagesListEl.scrollTop = this.messagesListEl.scrollHeight;
+      }
+    }
+  }
+
+  finalizeStreamingBubble() {
+    this.currentStreamingMsgEl = null;
+    this.currentStreamingTextNode = null;
   }
 
   setupPersonalityUI() {

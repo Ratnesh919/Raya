@@ -25,14 +25,14 @@ export class ChestPhysics {
     this._scratchQuat = new THREE.Quaternion();
 
     // Physics parameters (grounded in biomechanics & soft-tissue elasticity)
-    this.stiffness = 26.0;          // Spring restoring force coefficient (k)
-    this.damping = 4.0;             // Viscous damping coefficient (c) (underdamped ~0.39 for natural rebound ripples)
+    this.stiffness = 28.0;          // Spring restoring force coefficient (k)
+    this.damping = 5.2;             // Viscous damping coefficient (c) (eliminates rapid jitter/twitch)
     this.mass = 1.0;                // Normalized mass (m)
     this.breatheCoupling = 0.015;   // Sinusoidal breathing coupling
-    this.rotInertiaGain = 1.25;     // Dynamic rotational inertia lag on left/right turn
-    this.rotDragGain = 0.35;        // Sustained angular velocity drag
-    this.rotAccelGain = 0.055;      // Sudden flick acceleration response
-    this.centrifugalGain = 0.0022;  // Radial outward centrifugal expansion and lift
+    this.rotInertiaGain = 1.15;     // Dynamic rotational inertia lag on left/right turn
+    this.rotDragGain = 0.25;        // Sustained angular velocity drag
+    this.rotAccelGain = 0.045;      // Sudden flick acceleration response
+    this.centrifugalGain = 0.0018;  // Radial outward centrifugal expansion and lift
 
     // Torso Torsional Compliance (whole ribcage flexibility when rotating)
     this.torsoStiffness = 38.0;
@@ -264,15 +264,20 @@ export class ChestPhysics {
 
     if (this.breastBones.length === 0) return;
 
-    // 4. Force Calculations for Soft-Body Secondary Motion
-    // Rotational inertia: soft mass opposes angular turn speed and acceleration
-    const F_rotLag = -this.rotInertiaGain * totalAngVelY - this.rotAccelGain * totalAngAccelY - this.rotDragGain * Math.sign(totalAngVelY) * Math.min(Math.abs(totalAngVelY), 8.0);
+    // 4. Force Calculations for Soft-Body Secondary Motion with Non-Linear Drag Ceiling
+    // Soft saturation ceiling: smooth at normal speeds, but caps firmly on fast turns/flicks
+    const maxRotForceY = 2.2;
+    const F_rotLag = -Math.tanh(totalAngVelY * 0.20) * maxRotForceY
+                     - Math.tanh(totalAngAccelY * 0.015) * 0.6
+                     - this.rotDragGain * Math.sign(totalAngVelY) * Math.min(Math.abs(totalAngVelY), 2.5);
 
-    // Pitch rotational inertia (vertical lag and harmonic bounce when tilting up and down)
-    const F_rotPitchLag = -this.rotInertiaGain * 1.35 * totalAngVelX - this.rotAccelGain * totalAngAccelX;
+    // Pitch rotational inertia (soft vertical ceiling)
+    const maxRotForceX = 1.6;
+    const F_rotPitchLag = -Math.tanh(totalAngVelX * 0.20) * maxRotForceX
+                          - Math.tanh(totalAngAccelX * 0.015) * 0.5;
 
     // Centrifugal expansion: pushes soft mass radially outward from rotation center and lifts
-    const F_centrifugal = THREE.MathUtils.clamp(this.centrifugalGain * (totalAngVelY * totalAngVelY), 0, 0.28);
+    const F_centrifugal = THREE.MathUtils.clamp(this.centrifugalGain * (totalAngVelY * totalAngVelY), 0, 0.18);
 
     // Harmonic breathing cycle:
     const breatheFreq = 0.85 * Math.PI * 2;
@@ -287,13 +292,13 @@ export class ChestPhysics {
 
       // Net external forces along anatomical axes:
       // Yaw (Y axis): left/right sway opposite to turn direction, plus outward centrifugal spread
-      const extForceY = (F_rotLag + (F_centrifugal * sideSign * 0.45)) * chainScale;
+      const extForceY = (F_rotLag + (F_centrifugal * sideSign * 0.35)) * chainScale;
 
       // Pitch (X axis): vertical rotational inertia lag, bounce, respiration, and centrifugal lift
-      const extForceX = (F_rotPitchLag + F_centrifugal * 0.85 + breatheLift * 18.0) * chainScale;
+      const extForceX = (F_rotPitchLag + F_centrifugal * 0.65 + breatheLift * 18.0) * chainScale;
 
       // Roll (Z axis): natural lateral tilt
-      const extForceZ = (-F_rotLag * sideSign * 0.22) * chainScale;
+      const extForceZ = (-F_rotLag * sideSign * 0.18) * chainScale;
 
       // Physics equation: a = (F_ext - k * x - c * v) / m
       const aX = (extForceX - this.stiffness * bone.displacementX - this.damping * bone.velocityX) / this.mass;
@@ -309,10 +314,10 @@ export class ChestPhysics {
       bone.displacementY += bone.velocityY * dt;
       bone.displacementZ += bone.velocityZ * dt;
 
-      // Anatomically grounded safety limits (preserves natural range without clipping)
-      bone.displacementX = THREE.MathUtils.clamp(bone.displacementX, -0.16, 0.22); // Up/down pitch
-      bone.displacementY = THREE.MathUtils.clamp(bone.displacementY, -0.26, 0.26); // Left/right yaw (~15 deg)
-      bone.displacementZ = THREE.MathUtils.clamp(bone.displacementZ, -0.12, 0.12); // Roll
+      // Realistic anatomical limits: prevents excessive stretching regardless of turn speed
+      bone.displacementX = THREE.MathUtils.clamp(bone.displacementX, -0.065, 0.075); // ~3.7° - 4.3° pitch
+      bone.displacementY = THREE.MathUtils.clamp(bone.displacementY, -0.075, 0.075); // ~4.3° max lateral yaw
+      bone.displacementZ = THREE.MathUtils.clamp(bone.displacementZ, -0.035, 0.035); // ~2.0° max roll
 
       // Build physical offset quaternion
       this._scratchEuler.set(

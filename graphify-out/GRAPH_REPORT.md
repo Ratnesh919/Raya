@@ -1,17 +1,17 @@
-# Graph Report - raya ai assistant  (2026-10-30)
+# Graph Report - raya ai assistant  (2026-11-02)
 
 ## Corpus Check
-- 226 files · ~3,487,057 words
+- 34 files · ~36,379 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 30 file(s) not represented in the graph (top: .fbx 16, .vrm 8, (none) 2)
+- Unclassified: 24 file(s) not represented in the graph (top: .fbx 15, .vrm 4, (none) 2)
 
 ## Summary
-- 673 nodes · 1043 edges · 52 communities (12 shown, 40 thin omitted)
-- Extraction: 98% EXTRACTED · 2% INFERRED · 0% AMBIGUOUS · INFERRED: 18 edges (avg confidence: 0.85)
+- 367 nodes · 609 edges · 21 communities (10 shown, 11 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 17 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `f9a1b65e`
+- Built from commit: `5f2f6ad1`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -20,9 +20,11 @@
 - VoiceService
 - main.js
 - SettingsModal.js
-- mathutils
+- LLMService
 - bootstrap
 - ChatUI
+- AnimationEngine
+- KokoroService
 - LoaderAnimation
 - compilerOptions
 - ✨ Key Features
@@ -31,37 +33,24 @@
 - vercel.json
 - AGENTS.md — Raya AI Assistant
 - components.json
-- blender_live_bridge.py
-- generate_batch_17_22.py
 - ExpressionManager
-- generate_batch_23_30.py
-- generate_batch_31_40.py
-- generate_batch_41_50.py
-- generate_batch_51_60.py
-- generate_batch_07_10.py
-- os
-- numpy
-- scratch_map_vrm1_bones.py
-- generate_batch_03_06.py
-- generate_batch_11_16.py
-- map_hair_and_cloth_chains.py
 - PersonalityEngine
-- traverse
-- get_linear_chains
 
 ## God Nodes (most connected - your core abstractions)
 1. `bootstrap()` - 32 edges
-2. `LLMService` - 21 edges
-3. `VRMManager` - 21 edges
-4. `LifeSimulator` - 20 edges
-5. `VoiceService` - 17 edges
-6. `ChatUI` - 17 edges
+2. `LLMService` - 25 edges
+3. `VRMManager` - 23 edges
+4. `VoiceService` - 22 edges
+5. `ChatUI` - 20 edges
+6. `LifeSimulator` - 20 edges
 7. `compilerOptions` - 15 edges
 8. `ExpressionManager` - 14 edges
 9. `KokoroService` - 13 edges
 10. `PersonalityEngine` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
+- `bootstrap()` --calls--> `LLMService`  [EXTRACTED]
+  src/main.js → src/ai/LLMService.js
 - `bootstrap()` --calls--> `PersonalityEngine`  [EXTRACTED]
   src/main.js → src/ai/PersonalityEngine.js
 - `bootstrap()` --calls--> `VoiceService`  [EXTRACTED]
@@ -70,33 +59,31 @@
   src/main.js → src/ui/ChatUI.js
 - `bootstrap()` --calls--> `ControlsHUD`  [EXTRACTED]
   src/main.js → src/ui/ControlsHUD.js
-- `bootstrap()` --calls--> `SettingsModal`  [EXTRACTED]
-  src/main.js → src/ui/SettingsModal.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (52 total, 40 thin omitted)
+## Communities (21 total, 11 thin omitted)
 
 ### Community 0 - "package.json"
 Cohesion: 0.06
 Nodes (32): config, DEFAULT_MEMORY, UserMemory, dependencies, animejs, kokoro-js, @netlify/blobs, @netlify/functions (+24 more)
 
 ### Community 1 - "VoiceService"
-Cohesion: 0.09
-Nodes (10): kokoro-js, KOKORO_SUPPORTED_LANGS, KOKORO_VOICES, KokoroService, detectLanguage(), getNativeScriptForTTS(), isFemaleVoice(), isMobileDevice() (+2 more)
+Cohesion: 0.13
+Nodes (8): KOKORO_SUPPORTED_LANGS, KOKORO_VOICES, detectLanguage(), getNativeScriptForTTS(), isFemaleVoice(), isMobileDevice(), transliterateDevanagari(), VoiceService
 
 ### Community 2 - "main.js"
-Cohesion: 0.06
-Nodes (18): @pixiv/three-vrm, three, PERSONALITY_MODES, PERSONALITY_PROFILES, AnimationEngine, findRigNode(), getRigNodeMap(), MIXAMO_VRM_RIG_MAP (+10 more)
+Cohesion: 0.08
+Nodes (16): @pixiv/three-vrm, three, PERSONALITY_MODES, PERSONALITY_PROFILES, findRigNode(), getRigNodeMap(), MIXAMO_VRM_RIG_MAP, BodyCollisionGuard (+8 more)
 
 ### Community 3 - "SettingsModal.js"
 Cohesion: 0.26
 Nodes (6): DEFAULT_MODELS, PROVIDERS, DEFAULT_SYSTEM_PROMPT, parseRayaResponse(), isRealisticVoice(), SettingsModal
 
 ### Community 5 - "bootstrap"
-Cohesion: 0.07
-Nodes (5): LLMService, EXCLUDED_NAME_WORDS, MemoryService, bootstrap(), VRMManager
+Cohesion: 0.10
+Nodes (4): EXCLUDED_NAME_WORDS, MemoryService, bootstrap(), VRMManager
 
 ### Community 9 - "LoaderAnimation"
 Cohesion: 0.12
@@ -118,33 +105,25 @@ Nodes (5): AGENTS.md — Raya AI Assistant, Directories & Files to Avoid, Essent
 Cohesion: 0.14
 Nodes (13): aliases, components, ui, utils, rsc, $schema, style, tailwind (+5 more)
 
-### Community 18 - "blender_live_bridge.py"
-Cohesion: 0.15
-Nodes (5): BlenderBridgeHandler, ExecutionRequest, process_blender_main_thread_queue(), start_server(), ThreadingHTTPServer
-
-### Community 30 - "numpy"
-Cohesion: 0.07
-Nodes (6): sample_texture(), get_gradient_bgr(), get_gradient_bgr(), sample_texture(), parse_vrm(), run_code()
-
 ## Knowledge Gaps
 - **4 isolated node(s):** `@pixiv/three-vrm-animation`, `animejs`, `react`, `react-dom`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 325 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **40 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 132 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `three` connect `main.js` to `package.json`?**
-  _High betweenness centrality (0.042) - this node is a cross-community bridge._
+- **Why does `bootstrap()` connect `bootstrap` to `VoiceService`, `main.js`, `SettingsModal.js`, `LLMService`, `PersonalityEngine`, `ChatUI`, `AnimationEngine`, `LoaderAnimation`, `LipSyncEngine`, `LifeSimulator`, `ExpressionManager`?**
+  _High betweenness centrality (0.154) - this node is a cross-community bridge._
 - **Are the 17 inferred relationships involving `bootstrap()` (e.g. with `main.js` and `.setMemoryService()`) actually correct?**
   _`bootstrap()` has 17 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `@pixiv/three-vrm-animation`, `animejs`, `react` to the rest of the system?**
   _4 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.05555555555555555 - nodes in this community are weakly interconnected._
-- **Why does `bootstrap()` connect `bootstrap` to `VoiceService`, `main.js`, `SettingsModal.js`, `PersonalityEngine`, `ChatUI`, `LoaderAnimation`, `LipSyncEngine`, `LifeSimulator`, `ExpressionManager`?**
-  _High betweenness centrality (0.040) - this node is a cross-community bridge._
+- **Why does `three` connect `main.js` to `package.json`?**
+  _High betweenness centrality (0.151) - this node is a cross-community bridge._
 - **Should `VoiceService` be split into smaller, more focused modules?**
-  _Cohesion score 0.0915915915915916 - nodes in this community are weakly interconnected._
-- **Why does `LLMService` connect `bootstrap` to `main.js`, `SettingsModal.js`?**
-  _High betweenness centrality (0.020) - this node is a cross-community bridge._
+  _Cohesion score 0.12643678160919541 - nodes in this community are weakly interconnected._
+- **Why does `LLMService` connect `LLMService` to `main.js`, `SettingsModal.js`, `bootstrap`?**
+  _High betweenness centrality (0.088) - this node is a cross-community bridge._
