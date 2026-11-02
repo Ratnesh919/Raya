@@ -131,27 +131,28 @@ export class LifeSimulator {
   cacheFingerBones(side) {
     if (!this.vrm?.humanoid) return [];
     const fingers = [];
+    const seen = new Set();
     const fingerNames = ['Thumb', 'Index', 'Middle', 'Ring', 'Little'];
 
     fingerNames.forEach((fname) => {
       const isThumb = fname === 'Thumb';
-      if (isThumb) {
-        const t1 = this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbMetacarpal`) ||
-                   this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbProximal`);
-        const t2 = this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbProximal`) ||
-                   this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbIntermediate`);
-        const t3 = this.vrm.humanoid.getNormalizedBoneNode(`${side}ThumbDistal`);
-        if (t1) fingers.push({ node: t1, isThumb: true, seg: 'prox', side });
-        if (t2) fingers.push({ node: t2, isThumb: true, seg: 'inter', side });
-        if (t3) fingers.push({ node: t3, isThumb: true, seg: 'dist', side });
-      } else {
-        const p = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Proximal`);
-        const i = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Intermediate`);
-        const d = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Distal`);
-        if (p) fingers.push({ node: p, isThumb: false, seg: 'prox', side });
-        if (i) fingers.push({ node: i, isThumb: false, seg: 'inter', side });
-        if (d) fingers.push({ node: d, isThumb: false, seg: 'dist', side });
-      }
+      const b1 = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Proximal`) ||
+                 this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Metacarpal`);
+      const b2 = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Intermediate`);
+      const b3 = this.vrm.humanoid.getNormalizedBoneNode(`${side}${fname}Distal`);
+
+      [b1, b2, b3].forEach((node, idx) => {
+        if (node && !seen.has(node)) {
+          seen.add(node);
+          fingers.push({
+            node,
+            isThumb,
+            isIndex: fname === 'Index',
+            seg: idx === 0 ? 'prox' : idx === 1 ? 'inter' : 'dist',
+            side
+          });
+        }
+      });
     });
     return fingers;
   }
@@ -511,42 +512,23 @@ export class LifeSimulator {
       }
     }
 
-    // 2. All 10 Finger Bones: Gentle Clasp + Biological Micro-Fidgeting + Resting Breathing
-    // Eliminates the "hands and fingers are stiff/stuck" mannequin feel completely
-    const fidgetL = Math.sin(this.floorTime * 2.8) * 0.03 * w;
-    const fidgetR = Math.cos(this.floorTime * 2.4 + 0.3) * 0.03 * w;
-    const idleBreatheL = Math.sin(this.breatheTime * 0.9) * 0.016;
-    const idleBreatheR = Math.cos(this.breatheTime * 0.9 + 0.2) * 0.016;
-
-    // Left hand fingers (+Z curl in standard normalized VRM humanoid space)
-    if (this.leftFingers && this.leftFingers.length > 0) {
-      for (let i = 0; i < this.leftFingers.length; i++) {
-        const f = this.leftFingers[i];
-        let angle = 0;
-        if (f.isThumb) {
-          angle = f.seg === 'dist' ? (0.16 * w + fidgetL * 0.5) : (0.22 * w + fidgetL * 0.5);
-        } else {
-          if (f.seg === 'prox') angle = 0.36 * w + fidgetL + idleBreatheL;
-          else if (f.seg === 'inter') angle = 0.44 * w + fidgetL + idleBreatheL;
-          else angle = 0.24 * w + fidgetL * 0.5;
+    // 2. All 10 Finger Bones: Gentle Clasp during shy/joined hand postures without unbounded accumulation
+    // Strictly bounds finger rotation so index finger and thumb NEVER stretch or hyperextend
+    if (w > 0.001) {
+      if (this.leftFingers && this.leftFingers.length > 0) {
+        for (let i = 0; i < this.leftFingers.length; i++) {
+          const f = this.leftFingers[i];
+          const angle = f.isThumb ? 0.18 * w : f.isIndex ? 0.28 * w : 0.35 * w;
+          f.node.rotation.z = angle;
         }
-        f.node.rotation.z += angle;
       }
-    }
 
-    // Right hand fingers (-Z curl in standard normalized VRM humanoid space)
-    if (this.rightFingers && this.rightFingers.length > 0) {
-      for (let i = 0; i < this.rightFingers.length; i++) {
-        const f = this.rightFingers[i];
-        let angle = 0;
-        if (f.isThumb) {
-          angle = f.seg === 'dist' ? (0.16 * w + fidgetR * 0.5) : (0.22 * w + fidgetR * 0.5);
-        } else {
-          if (f.seg === 'prox') angle = 0.36 * w + fidgetR + idleBreatheR;
-          else if (f.seg === 'inter') angle = 0.44 * w + fidgetR + idleBreatheR;
-          else angle = 0.24 * w + fidgetR * 0.5;
+      if (this.rightFingers && this.rightFingers.length > 0) {
+        for (let i = 0; i < this.rightFingers.length; i++) {
+          const f = this.rightFingers[i];
+          const angle = f.isThumb ? 0.18 * w : f.isIndex ? 0.28 * w : 0.35 * w;
+          f.node.rotation.z = -angle;
         }
-        f.node.rotation.z -= angle;
       }
     }
   }

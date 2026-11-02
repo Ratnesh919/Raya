@@ -33,6 +33,32 @@
       "source_location": "L250"
     },
     {
+      "id": "src_ai_memoryservice_memoryservice",
+      "label": "MemoryService",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "memoryservice",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L14"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud",
+      "label": "ControlsHUD",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "controlshud",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L3"
+    },
+    {
       "id": "src_vrm_lipsyncengine_lipsyncengine",
       "label": "LipSyncEngine",
       "_callable": true,
@@ -150,26 +176,13 @@
       "source_location": "L19"
     },
     {
-      "id": "src_ai_memoryservice_memoryservice",
-      "label": "MemoryService",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": "memoryservice",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L14"
-    },
-    {
       "id": "src_vrm_vrmmanager_vrmmanager",
       "label": "VRMManager",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": "vrmmanager",
       "source_file": "src/vrm/VRMManager.js",
@@ -226,19 +239,6 @@
       "norm_label": "kokoroservice",
       "source_file": "src/ai/KokoroService.js",
       "source_location": "L22"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud",
-      "label": "ControlsHUD",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": "controlshud",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L3"
     },
     {
       "id": "src_ui_loaderanimation_loaderanimation",
@@ -539,7 +539,235 @@
       "file_type": "code",
       "norm_label": ".togglelistening()",
       "source_file": "src/ai/VoiceService.js",
-      "source_location": "L1195"
+      "source_location": "L1210"
+    },
+    {
+      "id": "src_ai_llmservice_llmservice_setmemoryservice",
+      "label": ".setMemoryService()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".setmemoryservice()",
+      "source_file": "src/ai/LLMService.js",
+      "source_location": "L48"
+    },
+    {
+      "id": "src_ai_llmservice_llmservice_setpersonalityengine",
+      "label": ".setPersonalityEngine()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".setpersonalityengine()",
+      "source_file": "src/ai/LLMService.js",
+      "source_location": "L44"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_addfact",
+      "label": ".addFact()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".addfact()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L142"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_detectandstorelearnedfacts",
+      "label": ".detectAndStoreLearnedFacts()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".detectandstorelearnedfacts()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L193"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_getmemory",
+      "label": ".getMemory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".getmemory()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L87"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_loadmemory",
+      "label": ".loadMemory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".loadmemory()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_resetmemory",
+      "label": ".resetMemory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".resetmemory()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L163"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_savememory",
+      "label": ".saveMemory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".savememory()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L94"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_setusername",
+      "label": ".setUserName()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".setusername()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L155"
+    },
+    {
+      "id": "src_main_bootstrap",
+      "label": "bootstrap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "bootstrap()",
+      "source_file": "src/main.js",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_main_bootstrap_animate",
+      "label": "animate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "animate()",
+      "source_file": "src/main.js",
+      "source_location": "L97"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_hideloading",
+      "label": ".hideLoading()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".hideloading()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L152"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_loadmodelwithloader",
+      "label": ".loadModelWithLoader()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".loadmodelwithloader()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L103"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_setupdraganddrop",
+      "label": ".setupDragAndDrop()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".setupdraganddrop()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L82"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_setuplisteners",
+      "label": ".setupListeners()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".setuplisteners()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_showloading",
+      "label": ".showLoading()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".showloading()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L144"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_updateprogress",
+      "label": ".updateProgress()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".updateprogress()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L136"
     },
     {
       "id": "src_vrm_lipsyncengine_lipsyncengine_connectmediaelement",
@@ -695,7 +923,7 @@
       "file_type": "code",
       "norm_label": ".clearbehavior()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L218"
+      "source_location": "L219"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_constructor",
@@ -719,7 +947,7 @@
       "file_type": "code",
       "norm_label": ".getmanager()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L172"
+      "source_location": "L173"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_setuplisteners",
@@ -731,7 +959,7 @@
       "file_type": "code",
       "norm_label": ".setuplisteners()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L159"
+      "source_location": "L160"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_startlistening",
@@ -743,7 +971,7 @@
       "file_type": "code",
       "norm_label": ".startlistening()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L180"
+      "source_location": "L181"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_stoplistening",
@@ -755,7 +983,7 @@
       "file_type": "code",
       "norm_label": ".stoplistening()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L191"
+      "source_location": "L192"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_triggerbehavior",
@@ -767,7 +995,7 @@
       "file_type": "code",
       "norm_label": ".triggerbehavior()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L196"
+      "source_location": "L197"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_update",
@@ -779,7 +1007,7 @@
       "file_type": "code",
       "norm_label": ".update()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L462"
+      "source_location": "L463"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updatebehavior",
@@ -791,7 +1019,7 @@
       "file_type": "code",
       "norm_label": ".updatebehavior()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L236"
+      "source_location": "L237"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updateblinking",
@@ -803,7 +1031,7 @@
       "file_type": "code",
       "norm_label": ".updateblinking()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L592"
+      "source_location": "L574"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updatebreathing",
@@ -815,7 +1043,7 @@
       "file_type": "code",
       "norm_label": ".updatebreathing()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L554"
+      "source_location": "L536"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updategaze",
@@ -827,7 +1055,7 @@
       "file_type": "code",
       "norm_label": ".updategaze()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L645"
+      "source_location": "L627"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updatehandsandfingers",
@@ -839,7 +1067,7 @@
       "file_type": "code",
       "norm_label": ".updatehandsandfingers()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L475"
+      "source_location": "L476"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updateinstinctandgestures",
@@ -851,7 +1079,7 @@
       "file_type": "code",
       "norm_label": ".updateinstinctandgestures()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L421"
+      "source_location": "L422"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updatesaccades",
@@ -863,31 +1091,7 @@
       "file_type": "code",
       "norm_label": ".updatesaccades()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L629"
-    },
-    {
-      "id": "src_vrm_animationengine_findrignode",
-      "label": "findRigNode()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "code",
-      "norm_label": "findrignode()",
-      "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L90"
-    },
-    {
-      "id": "src_vrm_animationengine_getrignodemap",
-      "label": "getRigNodeMap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "code",
-      "norm_label": "getrignodemap()",
-      "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L72"
+      "source_location": "L611"
     },
     {
       "id": "src_vrm_bodycollisionguard_bodycollisionguard_bindmodel",
@@ -936,6 +1140,18 @@
       "norm_label": ".update()",
       "source_file": "src/vrm/BodyCollisionGuard.js",
       "source_location": "L154"
+    },
+    {
+      "id": "src_vrm_chestphysics_chestphysics_applyshakeimpulse",
+      "label": ".applyShakeImpulse()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "main.js",
+      "file_type": "code",
+      "norm_label": ".applyshakeimpulse()",
+      "source_file": "src/vrm/ChestPhysics.js",
+      "source_location": "L351"
     },
     {
       "id": "src_vrm_chestphysics_chestphysics_bindmodel",
@@ -1586,18 +1802,6 @@
       "source_location": "L101"
     },
     {
-      "id": "src_ai_llmservice_llmservice_setmemoryservice",
-      "label": ".setMemoryService()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "LLMService",
-      "file_type": "code",
-      "norm_label": ".setmemoryservice()",
-      "source_file": "src/ai/LLMService.js",
-      "source_location": "L48"
-    },
-    {
       "id": "src_ai_llmservice_llmservice_setmodel",
       "label": ".setModel()",
       "_callable": true,
@@ -1608,18 +1812,6 @@
       "norm_label": ".setmodel()",
       "source_file": "src/ai/LLMService.js",
       "source_location": "L120"
-    },
-    {
-      "id": "src_ai_llmservice_llmservice_setpersonalityengine",
-      "label": ".setPersonalityEngine()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 4,
-      "community_name": "LLMService",
-      "file_type": "code",
-      "norm_label": ".setpersonalityengine()",
-      "source_file": "src/ai/LLMService.js",
-      "source_location": "L44"
     },
     {
       "id": "src_ai_llmservice_llmservice_setprovider",
@@ -1646,132 +1838,12 @@
       "source_location": "L127"
     },
     {
-      "id": "src_ai_memoryservice_memoryservice_addfact",
-      "label": ".addFact()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".addfact()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L142"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L15"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_detectandstorelearnedfacts",
-      "label": ".detectAndStoreLearnedFacts()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".detectandstorelearnedfacts()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L193"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_getmemory",
-      "label": ".getMemory()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".getmemory()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L87"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_loadmemory",
-      "label": ".loadMemory()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".loadmemory()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_resetmemory",
-      "label": ".resetMemory()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".resetmemory()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L163"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_savememory",
-      "label": ".saveMemory()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".savememory()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L94"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_setusername",
-      "label": ".setUserName()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".setusername()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L155"
-    },
-    {
-      "id": "src_main_bootstrap",
-      "label": "bootstrap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": "bootstrap()",
-      "source_file": "src/main.js",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_main_bootstrap_animate",
-      "label": "animate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": "animate()",
-      "source_file": "src/main.js",
-      "source_location": "L97"
-    },
-    {
       "id": "src_vrm_vrmmanager_vrmmanager_addmodelloadedlistener",
       "label": ".addModelLoadedListener()",
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".addmodelloadedlistener()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1783,11 +1855,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".applyvisualadjustments()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L569"
+      "source_location": "L627"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_constructor",
@@ -1795,7 +1867,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1807,7 +1879,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".initscene()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1819,11 +1891,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".loadmodel()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L612"
+      "source_location": "L670"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_onwindowresize",
@@ -1831,11 +1903,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".onwindowresize()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L767"
+      "source_location": "L825"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_poserestingarms",
@@ -1843,11 +1915,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".poserestingarms()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L545"
+      "source_location": "L603"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_render",
@@ -1855,11 +1927,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".render()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L828"
+      "source_location": "L886"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setcameramode",
@@ -1867,11 +1939,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".setcameramode()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L497"
+      "source_location": "L555"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setchairvisible",
@@ -1879,11 +1951,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".setchairvisible()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L773"
+      "source_location": "L831"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setgraphicsquality",
@@ -1891,11 +1963,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".setgraphicsquality()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L126"
+      "source_location": "L127"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_sethairbrightness",
@@ -1903,11 +1975,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".sethairbrightness()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L555"
+      "source_location": "L613"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setoverallbrightness",
@@ -1915,11 +1987,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".setoverallbrightness()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L561"
+      "source_location": "L619"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setskinbrightness",
@@ -1927,11 +1999,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".setskinbrightness()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L549"
+      "source_location": "L607"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setupgyroscope",
@@ -1939,11 +2011,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".setupgyroscope()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L411"
+      "source_location": "L412"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setupinteractions",
@@ -1951,11 +2023,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".setupinteractions()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L215"
+      "source_location": "L216"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_setuplighting",
@@ -1963,11 +2035,23 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".setuplighting()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L189"
+      "source_location": "L190"
+    },
+    {
+      "id": "src_vrm_vrmmanager_vrmmanager_setupphoneshake",
+      "label": ".setupPhoneShake()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "VRMManager",
+      "file_type": "code",
+      "norm_label": ".setupphoneshake()",
+      "source_file": "src/vrm/VRMManager.js",
+      "source_location": "L477"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_updatebreeze",
@@ -1975,11 +2059,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".updatebreeze()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L780"
+      "source_location": "L838"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_updatecameraforscreen",
@@ -1987,11 +2071,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".updatecameraforscreen()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L149"
+      "source_location": "L150"
     },
     {
       "id": "src_vrm_vrmmanager_vrmmanager_updategyro",
@@ -1999,11 +2083,11 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "bootstrap",
+      "community_name": "VRMManager",
       "file_type": "code",
       "norm_label": ".updategyro()",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L470"
+      "source_location": "L528"
     },
     {
       "id": "src_ui_chatui_chatui_addmessagetodrawer",
@@ -2015,7 +2099,7 @@
       "file_type": "code",
       "norm_label": ".addmessagetodrawer()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L400"
+      "source_location": "L432"
     },
     {
       "id": "src_ui_chatui_chatui_analyzechatsentiment",
@@ -2027,7 +2111,7 @@
       "file_type": "code",
       "norm_label": ".analyzechatsentiment()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L303"
+      "source_location": "L335"
     },
     {
       "id": "src_ui_chatui_chatui_analyzeuserintentemotion",
@@ -2039,7 +2123,7 @@
       "file_type": "code",
       "norm_label": ".analyzeuserintentemotion()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L263"
+      "source_location": "L295"
     },
     {
       "id": "src_ui_chatui_chatui_appendstreamingchunk",
@@ -2051,7 +2135,7 @@
       "file_type": "code",
       "norm_label": ".appendstreamingchunk()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L447"
+      "source_location": "L479"
     },
     {
       "id": "src_ui_chatui_chatui_constructor",
@@ -2075,7 +2159,7 @@
       "file_type": "code",
       "norm_label": ".createstreamingbubble()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L423"
+      "source_location": "L455"
     },
     {
       "id": "src_ui_chatui_chatui_finalizestreamingbubble",
@@ -2087,7 +2171,7 @@
       "file_type": "code",
       "norm_label": ".finalizestreamingbubble()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L456"
+      "source_location": "L488"
     },
     {
       "id": "src_ui_chatui_chatui_handlesendmessage",
@@ -2099,7 +2183,7 @@
       "file_type": "code",
       "norm_label": ".handlesendmessage()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L127"
+      "source_location": "L146"
     },
     {
       "id": "src_ui_chatui_chatui_removethinkingindicator",
@@ -2111,7 +2195,7 @@
       "file_type": "code",
       "norm_label": ".removethinkingindicator()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L386"
+      "source_location": "L418"
     },
     {
       "id": "src_ui_chatui_chatui_rendermemorystatus",
@@ -2123,7 +2207,7 @@
       "file_type": "code",
       "norm_label": ".rendermemorystatus()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L580"
+      "source_location": "L612"
     },
     {
       "id": "src_ui_chatui_chatui_renderpersonalitybadge",
@@ -2135,7 +2219,7 @@
       "file_type": "code",
       "norm_label": ".renderpersonalitybadge()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L501"
+      "source_location": "L533"
     },
     {
       "id": "src_ui_chatui_chatui_renderpersonalityoptions",
@@ -2147,7 +2231,7 @@
       "file_type": "code",
       "norm_label": ".renderpersonalityoptions()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L521"
+      "source_location": "L553"
     },
     {
       "id": "src_ui_chatui_chatui_setuplisteners",
@@ -2171,7 +2255,7 @@
       "file_type": "code",
       "norm_label": ".setupmemoryui()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L560"
+      "source_location": "L592"
     },
     {
       "id": "src_ui_chatui_chatui_setuppersonalityui",
@@ -2183,7 +2267,7 @@
       "file_type": "code",
       "norm_label": ".setuppersonalityui()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L461"
+      "source_location": "L493"
     },
     {
       "id": "src_ui_chatui_chatui_showspeechbubble",
@@ -2195,7 +2279,7 @@
       "file_type": "code",
       "norm_label": ".showspeechbubble()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L394"
+      "source_location": "L426"
     },
     {
       "id": "src_ui_chatui_chatui_showthinkingindicator",
@@ -2207,7 +2291,7 @@
       "file_type": "code",
       "norm_label": ".showthinkingindicator()",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L374"
+      "source_location": "L406"
     },
     {
       "id": "src_vrm_animationengine_animationengine_bindmodel",
@@ -2328,6 +2412,30 @@
       "norm_label": ".update()",
       "source_file": "src/vrm/AnimationEngine.js",
       "source_location": "L731"
+    },
+    {
+      "id": "src_vrm_animationengine_findrignode",
+      "label": "findRigNode()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "AnimationEngine",
+      "file_type": "code",
+      "norm_label": "findrignode()",
+      "source_file": "src/vrm/AnimationEngine.js",
+      "source_location": "L90"
+    },
+    {
+      "id": "src_vrm_animationengine_getrignodemap",
+      "label": "getRigNodeMap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "AnimationEngine",
+      "file_type": "code",
+      "norm_label": "getrignodemap()",
+      "source_file": "src/vrm/AnimationEngine.js",
+      "source_location": "L72"
     },
     {
       "id": "src_vrm_inertiablender_inertiablender_constructor",
@@ -2532,90 +2640,6 @@
       "norm_label": "thinkingorbsolvingdemo()",
       "source_file": "src/components/ui/demo.tsx",
       "source_location": "L4"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L4"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_hideloading",
-      "label": ".hideLoading()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": ".hideloading()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L152"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_loadmodelwithloader",
-      "label": ".loadModelWithLoader()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": ".loadmodelwithloader()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L103"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_setupdraganddrop",
-      "label": ".setupDragAndDrop()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": ".setupdraganddrop()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L82"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_setuplisteners",
-      "label": ".setupListeners()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": ".setuplisteners()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L30"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_showloading",
-      "label": ".showLoading()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": ".showloading()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L144"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_updateprogress",
-      "label": ".updateProgress()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": ".updateprogress()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L136"
     },
     {
       "id": "src_ui_loaderanimation_loaderanimation_constructor",
@@ -3330,6 +3354,28 @@
       "source_location": "L20"
     },
     {
+      "id": "src_ai_memoryservice",
+      "label": "MemoryService.js",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "memoryservice.js",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_ai_memoryservice_excluded_name_words",
+      "label": "EXCLUDED_NAME_WORDS",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "excluded_name_words",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L5"
+    },
+    {
       "id": "readme",
       "label": "README.md",
       "_origin": "ast",
@@ -3885,28 +3931,6 @@
       "source_location": "L1"
     },
     {
-      "id": "src_vrm_animationengine",
-      "label": "AnimationEngine.js",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "code",
-      "norm_label": "animationengine.js",
-      "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_vrm_animationengine_mixamo_vrm_rig_map",
-      "label": "MIXAMO_VRM_RIG_MAP",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "code",
-      "norm_label": "mixamo_vrm_rig_map",
-      "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L6"
-    },
-    {
       "id": "src_vrm_bodycollisionguard",
       "label": "BodyCollisionGuard.js",
       "_origin": "ast",
@@ -4004,17 +4028,6 @@
       "norm_label": "morph_target_presets",
       "source_file": "src/vrm/FBXAvatarLoader.js",
       "source_location": "L71"
-    },
-    {
-      "id": "src_vrm_inertiablender",
-      "label": "InertiaBlender.js",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "code",
-      "norm_label": "inertiablender.js",
-      "source_file": "src/vrm/InertiaBlender.js",
-      "source_location": "L1"
     },
     {
       "id": "src_vrm_lifesimulator",
@@ -4171,26 +4184,37 @@
       "source_location": "L1"
     },
     {
-      "id": "src_ai_memoryservice",
-      "label": "MemoryService.js",
+      "id": "src_vrm_animationengine",
+      "label": "AnimationEngine.js",
       "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
+      "community": 7,
+      "community_name": "AnimationEngine",
       "file_type": "code",
-      "norm_label": "memoryservice.js",
-      "source_file": "src/ai/MemoryService.js",
+      "norm_label": "animationengine.js",
+      "source_file": "src/vrm/AnimationEngine.js",
       "source_location": "L1"
     },
     {
-      "id": "src_ai_memoryservice_excluded_name_words",
-      "label": "EXCLUDED_NAME_WORDS",
+      "id": "src_vrm_animationengine_mixamo_vrm_rig_map",
+      "label": "MIXAMO_VRM_RIG_MAP",
       "_origin": "ast",
-      "community": 5,
-      "community_name": "bootstrap",
+      "community": 7,
+      "community_name": "AnimationEngine",
       "file_type": "code",
-      "norm_label": "excluded_name_words",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L5"
+      "norm_label": "mixamo_vrm_rig_map",
+      "source_file": "src/vrm/AnimationEngine.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_vrm_inertiablender",
+      "label": "InertiaBlender.js",
+      "_origin": "ast",
+      "community": 7,
+      "community_name": "AnimationEngine",
+      "file_type": "code",
+      "norm_label": "inertiablender.js",
+      "source_file": "src/vrm/InertiaBlender.js",
+      "source_location": "L1"
     },
     {
       "id": "ref_kokoro_js",
@@ -5337,6 +5361,18 @@
     },
     {
       "source": "src_ui_chatui_chatui_handlesendmessage",
+      "target": "src_ui_chatui_chatui_removethinkingindicator",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/ui/ChatUI.js",
+      "source_location": "L162",
+      "weight": 1.0
+    },
+    {
+      "source": "src_ui_chatui_chatui_handlesendmessage",
       "target": "src_ui_chatui_chatui_addmessagetodrawer",
       "relation": "calls",
       "_origin": "ast",
@@ -5344,7 +5380,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L146",
+      "source_location": "L177",
       "weight": 1.0
     },
     {
@@ -5356,7 +5392,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L164",
+      "source_location": "L195",
       "weight": 1.0
     },
     {
@@ -5368,19 +5404,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L167",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ui_chatui_chatui_handlesendmessage",
-      "target": "src_ui_chatui_chatui_removethinkingindicator",
-      "relation": "calls",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "context": "call",
-      "source_file": "src/ui/ChatUI.js",
-      "source_location": "L186",
+      "source_location": "L198",
       "weight": 1.0
     },
     {
@@ -5392,7 +5416,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L210",
+      "source_location": "L241",
       "weight": 1.0
     },
     {
@@ -5404,7 +5428,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L212",
+      "source_location": "L243",
       "weight": 1.0
     },
     {
@@ -5416,7 +5440,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L226",
+      "source_location": "L257",
       "weight": 1.0
     },
     {
@@ -5428,7 +5452,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L229",
+      "source_location": "L260",
       "weight": 1.0
     },
     {
@@ -5440,7 +5464,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L57",
+      "source_location": "L65",
       "weight": 1.0
     },
     {
@@ -5452,7 +5476,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L564",
+      "source_location": "L596",
       "weight": 1.0
     },
     {
@@ -5464,7 +5488,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L575",
+      "source_location": "L607",
       "weight": 1.0
     },
     {
@@ -5476,7 +5500,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L465",
+      "source_location": "L497",
       "weight": 1.0
     },
     {
@@ -5488,7 +5512,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L468",
+      "source_location": "L500",
       "weight": 1.0
     },
     {
@@ -5500,7 +5524,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L396",
+      "source_location": "L428",
       "weight": 1.0
     },
     {
@@ -5512,7 +5536,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L375",
+      "source_location": "L407",
       "weight": 1.0
     },
     {
@@ -6196,7 +6220,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L466",
+      "source_location": "L467",
       "weight": 1.0
     },
     {
@@ -6208,7 +6232,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L467",
+      "source_location": "L468",
       "weight": 1.0
     },
     {
@@ -6220,7 +6244,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L468",
+      "source_location": "L469",
       "weight": 1.0
     },
     {
@@ -6232,7 +6256,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L469",
+      "source_location": "L470",
       "weight": 1.0
     },
     {
@@ -6244,7 +6268,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L470",
+      "source_location": "L471",
       "weight": 1.0
     },
     {
@@ -6256,7 +6280,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L471",
+      "source_location": "L472",
       "weight": 1.0
     },
     {
@@ -6268,7 +6292,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L472",
+      "source_location": "L473",
       "weight": 1.0
     },
     {
@@ -6280,7 +6304,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L251",
+      "source_location": "L252",
       "weight": 1.0
     },
     {
@@ -6292,7 +6316,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L593",
+      "source_location": "L575",
       "weight": 1.0
     },
     {
@@ -6477,6 +6501,18 @@
     },
     {
       "source": "src_vrm_vrmmanager_vrmmanager_initscene",
+      "target": "src_vrm_vrmmanager_vrmmanager_setupphoneshake",
+      "relation": "calls",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "context": "call",
+      "source_file": "src/vrm/VRMManager.js",
+      "source_location": "L121",
+      "weight": 1.0
+    },
+    {
+      "source": "src_vrm_vrmmanager_vrmmanager_initscene",
       "target": "src_vrm_vrmmanager_vrmmanager_onwindowresize",
       "relation": "calls",
       "_origin": "ast",
@@ -6484,7 +6520,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L123",
+      "source_location": "L124",
       "weight": 1.0
     },
     {
@@ -6496,7 +6532,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L723",
+      "source_location": "L781",
       "weight": 1.0
     },
     {
@@ -6508,7 +6544,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L726",
+      "source_location": "L784",
       "weight": 1.0
     },
     {
@@ -6520,7 +6556,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L768",
+      "source_location": "L826",
       "weight": 1.0
     },
     {
@@ -6532,7 +6568,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L832",
+      "source_location": "L890",
       "weight": 1.0
     },
     {
@@ -6544,7 +6580,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L840",
+      "source_location": "L898",
       "weight": 1.0
     },
     {
@@ -6556,7 +6592,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L558",
+      "source_location": "L616",
       "weight": 1.0
     },
     {
@@ -6568,7 +6604,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L552",
+      "source_location": "L610",
       "weight": 1.0
     },
     {
@@ -9603,7 +9639,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ai/VoiceService.js",
-      "source_location": "L1195",
+      "source_location": "L1210",
       "weight": 1.0
     },
     {
@@ -9779,7 +9815,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L127",
+      "source_location": "L146",
       "weight": 1.0
     },
     {
@@ -9790,7 +9826,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L263",
+      "source_location": "L295",
       "weight": 1.0
     },
     {
@@ -9801,40 +9837,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L303",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ui_chatui_chatui",
-      "target": "src_ui_chatui_chatui_showthinkingindicator",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/ui/ChatUI.js",
-      "source_location": "L374",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ui_chatui_chatui",
-      "target": "src_ui_chatui_chatui_removethinkingindicator",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/ui/ChatUI.js",
-      "source_location": "L386",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ui_chatui_chatui",
-      "target": "src_ui_chatui_chatui_showspeechbubble",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/ui/ChatUI.js",
-      "source_location": "L394",
+      "source_location": "L335",
       "weight": 1.0
     },
     {
@@ -9850,13 +9853,46 @@
     },
     {
       "source": "src_ui_chatui_chatui",
+      "target": "src_ui_chatui_chatui_showthinkingindicator",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/ui/ChatUI.js",
+      "source_location": "L406",
+      "weight": 1.0
+    },
+    {
+      "source": "src_ui_chatui_chatui",
+      "target": "src_ui_chatui_chatui_removethinkingindicator",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/ui/ChatUI.js",
+      "source_location": "L418",
+      "weight": 1.0
+    },
+    {
+      "source": "src_ui_chatui_chatui",
+      "target": "src_ui_chatui_chatui_showspeechbubble",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/ui/ChatUI.js",
+      "source_location": "L426",
+      "weight": 1.0
+    },
+    {
+      "source": "src_ui_chatui_chatui",
       "target": "src_ui_chatui_chatui_addmessagetodrawer",
       "relation": "method",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L400",
+      "source_location": "L432",
       "weight": 1.0
     },
     {
@@ -9867,29 +9903,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L423",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ui_chatui_chatui",
-      "target": "src_ui_chatui_chatui_appendstreamingchunk",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/ui/ChatUI.js",
-      "source_location": "L447",
-      "weight": 1.0
-    },
-    {
-      "source": "src_ui_chatui_chatui",
-      "target": "src_ui_chatui_chatui_finalizestreamingbubble",
-      "relation": "method",
-      "_origin": "ast",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "src/ui/ChatUI.js",
-      "source_location": "L456",
+      "source_location": "L455",
       "weight": 1.0
     },
     {
@@ -9905,13 +9919,35 @@
     },
     {
       "source": "src_ui_chatui_chatui",
+      "target": "src_ui_chatui_chatui_appendstreamingchunk",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/ui/ChatUI.js",
+      "source_location": "L479",
+      "weight": 1.0
+    },
+    {
+      "source": "src_ui_chatui_chatui",
+      "target": "src_ui_chatui_chatui_finalizestreamingbubble",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/ui/ChatUI.js",
+      "source_location": "L488",
+      "weight": 1.0
+    },
+    {
+      "source": "src_ui_chatui_chatui",
       "target": "src_ui_chatui_chatui_setuppersonalityui",
       "relation": "method",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L461",
+      "source_location": "L493",
       "weight": 1.0
     },
     {
@@ -9922,7 +9958,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L501",
+      "source_location": "L533",
       "weight": 1.0
     },
     {
@@ -9933,7 +9969,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L521",
+      "source_location": "L553",
       "weight": 1.0
     },
     {
@@ -9944,7 +9980,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L560",
+      "source_location": "L592",
       "weight": 1.0
     },
     {
@@ -9955,7 +9991,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/ui/ChatUI.js",
-      "source_location": "L580",
+      "source_location": "L612",
       "weight": 1.0
     },
     {
@@ -10356,6 +10392,17 @@
     },
     {
       "source": "src_vrm_chestphysics_chestphysics",
+      "target": "src_vrm_chestphysics_chestphysics_applyshakeimpulse",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/vrm/ChestPhysics.js",
+      "source_location": "L351",
+      "weight": 1.0
+    },
+    {
+      "source": "src_vrm_chestphysics_chestphysics",
       "target": "src_vrm_chestphysics_chestphysics_bindmodel",
       "relation": "method",
       "_origin": "ast",
@@ -10615,7 +10662,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L159",
+      "source_location": "L160",
       "weight": 1.0
     },
     {
@@ -10626,7 +10673,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L172",
+      "source_location": "L173",
       "weight": 1.0
     },
     {
@@ -10637,7 +10684,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L180",
+      "source_location": "L181",
       "weight": 1.0
     },
     {
@@ -10648,7 +10695,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L191",
+      "source_location": "L192",
       "weight": 1.0
     },
     {
@@ -10659,7 +10706,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L196",
+      "source_location": "L197",
       "weight": 1.0
     },
     {
@@ -10670,7 +10717,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L218",
+      "source_location": "L219",
       "weight": 1.0
     },
     {
@@ -10681,7 +10728,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L236",
+      "source_location": "L237",
       "weight": 1.0
     },
     {
@@ -10703,7 +10750,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L421",
+      "source_location": "L422",
       "weight": 1.0
     },
     {
@@ -10714,7 +10761,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L462",
+      "source_location": "L463",
       "weight": 1.0
     },
     {
@@ -10725,7 +10772,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L475",
+      "source_location": "L476",
       "weight": 1.0
     },
     {
@@ -10736,7 +10783,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L554",
+      "source_location": "L536",
       "weight": 1.0
     },
     {
@@ -10747,7 +10794,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L592",
+      "source_location": "L574",
       "weight": 1.0
     },
     {
@@ -10758,7 +10805,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L629",
+      "source_location": "L611",
       "weight": 1.0
     },
     {
@@ -10769,7 +10816,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L645",
+      "source_location": "L627",
       "weight": 1.0
     },
     {
@@ -10890,7 +10937,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L126",
+      "source_location": "L127",
       "weight": 1.0
     },
     {
@@ -10901,7 +10948,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L149",
+      "source_location": "L150",
       "weight": 1.0
     },
     {
@@ -10912,7 +10959,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L189",
+      "source_location": "L190",
       "weight": 1.0
     },
     {
@@ -10923,7 +10970,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L215",
+      "source_location": "L216",
       "weight": 1.0
     },
     {
@@ -10945,7 +10992,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L411",
+      "source_location": "L412",
       "weight": 1.0
     },
     {
@@ -10961,13 +11008,24 @@
     },
     {
       "source": "src_vrm_vrmmanager_vrmmanager",
+      "target": "src_vrm_vrmmanager_vrmmanager_setupphoneshake",
+      "relation": "method",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/vrm/VRMManager.js",
+      "source_location": "L477",
+      "weight": 1.0
+    },
+    {
+      "source": "src_vrm_vrmmanager_vrmmanager",
       "target": "src_vrm_vrmmanager_vrmmanager_updategyro",
       "relation": "method",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L470",
+      "source_location": "L528",
       "weight": 1.0
     },
     {
@@ -10978,7 +11036,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L497",
+      "source_location": "L555",
       "weight": 1.0
     },
     {
@@ -10989,7 +11047,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L545",
+      "source_location": "L603",
       "weight": 1.0
     },
     {
@@ -11000,7 +11058,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L549",
+      "source_location": "L607",
       "weight": 1.0
     },
     {
@@ -11011,7 +11069,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L555",
+      "source_location": "L613",
       "weight": 1.0
     },
     {
@@ -11022,7 +11080,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L561",
+      "source_location": "L619",
       "weight": 1.0
     },
     {
@@ -11033,7 +11091,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L569",
+      "source_location": "L627",
       "weight": 1.0
     },
     {
@@ -11044,7 +11102,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L612",
+      "source_location": "L670",
       "weight": 1.0
     },
     {
@@ -11066,7 +11124,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L767",
+      "source_location": "L825",
       "weight": 1.0
     },
     {
@@ -11077,7 +11135,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L773",
+      "source_location": "L831",
       "weight": 1.0
     },
     {
@@ -11088,7 +11146,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L780",
+      "source_location": "L838",
       "weight": 1.0
     },
     {
@@ -11099,7 +11157,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L828",
+      "source_location": "L886",
       "weight": 1.0
     },
     {
@@ -11308,5 +11366,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "5f2f6ad1353b0be2f3df0959b548caaeaabb7e5d"
+  "built_at_commit": "80cd44604fee50e41e5256a7047b2f4f2362b1bb"
 }

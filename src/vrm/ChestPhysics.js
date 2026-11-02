@@ -341,4 +341,27 @@ export class ChestPhysics {
       bone.node.updateWorldMatrix(true, false);
     }
   }
+
+  /**
+   * Phone Shake Secondary Motion Excitation:
+   * Direct linear acceleration impulse triggered when user shakes phone.
+   * Completely independent of gyroscope orientation (Euler angles).
+   * Soft-clamped so it produces natural, dynamic jiggle without stretching.
+   */
+  applyShakeImpulse(intensity = 1.0, dirX = 0, dirY = 0) {
+    if (!this.breastBones || this.breastBones.length === 0) return;
+
+    const scaledIntensity = THREE.MathUtils.clamp(intensity, 0, 1.8);
+    const impulseY = THREE.MathUtils.clamp(dirX * 0.15 * scaledIntensity, -0.05, 0.05);
+    const impulseX = THREE.MathUtils.clamp(-Math.abs(dirY) * 0.20 * scaledIntensity - (0.04 * scaledIntensity), -0.065, 0.065);
+
+    for (let i = 0; i < this.breastBones.length; i++) {
+      const bone = this.breastBones[i];
+      const side = bone.isLeft ? 1 : -1;
+      const chain = bone.chainWeight || 1.0;
+
+      bone.velocityY += impulseY * side * 42.0 * chain;
+      bone.velocityX += impulseX * 48.0 * chain;
+    }
+  }
 }

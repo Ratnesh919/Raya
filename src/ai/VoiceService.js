@@ -1141,6 +1141,23 @@ export class VoiceService {
 
     let finalTranscript = '';
     let speechTimer = null;
+    let pendingInterim = '';
+
+    const submitCurrentSpeech = () => {
+      if (speechTimer) {
+        clearTimeout(speechTimer);
+        speechTimer = null;
+      }
+      const query = (finalTranscript + ' ' + pendingInterim).trim();
+      if (query.length > 1) {
+        if (this.onSpeechResult) {
+          this.onSpeechResult(query);
+        }
+        finalTranscript = '';
+        pendingInterim = '';
+      }
+    };
+    this._submitCurrentSpeech = submitCurrentSpeech;
 
     this.recognition.onstart = () => {
       this.isListening = true;
@@ -1158,19 +1175,16 @@ export class VoiceService {
         }
       }
 
+      pendingInterim = interim;
       if (this.onInterimTranscript) {
         this.onInterimTranscript(interim || finalTranscript);
       }
 
-      // Auto-submit after 1.2s pause in speech
+      // Auto-submit after 750ms pause in speech (snappy conversational response)
       if (speechTimer) clearTimeout(speechTimer);
       speechTimer = setTimeout(() => {
-        const query = (finalTranscript + interim).trim();
-        if (query.length > 1) {
-          if (this.onSpeechResult) this.onSpeechResult(query);
-          finalTranscript = '';
-        }
-      }, 1200);
+        submitCurrentSpeech();
+      }, 750);
     };
 
     this.recognition.onerror = (event) => {
@@ -1180,6 +1194,7 @@ export class VoiceService {
     };
 
     this.recognition.onend = () => {
+      submitCurrentSpeech();
       this.isListening = false;
       if (this.continuousMode) {
         // Auto-restart in hands-free mode
@@ -1200,6 +1215,9 @@ export class VoiceService {
 
     if (this.isListening) {
       this.continuousMode = false;
+      if (this._submitCurrentSpeech) {
+        this._submitCurrentSpeech();
+      }
       this.recognition.stop();
     } else {
       this.continuousMode = continuous;

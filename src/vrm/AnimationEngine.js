@@ -27,9 +27,9 @@ const MIXAMO_VRM_RIG_MAP = {
   mixamorigRightFoot: 'rightFoot',
   mixamorigRightToeBase: 'rightToes',
 
-  // Left Hand Fingers (Mixamo -> VRM Humanoid)
-  mixamorigLeftHandThumb1: 'leftThumbMetacarpal',
-  mixamorigLeftHandThumb2: 'leftThumbProximal',
+  // Left Hand Fingers (Mixamo -> VRM Humanoid: 3-bone thumb anatomy)
+  mixamorigLeftHandThumb1: 'leftThumbProximal',
+  mixamorigLeftHandThumb2: 'leftThumbIntermediate',
   mixamorigLeftHandThumb3: 'leftThumbDistal',
   mixamorigLeftHandIndex1: 'leftIndexProximal',
   mixamorigLeftHandIndex2: 'leftIndexIntermediate',
@@ -47,9 +47,9 @@ const MIXAMO_VRM_RIG_MAP = {
   mixamorigLeftHandLittle2: 'leftLittleIntermediate',
   mixamorigLeftHandLittle3: 'leftLittleDistal',
 
-  // Right Hand Fingers (Mixamo -> VRM Humanoid)
-  mixamorigRightHandThumb1: 'rightThumbMetacarpal',
-  mixamorigRightHandThumb2: 'rightThumbProximal',
+  // Right Hand Fingers (Mixamo -> VRM Humanoid: 3-bone thumb anatomy)
+  mixamorigRightHandThumb1: 'rightThumbProximal',
+  mixamorigRightHandThumb2: 'rightThumbIntermediate',
   mixamorigRightHandThumb3: 'rightThumbDistal',
   mixamorigRightHandIndex1: 'rightIndexProximal',
   mixamorigRightHandIndex2: 'rightIndexIntermediate',
@@ -564,10 +564,10 @@ export class AnimationEngine {
       // Ensure all 5 fingers have natural relaxed resting tracks if omitted in the FBX animation
       const animatedVrmNodes = new Set(tracks.map((t) => t.name.split('.')[0]));
       const fingerDefs = [
-        { name: 'Index', prox: 0.28, inter: 0.38, dist: 0.20 },
-        { name: 'Middle', prox: 0.32, inter: 0.42, dist: 0.22 },
-        { name: 'Ring', prox: 0.35, inter: 0.45, dist: 0.24 },
-        { name: 'Little', prox: 0.38, inter: 0.48, dist: 0.26 }
+        { name: 'Index', prox: 0.22, inter: 0.28, dist: 0.16 },
+        { name: 'Middle', prox: 0.26, inter: 0.32, dist: 0.18 },
+        { name: 'Ring', prox: 0.30, inter: 0.36, dist: 0.20 },
+        { name: 'Little', prox: 0.34, inter: 0.40, dist: 0.22 }
       ];
 
       ['left', 'right'].forEach((side) => {
@@ -598,21 +598,21 @@ export class AnimationEngine {
           }
         });
 
-        // Thumb
-        const t1 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbMetacarpal`)?.name || this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name;
-        const t2 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name || this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbIntermediate`)?.name;
+        // Natural thumb resting pose: 3 distinct joints, never duplicated on same bone
+        const t1 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name;
+        const t2 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbIntermediate`)?.name;
         const t3 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbDistal`)?.name;
 
         if (t1 && !animatedVrmNodes.has(t1)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.12 * curlSign);
           tracks.push(new THREE.QuaternionKeyframeTrack(`${t1}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
         }
-        if (t2 && !animatedVrmNodes.has(t2)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.20 * curlSign);
+        if (t2 && t2 !== t1 && !animatedVrmNodes.has(t2)) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
           tracks.push(new THREE.QuaternionKeyframeTrack(`${t2}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
         }
-        if (t3 && !animatedVrmNodes.has(t3)) {
-          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.15 * curlSign);
+        if (t3 && t3 !== t2 && !animatedVrmNodes.has(t3)) {
+          const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), 0.10 * curlSign);
           tracks.push(new THREE.QuaternionKeyframeTrack(`${t3}.quaternion`, [0, rawClip.duration], [q.x, q.y, q.z, q.w, q.x, q.y, q.z, q.w]));
         }
       });

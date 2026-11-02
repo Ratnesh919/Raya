@@ -53,8 +53,27 @@ export class ChatUI {
         this.animationEngine.playAnimation('think', 0.3);
       }
     };
-    // Send message on Enter or Click
-    this.sendBtnEl?.addEventListener('click', () => this.handleSendMessage());
+    // Send message on Enter, Click, Touchend, or Pointerdown
+    const triggerSend = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      const now = Date.now();
+      if (this._lastSendTime && now - this._lastSendTime < 350) return;
+      this._lastSendTime = now;
+      this.handleSendMessage();
+    };
+
+    this.sendBtnEl?.addEventListener('click', triggerSend);
+    this.sendBtnEl?.addEventListener('touchend', triggerSend);
+    this.sendBtnEl?.addEventListener('pointerdown', (e) => {
+      // Immediate response on mobile touch before virtual keyboard dismiss
+      if (e.pointerType === 'touch') {
+        triggerSend(e);
+      }
+    });
+
     this.chatInputEl?.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -131,6 +150,18 @@ export class ChatUI {
     this.isProcessing = true;
     this.lifeSimulator?.startListening();
     this.chatInputEl.value = '';
+    if (window.innerWidth < 768) {
+      this.chatInputEl.blur();
+    }
+
+    // Safety watchdog: ensure isProcessing never hangs for more than 22 seconds
+    const watchdogTimer = setTimeout(() => {
+      if (this.isProcessing) {
+        console.warn('[ChatUI] Safety timeout: Resetting isProcessing.');
+        this.isProcessing = false;
+        this.removeThinkingIndicator();
+      }
+    }, 22000);
 
     // Automatically detect and adapt personality based on user conversation
     if (this.personalityEngine) {
@@ -252,6 +283,7 @@ export class ChatUI {
         this.drawerToggleBtn?.classList.add('has-unread');
       }
     } finally {
+      clearTimeout(watchdogTimer);
       this.isProcessing = false;
       this.lifeSimulator?.stopListening();
     }

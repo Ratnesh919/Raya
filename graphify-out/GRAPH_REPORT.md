@@ -1,17 +1,17 @@
 # Graph Report - raya ai assistant  (2026-11-02)
 
 ## Corpus Check
-- 34 files · ~36,379 words
+- 34 files · ~36,703 words
 - Verdict: corpus is large enough that graph structure adds value.
-- Unclassified: 24 file(s) not represented in the graph (top: .fbx 15, .vrm 4, (none) 2)
+- Unclassified: 25 file(s) not represented in the graph (top: .fbx 15, .vrm 5, (none) 2)
 
 ## Summary
-- 367 nodes · 609 edges · 21 communities (10 shown, 11 thin omitted)
+- 369 nodes · 612 edges · 22 communities (10 shown, 12 thin omitted)
 - Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 17 edges (avg confidence: 0.85)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `5f2f6ad1`
+- Built from commit: `80cd4460`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -21,12 +21,13 @@
 - main.js
 - SettingsModal.js
 - LLMService
-- bootstrap
+- VRMManager
 - ChatUI
 - AnimationEngine
 - KokoroService
 - LoaderAnimation
 - compilerOptions
+- bootstrap
 - ✨ Key Features
 - LipSyncEngine
 - LifeSimulator
@@ -39,7 +40,7 @@
 ## God Nodes (most connected - your core abstractions)
 1. `bootstrap()` - 32 edges
 2. `LLMService` - 25 edges
-3. `VRMManager` - 23 edges
+3. `VRMManager` - 24 edges
 4. `VoiceService` - 22 edges
 5. `ChatUI` - 20 edges
 6. `LifeSimulator` - 20 edges
@@ -57,13 +58,13 @@
   src/main.js → src/ai/VoiceService.js
 - `bootstrap()` --calls--> `ChatUI`  [EXTRACTED]
   src/main.js → src/ui/ChatUI.js
-- `bootstrap()` --calls--> `ControlsHUD`  [EXTRACTED]
-  src/main.js → src/ui/ControlsHUD.js
+- `bootstrap()` --calls--> `SettingsModal`  [EXTRACTED]
+  src/main.js → src/ui/SettingsModal.js
 
 ## Import Cycles
 - None detected.
 
-## Communities (21 total, 11 thin omitted)
+## Communities (22 total, 12 thin omitted)
 
 ### Community 0 - "package.json"
 Cohesion: 0.06
@@ -74,24 +75,24 @@ Cohesion: 0.13
 Nodes (8): KOKORO_SUPPORTED_LANGS, KOKORO_VOICES, detectLanguage(), getNativeScriptForTTS(), isFemaleVoice(), isMobileDevice(), transliterateDevanagari(), VoiceService
 
 ### Community 2 - "main.js"
-Cohesion: 0.08
-Nodes (16): @pixiv/three-vrm, three, PERSONALITY_MODES, PERSONALITY_PROFILES, findRigNode(), getRigNodeMap(), MIXAMO_VRM_RIG_MAP, BodyCollisionGuard (+8 more)
+Cohesion: 0.09
+Nodes (13): @pixiv/three-vrm, three, PERSONALITY_MODES, PERSONALITY_PROFILES, BodyCollisionGuard, ChestPhysics, EMOTION_FAMILIES, EXPR_ALIASES (+5 more)
 
 ### Community 3 - "SettingsModal.js"
 Cohesion: 0.26
 Nodes (6): DEFAULT_MODELS, PROVIDERS, DEFAULT_SYSTEM_PROMPT, parseRayaResponse(), isRealisticVoice(), SettingsModal
 
-### Community 5 - "bootstrap"
-Cohesion: 0.10
-Nodes (4): EXCLUDED_NAME_WORDS, MemoryService, bootstrap(), VRMManager
-
-### Community 9 - "LoaderAnimation"
-Cohesion: 0.12
-Nodes (3): thinking-orbs, ControlsHUD, LoaderAnimation
+### Community 7 - "AnimationEngine"
+Cohesion: 0.16
+Nodes (5): AnimationEngine, findRigNode(), getRigNodeMap(), MIXAMO_VRM_RIG_MAP, InertiaBlender
 
 ### Community 10 - "compilerOptions"
 Cohesion: 0.12
 Nodes (16): compilerOptions, allowImportingTsExtensions, baseUrl, isolatedModules, jsx, lib, module, moduleResolution (+8 more)
+
+### Community 11 - "bootstrap"
+Cohesion: 0.15
+Nodes (4): EXCLUDED_NAME_WORDS, MemoryService, bootstrap(), ControlsHUD
 
 ### Community 12 - "✨ Key Features"
 Cohesion: 0.10
@@ -107,23 +108,23 @@ Nodes (13): aliases, components, ui, utils, rsc, $schema, style, tailwind (+5 mo
 
 ## Knowledge Gaps
 - **4 isolated node(s):** `@pixiv/three-vrm-animation`, `animejs`, `react`, `react-dom`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 132 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
-- **11 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 133 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+- **12 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `bootstrap()` connect `bootstrap` to `VoiceService`, `main.js`, `SettingsModal.js`, `LLMService`, `PersonalityEngine`, `ChatUI`, `AnimationEngine`, `LoaderAnimation`, `LipSyncEngine`, `LifeSimulator`, `ExpressionManager`?**
-  _High betweenness centrality (0.154) - this node is a cross-community bridge._
+- **Why does `bootstrap()` connect `bootstrap` to `VoiceService`, `main.js`, `SettingsModal.js`, `LLMService`, `PersonalityEngine`, `ChatUI`, `AnimationEngine`, `VRMManager`, `LipSyncEngine`, `LifeSimulator`, `ExpressionManager`?**
+  _High betweenness centrality (0.155) - this node is a cross-community bridge._
 - **Are the 17 inferred relationships involving `bootstrap()` (e.g. with `main.js` and `.setMemoryService()`) actually correct?**
   _`bootstrap()` has 17 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `@pixiv/three-vrm-animation`, `animejs`, `react` to the rest of the system?**
   _4 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.05555555555555555 - nodes in this community are weakly interconnected._
-- **Why does `three` connect `main.js` to `package.json`?**
+- **Why does `three` connect `main.js` to `package.json`, `AnimationEngine`?**
   _High betweenness centrality (0.151) - this node is a cross-community bridge._
 - **Should `VoiceService` be split into smaller, more focused modules?**
   _Cohesion score 0.12643678160919541 - nodes in this community are weakly interconnected._
-- **Why does `LLMService` connect `LLMService` to `main.js`, `SettingsModal.js`, `bootstrap`?**
+- **Why does `LLMService` connect `LLMService` to `bootstrap`, `main.js`, `SettingsModal.js`?**
   _High betweenness centrality (0.088) - this node is a cross-community bridge._

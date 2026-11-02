@@ -35,7 +35,6 @@ graphify-out/cache/
 graphify-out/2026-*/
 
 # Large binaries exceeding GitHub 100MB limit & temp files
-public/models/iuno.vrm
 public/models/*.bak
 public/models/test_*.vrm
 *.blend

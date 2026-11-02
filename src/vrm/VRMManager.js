@@ -118,6 +118,7 @@ export class VRMManager {
     this.chestPhysics = null;
     this.setupInteractions();
     this.setupGyroscope();
+    this.setupPhoneShake();
 
     // 7. Resize listener
     window.addEventListener('resize', () => this.onWindowResize());
@@ -465,6 +466,63 @@ export class VRMManager {
     // Request on first user interaction to satisfy browser security policies
     window.addEventListener('touchstart', requestGyroPermission, { once: true, passive: true });
     window.addEventListener('click', requestGyroPermission, { once: true, passive: true });
+  }
+
+  /**
+   * Phone Shake Secondary Motion:
+   * Uses DeviceMotionEvent linear acceleration to detect physical phone shake.
+   * Feeds linear jerk impulses into ChestPhysics to jiggle secondary mass,
+   * completely decoupled from gyroscope angular orientation.
+   */
+  setupPhoneShake() {
+    if (typeof window === 'undefined') return;
+
+    let lastX = 0;
+    let lastY = 0;
+    let lastZ = 0;
+    let lastShakeTime = 0;
+
+    const handleMotion = (e) => {
+      const acc = e.acceleration || e.accelerationIncludingGravity;
+      if (!acc || acc.x === null) return;
+
+      const deltaX = acc.x - lastX;
+      const deltaY = acc.y - lastY;
+      const deltaZ = acc.z - lastZ;
+      lastX = acc.x;
+      lastY = acc.y;
+      lastZ = acc.z;
+
+      const jerk = Math.hypot(deltaX, deltaY, deltaZ);
+      // Jerk threshold: > 11 m/s^2 detects intentional physical phone shake
+      if (jerk > 11) {
+        const now = performance.now();
+        if (now - lastShakeTime > 120) {
+          lastShakeTime = now;
+          const intensity = Math.min(1.8, (jerk - 11) / 10.0 + 0.3);
+          if (this.chestPhysics) {
+            this.chestPhysics.applyShakeImpulse(intensity, deltaX, deltaY);
+          }
+        }
+      }
+    };
+
+    const requestMotionPermission = () => {
+      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+        DeviceMotionEvent.requestPermission()
+          .then((response) => {
+            if (response === 'granted') {
+              window.addEventListener('devicemotion', handleMotion, { passive: true });
+            }
+          })
+          .catch(() => {});
+      } else if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
+        window.addEventListener('devicemotion', handleMotion, { passive: true });
+      }
+    };
+
+    window.addEventListener('touchstart', requestMotionPermission, { once: true, passive: true });
+    window.addEventListener('click', requestMotionPermission, { once: true, passive: true });
   }
 
   updateGyro(deltaTime) {

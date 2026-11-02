@@ -42,9 +42,9 @@
     "semantic_hash": "0219555a15a1d6c8a8490756748cda97"
   },
   "src/ai/VoiceService.js": {
-    "mtime": 1793596481.6454017,
-    "seen": 1793598667.9520109,
-    "ast_hash": "351809e3956f47cd8ac3023ad3928a13",
+    "mtime": 1793602281.9343207,
+    "seen": 1793604984.7596433,
+    "ast_hash": "6d4ff16fcb03a096392ea64be85602a5",
     "semantic_hash": ""
   },
   "src/main.js": {
@@ -54,9 +54,9 @@
     "semantic_hash": ""
   },
   "src/ui/ChatUI.js": {
-    "mtime": 1793598537.4477751,
-    "seen": 1793598667.9520245,
-    "ast_hash": "df47c39d591dd2ef47f4b24ea36c801e",
+    "mtime": 1793602505.4750433,
+    "seen": 1793604984.7596595,
+    "ast_hash": "b66307391b98c6a16df0898d60346ae1",
     "semantic_hash": ""
   },
   "src/ui/ControlsHUD.js": {
@@ -78,15 +78,15 @@
     "semantic_hash": "22d20c88126d8dcd2c97686564b5d733"
   },
   "src/vrm/AnimationEngine.js": {
-    "mtime": 1792829346.9551485,
-    "seen": 1792829931.9647884,
-    "ast_hash": "5691b43499312849efb5b7fe46c3a330",
+    "mtime": 1793602850.1429632,
+    "seen": 1793604984.7596686,
+    "ast_hash": "13731cc0422c764d97b069ea7619b246",
     "semantic_hash": ""
   },
   "src/vrm/ChestPhysics.js": {
-    "mtime": 1793591749.64632,
-    "seen": 1793598667.9520426,
-    "ast_hash": "db1b11dcb5bd054a21f7327200d76ea9",
+    "mtime": 1793602922.4277925,
+    "seen": 1793604984.759673,
+    "ast_hash": "8ff6c140cb82310883ebc2450284e995",
     "semantic_hash": ""
   },
   "src/vrm/ExpressionManager.js": {
@@ -96,9 +96,9 @@
     "semantic_hash": ""
   },
   "src/vrm/LifeSimulator.js": {
-    "mtime": 1793507404.052313,
-    "seen": 1793598667.9520528,
-    "ast_hash": "34ee4f9dc0fcfa688b70040a1babc66a",
+    "mtime": 1793602682.9994752,
+    "seen": 1793604984.7596834,
+    "ast_hash": "d29698afde510d677e56e1dd1e427f72",
     "semantic_hash": ""
   },
   "src/vrm/LipSyncEngine.js": {
@@ -108,9 +108,9 @@
     "semantic_hash": ""
   },
   "src/vrm/VRMManager.js": {
-    "mtime": 1793597631.6318305,
-    "seen": 1793598667.9520578,
-    "ast_hash": "6f64ba2f706af5c370fc1a5d01ee90c5",
+    "mtime": 1793603126.7579439,
+    "seen": 1793604984.7596872,
+    "ast_hash": "7b0c6ffa8720a5bfb29a9d75d55d1aa5",
     "semantic_hash": ""
   },
   "vercel.json": {

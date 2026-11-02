@@ -1595,21 +1595,30 @@ select option:hover, select option:focus, select option:checked {
 /* ─── MOBILE RESPONSIVE ADAPTATIONS (< 768px) ────────────────────────────── */
 @media (max-width: 768px) {
   #app-overlay {
-    padding: 0.75rem;
-    padding-top: max(0.75rem, env(safe-area-inset-top));
-    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-    padding-left: max(0.75rem, env(safe-area-inset-left));
-    padding-right: max(0.75rem, env(safe-area-inset-right));
+    padding: 0.5rem;
+    padding-top: max(0.5rem, env(safe-area-inset-top));
+    padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+    padding-left: max(0.5rem, env(safe-area-inset-left));
+    padding-right: max(0.5rem, env(safe-area-inset-right));
+    min-height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
   }
 
   .top-bar {
-    gap: 0.4rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.45rem;
     width: 100%;
+    z-index: 60;
   }
 
   .brand-badge {
     padding: 0.35rem 0.65rem;
     gap: 0.5rem;
+    flex-shrink: 0;
   }
 
   .brand-avatar {
@@ -1626,20 +1635,47 @@ select option:hover, select option:focus, select option:checked {
     display: none; /* Hide subtitle to keep top bar sleek on mobile */
   }
 
-  .top-actions {
+  .personality-menu-wrapper {
+    flex-shrink: 0;
+  }
+
+  .personality-chip {
+    padding: 0.35rem 0.65rem;
+    font-size: 0.75rem;
     gap: 0.35rem;
+    max-width: 160px;
+  }
+
+  .personality-chip .personality-text {
+    max-width: 95px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .top-actions {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.3rem;
+    margin-top: 2px;
   }
 
   #model-select {
-    max-width: 112px;
+    flex: 1;
+    min-width: 90px;
+    max-width: calc(100% - 175px);
     font-size: 0.75rem;
-    padding: 0.35rem 0.45rem;
+    padding: 0.38rem 0.45rem;
+    height: 2.25rem;
   }
 
   .btn-icon {
     width: 2.25rem;
     height: 2.25rem;
     border-radius: 0.65rem;
+    flex-shrink: 0;
   }
 
   .btn-icon svg {
@@ -1647,38 +1683,36 @@ select option:hover, select option:focus, select option:checked {
     height: 16px;
   }
 
-  /* Speech Bubble placed neatly above chest in vertical portrait mode */
+  /* Ensure upload button is always visible on all phones */
+  #btn-upload-vrm {
+    display: flex !important;
+  }
+
+  /* Speech Bubble placed neatly below the two-row top bar */
   .speech-bubble-container {
-    top: 4.6rem;
+    top: 5.8rem;
     left: 50%;
     right: auto;
     transform: translateX(-50%) translateZ(0);
-    width: calc(100% - 1.5rem);
-    max-width: 380px;
-    padding: 0.85rem 1rem;
+    width: calc(100% - 1rem);
+    max-width: 400px;
+    padding: 0.75rem 0.95rem;
     border-radius: 1rem;
   }
 
   .speech-text {
-    font-size: 0.92rem;
-    line-height: 1.4;
-    min-height: 1.8rem;
+    font-size: 0.90rem;
+    line-height: 1.35;
+    min-height: 1.6rem;
   }
 
-  /* Action & Mood Chips & Chat Bar (Elevated for phones only to prevent Netlify watermark overlap) */
+  /* Action & Mood Chips & Chat Bar */
   .bottom-controls {
     width: 100%;
-    gap: 0.5rem;
-    margin-bottom: calc(env(safe-area-inset-bottom, 0px) + 3.85rem);
+    gap: 0.4rem;
+    margin-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
     position: relative;
     z-index: 50;
-  }
-
-  /* Keep Netlify badge below interactive UI elements */
-  .netlify-badge,
-  [data-netlify-badge],
-  #netlify-badge {
-    z-index: 10 !important;
   }
 
   .action-chips {
@@ -1722,6 +1756,7 @@ select option:hover, select option:focus, select option:checked {
   .btn-mic {
     width: 2.75rem;
     height: 2.75rem;
+    flex-shrink: 0;
   }
 
   .btn-mic svg {
@@ -1733,6 +1768,7 @@ select option:hover, select option:focus, select option:checked {
     width: 2.45rem;
     height: 2.45rem;
     border-radius: 0.65rem;
+    flex-shrink: 0;
   }
 
   .btn-send svg {
@@ -1742,11 +1778,11 @@ select option:hover, select option:focus, select option:checked {
 
   /* Popover responsive */
   .appearance-popover {
-    top: 4.2rem;
-    left: 0.65rem;
-    right: 0.65rem;
+    top: 5.6rem;
+    left: 0.5rem;
+    right: 0.5rem;
     width: auto;
-    max-width: calc(100vw - 1.3rem);
+    max-width: calc(100vw - 1rem);
     padding: 1rem;
     border-radius: 1rem;
   }
@@ -1754,7 +1790,7 @@ select option:hover, select option:focus, select option:checked {
   /* Chat Drawer full responsive width */
   .chat-drawer {
     width: 100%;
-    max-width: 86vw;
+    max-width: 88vw;
   }
 
   body.drawer-open .bottom-controls,
@@ -1771,45 +1807,42 @@ select option:hover, select option:focus, select option:checked {
     border-radius: 1.25rem;
   }
 
-  .personality-chip {
-    padding: 0.35rem 0.65rem;
-    font-size: 0.75rem;
-    gap: 0.35rem;
-  }
-
   .personality-popover {
-    top: 4.2rem;
-    left: 0.65rem;
-    right: 0.65rem;
+    top: 5.6rem;
+    left: 0.5rem;
+    right: 0.5rem;
     width: auto;
-    max-width: calc(100vw - 1.3rem);
+    max-width: calc(100vw - 1rem);
   }
 }
 
 /* ─── EXTRA SMALL SCREENS (< 420px) ──────────────────────────────────────── */
 @media (max-width: 420px) {
-  #btn-upload-vrm {
-    display: none; /* Accessible via dropdown '+ Load Custom VRM...' */
-  }
-
-  #model-select {
-    max-width: 100px;
-    font-size: 0.72rem;
-  }
-
-  .personality-chip .personality-text {
-    max-width: 80px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  #app-overlay {
+    padding: 0.35rem;
   }
 
   .top-actions {
-    gap: 0.25rem;
+    gap: 0.2rem;
+  }
+
+  #model-select {
+    font-size: 0.72rem;
+    padding: 0.3rem 0.35rem;
+    height: 2.1rem;
   }
 
   .btn-icon {
     width: 2.1rem;
     height: 2.1rem;
+  }
+
+  .btn-icon svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .personality-chip .personality-text {
+    max-width: 75px;
   }
 }
