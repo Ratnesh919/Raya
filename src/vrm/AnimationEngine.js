@@ -584,10 +584,10 @@ export class AnimationEngine {
       // Left hand curls inward towards palm with -Z rotation
       // Right hand curls inward towards palm with +Z rotation
       const fingerDefs = [
-        { name: 'Index', prox: 0.22, inter: 0.28, dist: 0.16 },
-        { name: 'Middle', prox: 0.26, inter: 0.32, dist: 0.18 },
-        { name: 'Ring', prox: 0.30, inter: 0.36, dist: 0.20 },
-        { name: 'Little', prox: 0.34, inter: 0.40, dist: 0.22 }
+        { name: 'Index', prox: 0.36, inter: 0.44, dist: 0.22 },
+        { name: 'Middle', prox: 0.38, inter: 0.46, dist: 0.24 },
+        { name: 'Ring', prox: 0.42, inter: 0.50, dist: 0.26 },
+        { name: 'Little', prox: 0.46, inter: 0.54, dist: 0.28 }
       ];
 
       ['left', 'right'].forEach((side) => {
@@ -600,7 +600,8 @@ export class AnimationEngine {
           const iBone = `${side}${f.name}Intermediate`;
           const dBone = `${side}${f.name}Distal`;
 
-          const pNode = this.vrm.humanoid?.getNormalizedBoneNode(pBone)?.name;
+          const pNode = (this.vrm.humanoid?.getNormalizedBoneNode(pBone) ||
+                         this.vrm.humanoid?.getNormalizedBoneNode(`${side}${f.name}Metacarpal`))?.name;
           const iNode = this.vrm.humanoid?.getNormalizedBoneNode(iBone)?.name;
           const dNode = this.vrm.humanoid?.getNormalizedBoneNode(dBone)?.name;
 
@@ -618,21 +619,22 @@ export class AnimationEngine {
           }
         });
 
-        // Natural thumb resting pose: anatomical 3-joint inward curl across palm
-        const t1 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`)?.name;
+        // Natural thumb resting pose: anatomical 3-joint inward curl across palm (no stiff spikes or outward wings)
+        const t1 = (this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbProximal`) ||
+                    this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbMetacarpal`))?.name;
         const t2 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbIntermediate`)?.name;
         const t3 = this.vrm.humanoid?.getNormalizedBoneNode(`${side}ThumbDistal`)?.name;
 
         const thumbEulers = isLeft
           ? [
-              new THREE.Euler(-0.12, 0.18, -0.22, 'YXZ'),
-              new THREE.Euler(-0.08, 0.15, -0.25, 'YXZ'),
-              new THREE.Euler(-0.06, 0.12, -0.18, 'YXZ')
+              new THREE.Euler(-0.06, -0.28, -0.42, 'YXZ'),
+              new THREE.Euler(-0.04, -0.20, -0.36, 'YXZ'),
+              new THREE.Euler(0.0, -0.12, -0.26, 'YXZ')
             ]
           : [
-              new THREE.Euler(-0.12, -0.18, 0.22, 'YXZ'),
-              new THREE.Euler(-0.08, -0.15, 0.25, 'YXZ'),
-              new THREE.Euler(-0.06, -0.12, 0.18, 'YXZ')
+              new THREE.Euler(-0.06, 0.28, 0.42, 'YXZ'),
+              new THREE.Euler(-0.04, 0.20, 0.36, 'YXZ'),
+              new THREE.Euler(0.0, 0.12, 0.26, 'YXZ')
             ];
 
         if (t1) {

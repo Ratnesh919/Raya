@@ -202,13 +202,15 @@ export class VRMManager {
     this.fillLight.position.set(-2, 1.5, 1.5);
     this.scene.add(this.fillLight);
 
-    this.rimLight = new THREE.DirectionalLight(0xcc66ff, 1.2);
-    this.rimLight.userData.baseIntensity = 1.2;
+    // Warm, natural rim backlight (replaces previous neon magenta 0xcc66ff)
+    this.rimLight = new THREE.DirectionalLight(0xfff0e6, 0.5);
+    this.rimLight.userData.baseIntensity = 0.5;
     this.rimLight.position.set(0, 3, -3);
     this.scene.add(this.rimLight);
 
-    this.underLight = new THREE.DirectionalLight(0x66ccff, 0.4);
-    this.underLight.userData.baseIntensity = 0.4;
+    // Soft neutral floor bounce light (replaces previous cyan 0x66ccff)
+    this.underLight = new THREE.DirectionalLight(0xfff5ee, 0.25);
+    this.underLight.userData.baseIntensity = 0.25;
     this.underLight.position.set(0, -1, 2);
     this.scene.add(this.underLight);
   }
@@ -439,8 +441,8 @@ export class VRMManager {
     this.currentGyroPitch = 0;
 
     const handleOrientation = (e) => {
-      if (!this.gyroEnabled || !this.currentVrm) return;
-      if (e.gamma === null || e.beta === null) return;
+      if (!this.gyroEnabled) return;
+      if (e.gamma === null || e.beta === null || e.gamma === undefined || e.beta === undefined) return;
 
       // gamma: Left-to-right tilt in degrees [-90, 90]
       // beta: Front-to-back tilt in degrees [-180, 180]
@@ -467,30 +469,31 @@ export class VRMManager {
       this.targetGyroPitch = THREE.MathUtils.clamp(-rawPitch, -maxHumanPitch, maxHumanPitch);
     };
 
-    // Permission handler for iOS 13+ devices
-    const requestGyroPermission = () => {
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then((response) => {
-            if (response === 'granted') {
-              window.addEventListener('deviceorientation', handleOrientation, { passive: true });
-            }
-          })
-          .catch(() => {});
-      } else if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
+    if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        // iOS 13+ devices require explicit gesture
+        const requestIosPermission = () => {
+          DeviceOrientationEvent.requestPermission()
+            .then((response) => {
+              if (response === 'granted') {
+                window.addEventListener('deviceorientation', handleOrientation, { passive: true });
+              }
+            })
+            .catch(() => {});
+        };
+        window.addEventListener('touchend', requestIosPermission, { once: true, passive: true });
+        window.addEventListener('click', requestIosPermission, { once: true, passive: true });
+      } else {
+        // Android and modern browsers: attach immediately!
         window.addEventListener('deviceorientation', handleOrientation, { passive: true });
       }
-    };
-
-    // Request on first user interaction to satisfy browser security policies
-    window.addEventListener('touchstart', requestGyroPermission, { once: true, passive: true });
-    window.addEventListener('click', requestGyroPermission, { once: true, passive: true });
+    }
   }
 
   /**
    * Phone Shake Secondary Motion:
-   * Uses DeviceMotionEvent linear acceleration to detect physical phone shake.
-   * Feeds linear jerk impulses into ChestPhysics to jiggle secondary mass,
+   * Uses DeviceMotionEvent linear acceleration or delta jerk to detect physical phone shake.
+   * Feeds linear impulses into ChestPhysics to jiggle secondary mass,
    * completely decoupled from gyroscope angular orientation.
    */
   setupPhoneShake() {
@@ -502,50 +505,61 @@ export class VRMManager {
     let lastShakeTime = 0;
 
     const handleMotion = (e) => {
-      const acc = e.acceleration || e.accelerationIncludingGravity;
-      if (!acc || acc.x === null) return;
+      // Support linear acceleration or acceleration including gravity
+      const acc = (e.acceleration && typeof e.acceleration.x === 'number' && (e.acceleration.x !== 0 || e.acceleration.y !== 0))
+        ? e.acceleration
+        : e.accelerationIncludingGravity;
+
+      if (!acc || typeof acc.x !== 'number') return;
 
       const deltaX = acc.x - lastX;
       const deltaY = acc.y - lastY;
-      const deltaZ = acc.z - lastZ;
+      const deltaZ = (typeof acc.z === 'number') ? (acc.z - lastZ) : 0;
       lastX = acc.x;
       lastY = acc.y;
-      lastZ = acc.z;
+      if (typeof acc.z === 'number') lastZ = acc.z;
 
+      // Rate of change between consecutive readings
       const jerk = Math.hypot(deltaX, deltaY, deltaZ);
-      // Jerk threshold: > 11 m/s^2 detects intentional physical phone shake
-      if (jerk > 11) {
+      const linMag = (e.acceleration && typeof e.acceleration.x === 'number')
+        ? Math.hypot(e.acceleration.x, e.acceleration.y, e.acceleration.z || 0)
+        : 0;
+
+      // Sensitive but robust shake detection: jerk > 2.8 m/s² OR linear magnitude > 5.5 m/s²
+      if (jerk > 2.8 || linMag > 5.5) {
         const now = performance.now();
-        if (now - lastShakeTime > 120) {
+        if (now - lastShakeTime > 150) {
           lastShakeTime = now;
-          const intensity = Math.min(1.8, (jerk - 11) / 10.0 + 0.3);
+          const intensity = Math.min(1.8, Math.max(0.6, (jerk - 2.8) / 6.0 + 0.6));
           if (this.chestPhysics) {
-            this.chestPhysics.applyShakeImpulse(intensity, deltaX, deltaY);
+            this.chestPhysics.applyShakeImpulse(intensity, deltaX || acc.x, deltaY || acc.y);
           }
         }
       }
     };
 
-    const requestMotionPermission = () => {
-      if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
-        DeviceMotionEvent.requestPermission()
-          .then((response) => {
-            if (response === 'granted') {
-              window.addEventListener('devicemotion', handleMotion, { passive: true });
-            }
-          })
-          .catch(() => {});
-      } else if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
+    if (typeof window !== 'undefined' && 'DeviceMotionEvent' in window) {
+      if (typeof DeviceMotionEvent.requestPermission === 'function') {
+        const requestIosMotion = () => {
+          DeviceMotionEvent.requestPermission()
+            .then((response) => {
+              if (response === 'granted') {
+                window.addEventListener('devicemotion', handleMotion, { passive: true });
+              }
+            })
+            .catch(() => {});
+        };
+        window.addEventListener('touchend', requestIosMotion, { once: true, passive: true });
+        window.addEventListener('click', requestIosMotion, { once: true, passive: true });
+      } else {
+        // Android / Chrome: attach immediately!
         window.addEventListener('devicemotion', handleMotion, { passive: true });
       }
-    };
-
-    window.addEventListener('touchstart', requestMotionPermission, { once: true, passive: true });
-    window.addEventListener('click', requestMotionPermission, { once: true, passive: true });
+    }
   }
 
   updateGyro(deltaTime) {
-    if (!this.currentVrm || !this.gyroEnabled) return;
+    if (!this.gyroEnabled) return;
 
     // Smooth lerp (soft spring-damped tracking)
     const lerpSpeed = THREE.MathUtils.clamp(deltaTime * 6.0, 0, 1);
@@ -555,20 +569,6 @@ export class VRMManager {
 
     const deltaGyro = this.currentGyroYaw - prevYaw;
     this.turnDeltaY += deltaGyro;
-
-    // Apply clamped gyro rotation smoothly onto avatar head/neck without exceeding human limits
-    if (this.currentVrm.humanoid) {
-      const neck = this.currentVrm.humanoid.getNormalizedBoneNode('neck');
-      const head = this.currentVrm.humanoid.getNormalizedBoneNode('head');
-      if (neck) {
-        neck.rotation.y = THREE.MathUtils.clamp(neck.rotation.y + this.currentGyroYaw * 0.40, -0.45, 0.45);
-        neck.rotation.x = THREE.MathUtils.clamp(neck.rotation.x + this.currentGyroPitch * 0.40, -0.30, 0.30);
-      }
-      if (head) {
-        head.rotation.y = THREE.MathUtils.clamp(head.rotation.y + this.currentGyroYaw * 0.60, -0.75, 0.75);
-        head.rotation.x = THREE.MathUtils.clamp(head.rotation.x + this.currentGyroPitch * 0.60, -0.35, 0.35);
-      }
-    }
   }
 
   setCameraMode(mode = 'portrait') {
@@ -904,18 +904,16 @@ export class VRMManager {
 
   render(deltaTime) {
     if (this.currentVrm) {
-      // 1. Real-time breeze physics vectors (modifies spring bone joint forces)
-      if (this.graphicsQuality !== 'low' && this.currentVrm.springBoneManager) {
-        this.updateBreeze(deltaTime);
-      }
-      // 2. VRM update: @pixiv/three-vrm already updates humanoid, lookAt, and springBoneManager
-      // (Redundant second springBoneManager.update call eliminated to save 50% physics CPU)
-      this.currentVrm.update(deltaTime);
-
-      // 3. Phone Gyroscope Head/Gaze tracking (blends natural head rotation clamped to human limits)
+      // 1. Phone Gyroscope tracking (updates smooth angular targets before humanoid evaluation)
       if (this.gyroEnabled) {
         this.updateGyro(deltaTime);
       }
+      // 2. Real-time breeze physics vectors (modifies spring bone joint forces)
+      if (this.graphicsQuality !== 'low' && this.currentVrm.springBoneManager) {
+        this.updateBreeze(deltaTime);
+      }
+      // 3. VRM update: @pixiv/three-vrm already updates humanoid, lookAt, and springBoneManager
+      this.currentVrm.update(deltaTime);
 
       // 4. Apply physics-based rotational inertia & dynamic secondary motion for chest/breast bones
       // Executes directly after currentVrm.update so it blends dynamically on top of spring bones & animations!
