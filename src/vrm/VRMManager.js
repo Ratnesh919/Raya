@@ -427,46 +427,42 @@ export class VRMManager {
 
   /**
    * Phone Gyroscope Integration:
-   * Rotates avatar head and gaze smoothly as user tilts phone,
-   * strictly clamped to natural human anatomical limits (no 360-degree rotation).
+   * Rotates avatar head and gaze smoothly as user tilts phone LEFT and RIGHT only (Yaw),
+   * strictly clamped to natural human anatomical limits (no 360-degree rotation, no vertical pitch).
    */
   setupGyroscope() {
     if (typeof window === 'undefined') return;
 
     this.gyroEnabled = true;
     this.gyroBaseline = null;
-    this.targetGyroYaw = 0;   // Radians
-    this.targetGyroPitch = 0; // Radians
+    this.targetGyroYaw = 0;   // Radians (Left/Right only)
+    this.targetGyroPitch = 0; // Strictly 0 (up/down pitch disabled for gyroscope)
     this.currentGyroYaw = 0;
     this.currentGyroPitch = 0;
 
     const handleOrientation = (e) => {
       if (!this.gyroEnabled) return;
-      if (e.gamma === null || e.beta === null || e.gamma === undefined || e.beta === undefined) return;
+      if (e.gamma === null || e.gamma === undefined) return;
 
       // gamma: Left-to-right tilt in degrees [-90, 90]
-      // beta: Front-to-back tilt in degrees [-180, 180]
       if (!this.gyroBaseline) {
-        this.gyroBaseline = { gamma: e.gamma, beta: e.beta };
+        this.gyroBaseline = { gamma: e.gamma };
         return;
       }
 
       // Delta from baseline
       const deltaGamma = e.gamma - this.gyroBaseline.gamma;
-      const deltaBeta = e.beta - this.gyroBaseline.beta;
 
       // Convert degrees to radians
       const rawYaw = (deltaGamma * Math.PI) / 180;
-      const rawPitch = (deltaBeta * Math.PI) / 180;
 
       // BIOMECHANICAL RANGE CONSTRAINT:
       // Real human head/neck cannot rotate 360 degrees!
-      // Limit yaw to max ±45° (±0.78 rad) and pitch to max ±25° (±0.44 rad)
+      // Limit yaw to max ±45° (±0.78 rad). Gyroscope ONLY controls Left and Right.
       const maxHumanYaw = 0.78;   // ~45°
-      const maxHumanPitch = 0.44; // ~25°
 
       this.targetGyroYaw = THREE.MathUtils.clamp(rawYaw, -maxHumanYaw, maxHumanYaw);
-      this.targetGyroPitch = THREE.MathUtils.clamp(-rawPitch, -maxHumanPitch, maxHumanPitch);
+      this.targetGyroPitch = 0;
     };
 
     if (typeof window !== 'undefined' && 'DeviceOrientationEvent' in window) {
@@ -561,11 +557,11 @@ export class VRMManager {
   updateGyro(deltaTime) {
     if (!this.gyroEnabled) return;
 
-    // Smooth lerp (soft spring-damped tracking)
+    // Smooth lerp (soft spring-damped tracking for Left/Right yaw only)
     const lerpSpeed = THREE.MathUtils.clamp(deltaTime * 6.0, 0, 1);
     const prevYaw = this.currentGyroYaw;
     this.currentGyroYaw = THREE.MathUtils.lerp(this.currentGyroYaw, this.targetGyroYaw, lerpSpeed);
-    this.currentGyroPitch = THREE.MathUtils.lerp(this.currentGyroPitch, this.targetGyroPitch, lerpSpeed);
+    this.currentGyroPitch = 0;
 
     const deltaGyro = this.currentGyroYaw - prevYaw;
     this.turnDeltaY += deltaGyro;

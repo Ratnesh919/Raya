@@ -672,20 +672,19 @@ export class LifeSimulator {
       this.currentHeadYaw = THREE.MathUtils.lerp(this.currentHeadYaw, targetYaw, lerpSpeed);
       this.currentHeadPitch = THREE.MathUtils.lerp(this.currentHeadPitch, targetPitch, lerpSpeed);
 
-      // Biomechanical distribution + Instinct Listening Nods & Co-Speech Nod Accents + Phone Gyroscope
+      // Biomechanical distribution + Instinct Listening Nods & Co-Speech Nod Accents + Phone Gyroscope (Left/Right only)
       const totalNodPitch = this.listeningCurrent.nodPitch + this.speechNodCurrent;
       const totalRoll = (this.behaviorCurrent.headRoll || 0) + this.listeningCurrent.headRoll;
 
-      // Phone Gyroscope Head/Gaze tilt (clamped safely to human anatomical limits)
+      // Phone Gyroscope Head tilt (Left and Right only, clamped safely to human limits)
       const gyroYaw = this.vrmManager?.currentGyroYaw || 0;
-      const gyroPitch = this.vrmManager?.currentGyroPitch || 0;
 
       neck.rotation.y = this.currentHeadYaw * 0.35 + (this.behaviorCurrent.headYaw * 0.35) + (gyroYaw * 0.35);
-      neck.rotation.x = this.currentHeadPitch * 0.35 + (this.behaviorCurrent.headPitch * 0.35) + totalNodPitch * 0.35 + (gyroPitch * 0.35);
+      neck.rotation.x = this.currentHeadPitch * 0.35 + (this.behaviorCurrent.headPitch * 0.35) + totalNodPitch * 0.35;
       neck.rotation.z = (this.behaviorCurrent.neckRoll || 0) + totalRoll * 0.35;
 
       head.rotation.y = this.currentHeadYaw * 0.65 + (this.behaviorCurrent.headYaw * 0.65) + (gyroYaw * 0.65);
-      head.rotation.x = this.currentHeadPitch * 0.65 + (this.behaviorCurrent.headPitch * 0.65) + totalNodPitch * 0.65 + (gyroPitch * 0.65);
+      head.rotation.x = this.currentHeadPitch * 0.65 + (this.behaviorCurrent.headPitch * 0.65) + totalNodPitch * 0.65;
       head.rotation.z = totalRoll * 0.65;
 
       if (this.vrm.lookAt) {
@@ -703,12 +702,11 @@ export class LifeSimulator {
       const totalNodPitch = this.listeningCurrent.nodPitch + this.speechNodCurrent;
       const totalRoll = (this.behaviorCurrent.headRoll || 0) + this.listeningCurrent.headRoll;
       const gyroYaw = this.vrmManager?.currentGyroYaw || 0;
-      const gyroPitch = this.vrmManager?.currentGyroPitch || 0;
 
-      neck.rotation.x = THREE.MathUtils.lerp(neck.rotation.x, headX * 0.4 + (this.behaviorCurrent.headPitch * 0.35) + totalNodPitch * 0.35 + (gyroPitch * 0.35), 0.1);
+      neck.rotation.x = THREE.MathUtils.lerp(neck.rotation.x, headX * 0.4 + (this.behaviorCurrent.headPitch * 0.35) + totalNodPitch * 0.35, 0.1);
       neck.rotation.y = THREE.MathUtils.lerp(neck.rotation.y, headY * 0.4 + (this.behaviorCurrent.headYaw * 0.35) + (gyroYaw * 0.35), 0.1);
       neck.rotation.z = (this.behaviorCurrent.neckRoll || 0) + totalRoll * 0.35;
-      head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, headX * 0.6 + (this.behaviorCurrent.headPitch * 0.65) + totalNodPitch * 0.65 + (gyroPitch * 0.65), 0.1);
+      head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, headX * 0.6 + (this.behaviorCurrent.headPitch * 0.65) + totalNodPitch * 0.65, 0.1);
       head.rotation.y = THREE.MathUtils.lerp(head.rotation.y, headY * 0.6 + (this.behaviorCurrent.headYaw * 0.65) + (gyroYaw * 0.65), 0.1);
       head.rotation.z = totalRoll * 0.65;
     }
