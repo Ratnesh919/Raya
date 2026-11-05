@@ -90,15 +90,15 @@
     "semantic_hash": ""
   },
   "src/vrm/ExpressionManager.js": {
-    "mtime": 1793507702.9424503,
-    "seen": 1793598667.9520447,
-    "ast_hash": "1336f41f19e534c2730e4f323004b605",
+    "mtime": 1793857049.0548542,
+    "seen": 1793857200.2212913,
+    "ast_hash": "4d704d623a4b372e4ff8fb72e1312081",
     "semantic_hash": ""
   },
   "src/vrm/LifeSimulator.js": {
-    "mtime": 1793794164.9841077,
-    "seen": 1793794271.2771735,
-    "ast_hash": "f82bdc71f36b1ef342b7d414ebaabf0c",
+    "mtime": 1793854175.387192,
+    "seen": 1793857200.2213001,
+    "ast_hash": "9299950d89ed541a81f1bc484d89eca9",
     "semantic_hash": ""
   },
   "src/vrm/LipSyncEngine.js": {

@@ -33,30 +33,17 @@
       "source_location": "L250"
     },
     {
-      "id": "src_ai_memoryservice_memoryservice",
-      "label": "MemoryService",
+      "id": "src_vrm_fbxavatarloader_fbxavatarloader",
+      "label": "FBXAvatarLoader",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 11,
-      "community_name": "bootstrap",
+      "community_name": "FBXAvatarLoader",
       "file_type": "code",
-      "norm_label": "memoryservice",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L14"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud",
-      "label": "ControlsHUD",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": "controlshud",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L3"
+      "norm_label": "fbxavatarloader",
+      "source_file": "src/vrm/FBXAvatarLoader.js",
+      "source_location": "L99"
     },
     {
       "id": "src_vrm_lipsyncengine_lipsyncengine",
@@ -111,17 +98,17 @@
       "source_location": "L17"
     },
     {
-      "id": "src_vrm_fbxavatarloader_fbxavatarloader",
-      "label": "FBXAvatarLoader",
+      "id": "src_vrm_inertiablender_inertiablender",
+      "label": "InertiaBlender",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 2,
       "community_name": "main.js",
       "file_type": "code",
-      "norm_label": "fbxavatarloader",
-      "source_file": "src/vrm/FBXAvatarLoader.js",
-      "source_location": "L99"
+      "norm_label": "inertiablender",
+      "source_file": "src/vrm/InertiaBlender.js",
+      "source_location": "L12"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager",
@@ -134,7 +121,7 @@
       "file_type": "code",
       "norm_label": "expressionmanager",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L34"
+      "source_location": "L47"
     },
     {
       "id": "src_ui_settingsmodal_settingsmodal",
@@ -176,13 +163,26 @@
       "source_location": "L19"
     },
     {
+      "id": "src_ai_memoryservice_memoryservice",
+      "label": "MemoryService",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "memoryservice",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L14"
+    },
+    {
       "id": "src_vrm_vrmmanager_vrmmanager",
       "label": "VRMManager",
       "_callable": true,
       "_callable_class": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": "vrmmanager",
       "source_file": "src/vrm/VRMManager.js",
@@ -215,19 +215,6 @@
       "source_location": "L103"
     },
     {
-      "id": "src_vrm_inertiablender_inertiablender",
-      "label": "InertiaBlender",
-      "_callable": true,
-      "_callable_class": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": "inertiablender",
-      "source_file": "src/vrm/InertiaBlender.js",
-      "source_location": "L12"
-    },
-    {
       "id": "src_ai_kokoroservice_kokoroservice",
       "label": "KokoroService",
       "_callable": true,
@@ -239,6 +226,19 @@
       "norm_label": "kokoroservice",
       "source_file": "src/ai/KokoroService.js",
       "source_location": "L22"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud",
+      "label": "ControlsHUD",
+      "_callable": true,
+      "_callable_class": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "LoaderAnimation",
+      "file_type": "code",
+      "norm_label": "controlshud",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L3"
     },
     {
       "id": "src_ui_loaderanimation_loaderanimation",
@@ -542,232 +542,52 @@
       "source_location": "L1210"
     },
     {
-      "id": "src_ai_llmservice_llmservice_setmemoryservice",
-      "label": ".setMemoryService()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".setmemoryservice()",
-      "source_file": "src/ai/LLMService.js",
-      "source_location": "L48"
-    },
-    {
-      "id": "src_ai_llmservice_llmservice_setpersonalityengine",
-      "label": ".setPersonalityEngine()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".setpersonalityengine()",
-      "source_file": "src/ai/LLMService.js",
-      "source_location": "L44"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_addfact",
-      "label": ".addFact()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".addfact()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L142"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_constructor",
+      "id": "src_vrm_fbxavatarloader_fbxavatarloader_constructor",
       "label": ".constructor()",
       "_callable": true,
       "_origin": "ast",
       "community": 11,
-      "community_name": "bootstrap",
+      "community_name": "FBXAvatarLoader",
       "file_type": "code",
       "norm_label": ".constructor()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L15"
+      "source_file": "src/vrm/FBXAvatarLoader.js",
+      "source_location": "L100"
     },
     {
-      "id": "src_ai_memoryservice_memoryservice_detectandstorelearnedfacts",
-      "label": ".detectAndStoreLearnedFacts()",
+      "id": "src_vrm_fbxavatarloader_fbxavatarloader_createexpressionmanager",
+      "label": ".createExpressionManager()",
       "_callable": true,
       "_origin": "ast",
       "community": 11,
-      "community_name": "bootstrap",
+      "community_name": "FBXAvatarLoader",
       "file_type": "code",
-      "norm_label": ".detectandstorelearnedfacts()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L193"
+      "norm_label": ".createexpressionmanager()",
+      "source_file": "src/vrm/FBXAvatarLoader.js",
+      "source_location": "L395"
     },
     {
-      "id": "src_ai_memoryservice_memoryservice_getmemory",
-      "label": ".getMemory()",
+      "id": "src_vrm_fbxavatarloader_fbxavatarloader_load",
+      "label": ".load()",
       "_callable": true,
       "_origin": "ast",
       "community": 11,
-      "community_name": "bootstrap",
+      "community_name": "FBXAvatarLoader",
       "file_type": "code",
-      "norm_label": ".getmemory()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L87"
+      "norm_label": ".load()",
+      "source_file": "src/vrm/FBXAvatarLoader.js",
+      "source_location": "L114"
     },
     {
-      "id": "src_ai_memoryservice_memoryservice_loadmemory",
-      "label": ".loadMemory()",
+      "id": "src_vrm_fbxavatarloader_fbxavatarloader_setupmaterials",
+      "label": ".setupMaterials()",
       "_callable": true,
       "_origin": "ast",
       "community": 11,
-      "community_name": "bootstrap",
+      "community_name": "FBXAvatarLoader",
       "file_type": "code",
-      "norm_label": ".loadmemory()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L37"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_resetmemory",
-      "label": ".resetMemory()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".resetmemory()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L163"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_savememory",
-      "label": ".saveMemory()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".savememory()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L94"
-    },
-    {
-      "id": "src_ai_memoryservice_memoryservice_setusername",
-      "label": ".setUserName()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".setusername()",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L155"
-    },
-    {
-      "id": "src_main_bootstrap",
-      "label": "bootstrap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": "bootstrap()",
-      "source_file": "src/main.js",
-      "source_location": "L19"
-    },
-    {
-      "id": "src_main_bootstrap_animate",
-      "label": "animate()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": "animate()",
-      "source_file": "src/main.js",
-      "source_location": "L97"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L4"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_hideloading",
-      "label": ".hideLoading()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".hideloading()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L152"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_loadmodelwithloader",
-      "label": ".loadModelWithLoader()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".loadmodelwithloader()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L103"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_setupdraganddrop",
-      "label": ".setupDragAndDrop()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".setupdraganddrop()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L82"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_setuplisteners",
-      "label": ".setupListeners()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".setuplisteners()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L30"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_showloading",
-      "label": ".showLoading()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".showloading()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L144"
-    },
-    {
-      "id": "src_ui_controlshud_controlshud_updateprogress",
-      "label": ".updateProgress()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 11,
-      "community_name": "bootstrap",
-      "file_type": "code",
-      "norm_label": ".updateprogress()",
-      "source_file": "src/ui/ControlsHUD.js",
-      "source_location": "L136"
+      "norm_label": ".setupmaterials()",
+      "source_file": "src/vrm/FBXAvatarLoader.js",
+      "source_location": "L292"
     },
     {
       "id": "src_vrm_lipsyncengine_lipsyncengine_connectmediaelement",
@@ -923,7 +743,7 @@
       "file_type": "code",
       "norm_label": ".clearbehavior()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L219"
+      "source_location": "L225"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_constructor",
@@ -1007,7 +827,7 @@
       "file_type": "code",
       "norm_label": ".update()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L463"
+      "source_location": "L506"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updatebehavior",
@@ -1019,7 +839,7 @@
       "file_type": "code",
       "norm_label": ".updatebehavior()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L237"
+      "source_location": "L243"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updateblinking",
@@ -1031,7 +851,7 @@
       "file_type": "code",
       "norm_label": ".updateblinking()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L574"
+      "source_location": "L617"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updatebreathing",
@@ -1043,7 +863,7 @@
       "file_type": "code",
       "norm_label": ".updatebreathing()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L536"
+      "source_location": "L579"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updategaze",
@@ -1055,7 +875,7 @@
       "file_type": "code",
       "norm_label": ".updategaze()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L627"
+      "source_location": "L670"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updatehandsandfingers",
@@ -1067,7 +887,7 @@
       "file_type": "code",
       "norm_label": ".updatehandsandfingers()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L476"
+      "source_location": "L519"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updateinstinctandgestures",
@@ -1079,7 +899,7 @@
       "file_type": "code",
       "norm_label": ".updateinstinctandgestures()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L422"
+      "source_location": "L465"
     },
     {
       "id": "src_vrm_lifesimulator_lifesimulator_updatesaccades",
@@ -1091,7 +911,55 @@
       "file_type": "code",
       "norm_label": ".updatesaccades()",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L611"
+      "source_location": "L654"
+    },
+    {
+      "id": "components_ui_demo_thinkingorbsolvingdemo",
+      "label": "ThinkingOrbSolvingDemo()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "thinking-orbs",
+      "file_type": "code",
+      "norm_label": "thinkingorbsolvingdemo()",
+      "source_file": "components/ui/demo.tsx",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_components_ui_demo_thinkingorbsolvingdemo",
+      "label": "ThinkingOrbSolvingDemo()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "thinking-orbs",
+      "file_type": "code",
+      "norm_label": "thinkingorbsolvingdemo()",
+      "source_file": "src/components/ui/demo.tsx",
+      "source_location": "L4"
+    },
+    {
+      "id": "src_vrm_animationengine_findrignode",
+      "label": "findRigNode()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "main.js",
+      "file_type": "code",
+      "norm_label": "findrignode()",
+      "source_file": "src/vrm/AnimationEngine.js",
+      "source_location": "L90"
+    },
+    {
+      "id": "src_vrm_animationengine_getrignodemap",
+      "label": "getRigNodeMap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "main.js",
+      "file_type": "code",
+      "norm_label": "getrignodemap()",
+      "source_file": "src/vrm/AnimationEngine.js",
+      "source_location": "L72"
     },
     {
       "id": "src_vrm_bodycollisionguard_bodycollisionguard_bindmodel",
@@ -1190,7 +1058,7 @@
       "source_location": "L177"
     },
     {
-      "id": "src_vrm_fbxavatarloader_fbxavatarloader_constructor",
+      "id": "src_vrm_inertiablender_inertiablender_constructor",
       "label": ".constructor()",
       "_callable": true,
       "_origin": "ast",
@@ -1198,44 +1066,56 @@
       "community_name": "main.js",
       "file_type": "code",
       "norm_label": ".constructor()",
-      "source_file": "src/vrm/FBXAvatarLoader.js",
-      "source_location": "L100"
+      "source_file": "src/vrm/InertiaBlender.js",
+      "source_location": "L13"
     },
     {
-      "id": "src_vrm_fbxavatarloader_fbxavatarloader_createexpressionmanager",
-      "label": ".createExpressionManager()",
+      "id": "src_vrm_inertiablender_inertiablender_posttargetsample",
+      "label": ".postTargetSample()",
       "_callable": true,
       "_origin": "ast",
       "community": 2,
       "community_name": "main.js",
       "file_type": "code",
-      "norm_label": ".createexpressionmanager()",
-      "source_file": "src/vrm/FBXAvatarLoader.js",
-      "source_location": "L395"
+      "norm_label": ".posttargetsample()",
+      "source_file": "src/vrm/InertiaBlender.js",
+      "source_location": "L97"
     },
     {
-      "id": "src_vrm_fbxavatarloader_fbxavatarloader_load",
-      "label": ".load()",
+      "id": "src_vrm_inertiablender_inertiablender_reset",
+      "label": ".reset()",
       "_callable": true,
       "_origin": "ast",
       "community": 2,
       "community_name": "main.js",
       "file_type": "code",
-      "norm_label": ".load()",
-      "source_file": "src/vrm/FBXAvatarLoader.js",
-      "source_location": "L114"
+      "norm_label": ".reset()",
+      "source_file": "src/vrm/InertiaBlender.js",
+      "source_location": "L61"
     },
     {
-      "id": "src_vrm_fbxavatarloader_fbxavatarloader_setupmaterials",
-      "label": ".setupMaterials()",
+      "id": "src_vrm_inertiablender_inertiablender_starttransition",
+      "label": ".startTransition()",
       "_callable": true,
       "_origin": "ast",
       "community": 2,
       "community_name": "main.js",
       "file_type": "code",
-      "norm_label": ".setupmaterials()",
-      "source_file": "src/vrm/FBXAvatarLoader.js",
-      "source_location": "L292"
+      "norm_label": ".starttransition()",
+      "source_file": "src/vrm/InertiaBlender.js",
+      "source_location": "L75"
+    },
+    {
+      "id": "src_vrm_inertiablender_inertiablender_update",
+      "label": ".update()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "main.js",
+      "file_type": "code",
+      "norm_label": ".update()",
+      "source_file": "src/vrm/InertiaBlender.js",
+      "source_location": "L120"
     },
     {
       "id": "lib_utils_cn",
@@ -1271,7 +1151,7 @@
       "file_type": "code",
       "norm_label": ".bindmodel()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L101"
+      "source_location": "L116"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_constructor",
@@ -1283,7 +1163,7 @@
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L35"
+      "source_location": "L48"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_easeinoutcubic",
@@ -1295,7 +1175,7 @@
       "file_type": "code",
       "norm_label": ".easeinoutcubic()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L185"
+      "source_location": "L253"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_getemotionfamily",
@@ -1307,7 +1187,7 @@
       "file_type": "code",
       "norm_label": ".getemotionfamily()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L119"
+      "source_location": "L168"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_getexpressionvalue",
@@ -1319,7 +1199,7 @@
       "file_type": "code",
       "norm_label": ".getexpressionvalue()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L167"
+      "source_location": "L227"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_getmanager",
@@ -1331,7 +1211,7 @@
       "file_type": "code",
       "norm_label": ".getmanager()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L115"
+      "source_location": "L164"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_releaseemotion",
@@ -1343,7 +1223,7 @@
       "file_type": "code",
       "norm_label": ".releaseemotion()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L255"
+      "source_location": "L323"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_setemotion",
@@ -1355,7 +1235,7 @@
       "file_type": "code",
       "norm_label": ".setemotion()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L193"
+      "source_location": "L261"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_setemotionwithautoreset",
@@ -1367,7 +1247,7 @@
       "file_type": "code",
       "norm_label": ".setemotionwithautoreset()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L241"
+      "source_location": "L309"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_setexpressionvalue",
@@ -1379,7 +1259,7 @@
       "file_type": "code",
       "norm_label": ".setexpressionvalue()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L127"
+      "source_location": "L176"
     },
     {
       "id": "src_vrm_expressionmanager_expressionmanager_update",
@@ -1391,7 +1271,7 @@
       "file_type": "code",
       "norm_label": ".update()",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L274"
+      "source_location": "L342"
     },
     {
       "id": "src_ai_promptengine_parserayaresponse",
@@ -1838,12 +1718,156 @@
       "source_location": "L127"
     },
     {
+      "id": "src_ai_llmservice_llmservice_setmemoryservice",
+      "label": ".setMemoryService()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".setmemoryservice()",
+      "source_file": "src/ai/LLMService.js",
+      "source_location": "L48"
+    },
+    {
+      "id": "src_ai_llmservice_llmservice_setpersonalityengine",
+      "label": ".setPersonalityEngine()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".setpersonalityengine()",
+      "source_file": "src/ai/LLMService.js",
+      "source_location": "L44"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_addfact",
+      "label": ".addFact()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".addfact()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L142"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_constructor",
+      "label": ".constructor()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".constructor()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L15"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_detectandstorelearnedfacts",
+      "label": ".detectAndStoreLearnedFacts()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".detectandstorelearnedfacts()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L193"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_getmemory",
+      "label": ".getMemory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".getmemory()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L87"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_loadmemory",
+      "label": ".loadMemory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".loadmemory()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L37"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_resetmemory",
+      "label": ".resetMemory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".resetmemory()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L163"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_savememory",
+      "label": ".saveMemory()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".savememory()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L94"
+    },
+    {
+      "id": "src_ai_memoryservice_memoryservice_setusername",
+      "label": ".setUserName()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": ".setusername()",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L155"
+    },
+    {
+      "id": "src_main_bootstrap",
+      "label": "bootstrap()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "bootstrap()",
+      "source_file": "src/main.js",
+      "source_location": "L19"
+    },
+    {
+      "id": "src_main_bootstrap_animate",
+      "label": "animate()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 5,
+      "community_name": "bootstrap",
+      "file_type": "code",
+      "norm_label": "animate()",
+      "source_file": "src/main.js",
+      "source_location": "L97"
+    },
+    {
       "id": "src_vrm_vrmmanager_vrmmanager_addmodelloadedlistener",
       "label": ".addModelLoadedListener()",
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".addmodelloadedlistener()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1855,7 +1879,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".applyvisualadjustments()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1867,7 +1891,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".constructor()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1879,7 +1903,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".initscene()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1891,7 +1915,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".loadmodel()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1903,7 +1927,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".onwindowresize()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1915,7 +1939,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".poserestingarms()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1927,7 +1951,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".render()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1939,7 +1963,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setcameramode()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1951,7 +1975,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setchairvisible()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1963,7 +1987,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setgraphicsquality()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1975,7 +1999,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".sethairbrightness()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1987,7 +2011,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setoverallbrightness()",
       "source_file": "src/vrm/VRMManager.js",
@@ -1999,7 +2023,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setskinbrightness()",
       "source_file": "src/vrm/VRMManager.js",
@@ -2011,7 +2035,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setupgyroscope()",
       "source_file": "src/vrm/VRMManager.js",
@@ -2023,7 +2047,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setupinteractions()",
       "source_file": "src/vrm/VRMManager.js",
@@ -2035,7 +2059,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setuplighting()",
       "source_file": "src/vrm/VRMManager.js",
@@ -2047,7 +2071,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".setupphoneshake()",
       "source_file": "src/vrm/VRMManager.js",
@@ -2059,7 +2083,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".updatebreeze()",
       "source_file": "src/vrm/VRMManager.js",
@@ -2071,7 +2095,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".updatecameraforscreen()",
       "source_file": "src/vrm/VRMManager.js",
@@ -2083,7 +2107,7 @@
       "_callable": true,
       "_origin": "ast",
       "community": 5,
-      "community_name": "VRMManager",
+      "community_name": "bootstrap",
       "file_type": "code",
       "norm_label": ".updategyro()",
       "source_file": "src/vrm/VRMManager.js",
@@ -2414,90 +2438,6 @@
       "source_location": "L765"
     },
     {
-      "id": "src_vrm_animationengine_findrignode",
-      "label": "findRigNode()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": "findrignode()",
-      "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L90"
-    },
-    {
-      "id": "src_vrm_animationengine_getrignodemap",
-      "label": "getRigNodeMap()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": "getrignodemap()",
-      "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L72"
-    },
-    {
-      "id": "src_vrm_inertiablender_inertiablender_constructor",
-      "label": ".constructor()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": ".constructor()",
-      "source_file": "src/vrm/InertiaBlender.js",
-      "source_location": "L13"
-    },
-    {
-      "id": "src_vrm_inertiablender_inertiablender_posttargetsample",
-      "label": ".postTargetSample()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": ".posttargetsample()",
-      "source_file": "src/vrm/InertiaBlender.js",
-      "source_location": "L97"
-    },
-    {
-      "id": "src_vrm_inertiablender_inertiablender_reset",
-      "label": ".reset()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": ".reset()",
-      "source_file": "src/vrm/InertiaBlender.js",
-      "source_location": "L61"
-    },
-    {
-      "id": "src_vrm_inertiablender_inertiablender_starttransition",
-      "label": ".startTransition()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": ".starttransition()",
-      "source_file": "src/vrm/InertiaBlender.js",
-      "source_location": "L75"
-    },
-    {
-      "id": "src_vrm_inertiablender_inertiablender_update",
-      "label": ".update()",
-      "_callable": true,
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": ".update()",
-      "source_file": "src/vrm/InertiaBlender.js",
-      "source_location": "L120"
-    },
-    {
       "id": "src_ai_kokoroservice_kokoroservice_cleanup",
       "label": "._cleanup()",
       "_callable": true,
@@ -2618,28 +2558,88 @@
       "source_location": "L206"
     },
     {
-      "id": "components_ui_demo_thinkingorbsolvingdemo",
-      "label": "ThinkingOrbSolvingDemo()",
+      "id": "src_ui_controlshud_controlshud_constructor",
+      "label": ".constructor()",
       "_callable": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "LoaderAnimation",
       "file_type": "code",
-      "norm_label": "thinkingorbsolvingdemo()",
-      "source_file": "components/ui/demo.tsx",
+      "norm_label": ".constructor()",
+      "source_file": "src/ui/ControlsHUD.js",
       "source_location": "L4"
     },
     {
-      "id": "src_components_ui_demo_thinkingorbsolvingdemo",
-      "label": "ThinkingOrbSolvingDemo()",
+      "id": "src_ui_controlshud_controlshud_hideloading",
+      "label": ".hideLoading()",
       "_callable": true,
       "_origin": "ast",
       "community": 9,
       "community_name": "LoaderAnimation",
       "file_type": "code",
-      "norm_label": "thinkingorbsolvingdemo()",
-      "source_file": "src/components/ui/demo.tsx",
-      "source_location": "L4"
+      "norm_label": ".hideloading()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L152"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_loadmodelwithloader",
+      "label": ".loadModelWithLoader()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "LoaderAnimation",
+      "file_type": "code",
+      "norm_label": ".loadmodelwithloader()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L103"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_setupdraganddrop",
+      "label": ".setupDragAndDrop()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "LoaderAnimation",
+      "file_type": "code",
+      "norm_label": ".setupdraganddrop()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L82"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_setuplisteners",
+      "label": ".setupListeners()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "LoaderAnimation",
+      "file_type": "code",
+      "norm_label": ".setuplisteners()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L30"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_showloading",
+      "label": ".showLoading()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "LoaderAnimation",
+      "file_type": "code",
+      "norm_label": ".showloading()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L144"
+    },
+    {
+      "id": "src_ui_controlshud_controlshud_updateprogress",
+      "label": ".updateProgress()",
+      "_callable": true,
+      "_origin": "ast",
+      "community": 9,
+      "community_name": "LoaderAnimation",
+      "file_type": "code",
+      "norm_label": ".updateprogress()",
+      "source_file": "src/ui/ControlsHUD.js",
+      "source_location": "L136"
     },
     {
       "id": "src_ui_loaderanimation_loaderanimation_constructor",
@@ -3354,26 +3354,59 @@
       "source_location": "L20"
     },
     {
-      "id": "src_ai_memoryservice",
-      "label": "MemoryService.js",
+      "id": "src_vrm_fbxavatarloader",
+      "label": "FBXAvatarLoader.js",
       "_origin": "ast",
       "community": 11,
-      "community_name": "bootstrap",
+      "community_name": "FBXAvatarLoader",
       "file_type": "code",
-      "norm_label": "memoryservice.js",
-      "source_file": "src/ai/MemoryService.js",
+      "norm_label": "fbxavatarloader.js",
+      "source_file": "src/vrm/FBXAvatarLoader.js",
       "source_location": "L1"
     },
     {
-      "id": "src_ai_memoryservice_excluded_name_words",
-      "label": "EXCLUDED_NAME_WORDS",
+      "id": "src_vrm_fbxavatarloader_bone_candidates",
+      "label": "BONE_CANDIDATES",
       "_origin": "ast",
       "community": 11,
-      "community_name": "bootstrap",
+      "community_name": "FBXAvatarLoader",
       "file_type": "code",
-      "norm_label": "excluded_name_words",
-      "source_file": "src/ai/MemoryService.js",
-      "source_location": "L5"
+      "norm_label": "bone_candidates",
+      "source_file": "src/vrm/FBXAvatarLoader.js",
+      "source_location": "L6"
+    },
+    {
+      "id": "src_vrm_fbxavatarloader_morph_target_presets",
+      "label": "MORPH_TARGET_PRESETS",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "FBXAvatarLoader",
+      "file_type": "code",
+      "norm_label": "morph_target_presets",
+      "source_file": "src/vrm/FBXAvatarLoader.js",
+      "source_location": "L71"
+    },
+    {
+      "id": "src_vrm_vrmmanager",
+      "label": "VRMManager.js",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "FBXAvatarLoader",
+      "file_type": "code",
+      "norm_label": "vrmmanager.js",
+      "source_file": "src/vrm/VRMManager.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "ref_pixiv_three_vrm",
+      "label": "@pixiv/three-vrm",
+      "_origin": "ast",
+      "community": 11,
+      "community_name": "FBXAvatarLoader",
+      "file_type": "concept",
+      "norm_label": "@pixiv/three-vrm",
+      "source_file": "package.json",
+      "source_location": "L14"
     },
     {
       "id": "readme",
@@ -3876,6 +3909,61 @@
       "source_location": "L5"
     },
     {
+      "id": "components_ui_demo",
+      "label": "components/ui/demo.tsx",
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "thinking-orbs",
+      "file_type": "code",
+      "norm_label": "components/ui/demo.tsx",
+      "source_file": "components/ui/demo.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "components_ui_thinking_orbs",
+      "label": "components/ui/thinking-orbs.tsx",
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "thinking-orbs",
+      "file_type": "code",
+      "norm_label": "components/ui/thinking-orbs.tsx",
+      "source_file": "components/ui/thinking-orbs.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_components_ui_demo",
+      "label": "src/components/ui/demo.tsx",
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "thinking-orbs",
+      "file_type": "code",
+      "norm_label": "src/components/ui/demo.tsx",
+      "source_file": "src/components/ui/demo.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_components_ui_thinking_orbs",
+      "label": "src/components/ui/thinking-orbs.tsx",
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "thinking-orbs",
+      "file_type": "code",
+      "norm_label": "src/components/ui/thinking-orbs.tsx",
+      "source_file": "src/components/ui/thinking-orbs.tsx",
+      "source_location": "L1"
+    },
+    {
+      "id": "ref_thinking_orbs",
+      "label": "thinking-orbs",
+      "_origin": "ast",
+      "community": 18,
+      "community_name": "thinking-orbs",
+      "file_type": "concept",
+      "norm_label": "thinking-orbs",
+      "source_file": "package.json",
+      "source_location": "L20"
+    },
+    {
       "id": "src_ai_personalityengine",
       "label": "PersonalityEngine.js",
       "_origin": "ast",
@@ -3931,6 +4019,28 @@
       "source_location": "L1"
     },
     {
+      "id": "src_vrm_animationengine",
+      "label": "AnimationEngine.js",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "main.js",
+      "file_type": "code",
+      "norm_label": "animationengine.js",
+      "source_file": "src/vrm/AnimationEngine.js",
+      "source_location": "L1"
+    },
+    {
+      "id": "src_vrm_animationengine_mixamo_vrm_rig_map",
+      "label": "MIXAMO_VRM_RIG_MAP",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "main.js",
+      "file_type": "code",
+      "norm_label": "mixamo_vrm_rig_map",
+      "source_file": "src/vrm/AnimationEngine.js",
+      "source_location": "L6"
+    },
+    {
       "id": "src_vrm_bodycollisionguard",
       "label": "BodyCollisionGuard.js",
       "_origin": "ast",
@@ -3972,7 +4082,7 @@
       "file_type": "code",
       "norm_label": "emotion_families",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L23"
+      "source_location": "L36"
     },
     {
       "id": "src_vrm_expressionmanager_expr_aliases",
@@ -3994,40 +4104,29 @@
       "file_type": "code",
       "norm_label": "mouth_affecting_emotions",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L32"
+      "source_location": "L45"
     },
     {
-      "id": "src_vrm_fbxavatarloader",
-      "label": "FBXAvatarLoader.js",
+      "id": "src_vrm_expressionmanager_raw_morph_aliases",
+      "label": "RAW_MORPH_ALIASES",
       "_origin": "ast",
       "community": 2,
       "community_name": "main.js",
       "file_type": "code",
-      "norm_label": "fbxavatarloader.js",
-      "source_file": "src/vrm/FBXAvatarLoader.js",
+      "norm_label": "raw_morph_aliases",
+      "source_file": "src/vrm/ExpressionManager.js",
+      "source_location": "L23"
+    },
+    {
+      "id": "src_vrm_inertiablender",
+      "label": "InertiaBlender.js",
+      "_origin": "ast",
+      "community": 2,
+      "community_name": "main.js",
+      "file_type": "code",
+      "norm_label": "inertiablender.js",
+      "source_file": "src/vrm/InertiaBlender.js",
       "source_location": "L1"
-    },
-    {
-      "id": "src_vrm_fbxavatarloader_bone_candidates",
-      "label": "BONE_CANDIDATES",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "code",
-      "norm_label": "bone_candidates",
-      "source_file": "src/vrm/FBXAvatarLoader.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_vrm_fbxavatarloader_morph_target_presets",
-      "label": "MORPH_TARGET_PRESETS",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "code",
-      "norm_label": "morph_target_presets",
-      "source_file": "src/vrm/FBXAvatarLoader.js",
-      "source_location": "L71"
     },
     {
       "id": "src_vrm_lifesimulator",
@@ -4061,28 +4160,6 @@
       "norm_label": "viseme_aliases",
       "source_file": "src/vrm/LipSyncEngine.js",
       "source_location": "L3"
-    },
-    {
-      "id": "src_vrm_vrmmanager",
-      "label": "VRMManager.js",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "code",
-      "norm_label": "vrmmanager.js",
-      "source_file": "src/vrm/VRMManager.js",
-      "source_location": "L1"
-    },
-    {
-      "id": "ref_pixiv_three_vrm",
-      "label": "@pixiv/three-vrm",
-      "_origin": "ast",
-      "community": 2,
-      "community_name": "main.js",
-      "file_type": "concept",
-      "norm_label": "@pixiv/three-vrm",
-      "source_file": "package.json",
-      "source_location": "L14"
     },
     {
       "id": "ref_three",
@@ -4184,37 +4261,26 @@
       "source_location": "L1"
     },
     {
-      "id": "src_vrm_animationengine",
-      "label": "AnimationEngine.js",
+      "id": "src_ai_memoryservice",
+      "label": "MemoryService.js",
       "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
+      "community": 5,
+      "community_name": "bootstrap",
       "file_type": "code",
-      "norm_label": "animationengine.js",
-      "source_file": "src/vrm/AnimationEngine.js",
+      "norm_label": "memoryservice.js",
+      "source_file": "src/ai/MemoryService.js",
       "source_location": "L1"
     },
     {
-      "id": "src_vrm_animationengine_mixamo_vrm_rig_map",
-      "label": "MIXAMO_VRM_RIG_MAP",
+      "id": "src_ai_memoryservice_excluded_name_words",
+      "label": "EXCLUDED_NAME_WORDS",
       "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
+      "community": 5,
+      "community_name": "bootstrap",
       "file_type": "code",
-      "norm_label": "mixamo_vrm_rig_map",
-      "source_file": "src/vrm/AnimationEngine.js",
-      "source_location": "L6"
-    },
-    {
-      "id": "src_vrm_inertiablender",
-      "label": "InertiaBlender.js",
-      "_origin": "ast",
-      "community": 7,
-      "community_name": "AnimationEngine",
-      "file_type": "code",
-      "norm_label": "inertiablender.js",
-      "source_file": "src/vrm/InertiaBlender.js",
-      "source_location": "L1"
+      "norm_label": "excluded_name_words",
+      "source_file": "src/ai/MemoryService.js",
+      "source_location": "L5"
     },
     {
       "id": "ref_kokoro_js",
@@ -4226,50 +4292,6 @@
       "norm_label": "kokoro-js",
       "source_file": "package.json",
       "source_location": "L17"
-    },
-    {
-      "id": "components_ui_demo",
-      "label": "components/ui/demo.tsx",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": "components/ui/demo.tsx",
-      "source_file": "components/ui/demo.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "components_ui_thinking_orbs",
-      "label": "components/ui/thinking-orbs.tsx",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": "components/ui/thinking-orbs.tsx",
-      "source_file": "components/ui/thinking-orbs.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_components_ui_demo",
-      "label": "src/components/ui/demo.tsx",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": "src/components/ui/demo.tsx",
-      "source_file": "src/components/ui/demo.tsx",
-      "source_location": "L1"
-    },
-    {
-      "id": "src_components_ui_thinking_orbs",
-      "label": "src/components/ui/thinking-orbs.tsx",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "code",
-      "norm_label": "src/components/ui/thinking-orbs.tsx",
-      "source_file": "src/components/ui/thinking-orbs.tsx",
-      "source_location": "L1"
     },
     {
       "id": "src_ui_controlshud",
@@ -4292,17 +4314,6 @@
       "norm_label": "loaderanimation.js",
       "source_file": "src/ui/LoaderAnimation.js",
       "source_location": "L1"
-    },
-    {
-      "id": "ref_thinking_orbs",
-      "label": "thinking-orbs",
-      "_origin": "ast",
-      "community": 9,
-      "community_name": "LoaderAnimation",
-      "file_type": "concept",
-      "norm_label": "thinking-orbs",
-      "source_file": "package.json",
-      "source_location": "L20"
     },
     {
       "id": "ref_path",
@@ -4329,8 +4340,8 @@
     {
       "id": "components_ui_thinking_orbs_thinkingorb",
       "label": "components_ui_thinking_orbs_thinkingorb",
-      "community": 9,
-      "community_name": "LoaderAnimation",
+      "community": 18,
+      "community_name": "thinking-orbs",
       "external": true,
       "file_type": "concept",
       "norm_label": "components_ui_thinking_orbs_thinkingorb",
@@ -5980,7 +5991,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L106",
+      "source_location": "L154",
       "weight": 1.0
     },
     {
@@ -5992,7 +6003,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L112",
+      "source_location": "L161",
       "weight": 1.0
     },
     {
@@ -6004,7 +6015,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L97",
+      "source_location": "L112",
       "weight": 1.0
     },
     {
@@ -6016,7 +6027,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L168",
+      "source_location": "L228",
       "weight": 1.0
     },
     {
@@ -6028,7 +6039,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L263",
+      "source_location": "L331",
       "weight": 1.0
     },
     {
@@ -6040,7 +6051,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L194",
+      "source_location": "L262",
       "weight": 1.0
     },
     {
@@ -6052,7 +6063,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L225",
+      "source_location": "L293",
       "weight": 1.0
     },
     {
@@ -6064,7 +6075,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L242",
+      "source_location": "L310",
       "weight": 1.0
     },
     {
@@ -6076,7 +6087,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L247",
+      "source_location": "L315",
       "weight": 1.0
     },
     {
@@ -6088,7 +6099,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L128",
+      "source_location": "L177",
       "weight": 1.0
     },
     {
@@ -6100,7 +6111,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L163",
+      "source_location": "L211",
       "weight": 1.0
     },
     {
@@ -6112,7 +6123,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L275",
+      "source_location": "L343",
       "weight": 1.0
     },
     {
@@ -6124,7 +6135,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L291",
+      "source_location": "L359",
       "weight": 1.0
     },
     {
@@ -6220,7 +6231,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L467",
+      "source_location": "L510",
       "weight": 1.0
     },
     {
@@ -6232,7 +6243,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L468",
+      "source_location": "L511",
       "weight": 1.0
     },
     {
@@ -6244,7 +6255,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L469",
+      "source_location": "L512",
       "weight": 1.0
     },
     {
@@ -6256,7 +6267,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L470",
+      "source_location": "L513",
       "weight": 1.0
     },
     {
@@ -6268,7 +6279,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L471",
+      "source_location": "L514",
       "weight": 1.0
     },
     {
@@ -6280,7 +6291,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L472",
+      "source_location": "L515",
       "weight": 1.0
     },
     {
@@ -6292,7 +6303,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L473",
+      "source_location": "L516",
       "weight": 1.0
     },
     {
@@ -6304,7 +6315,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L252",
+      "source_location": "L258",
       "weight": 1.0
     },
     {
@@ -6316,7 +6327,7 @@
       "confidence_score": 1.0,
       "context": "call",
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L575",
+      "source_location": "L618",
       "weight": 1.0
     },
     {
@@ -8711,7 +8722,7 @@
     },
     {
       "source": "src_vrm_expressionmanager",
-      "target": "src_vrm_expressionmanager_emotion_families",
+      "target": "src_vrm_expressionmanager_raw_morph_aliases",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
@@ -8733,13 +8744,24 @@
     },
     {
       "source": "src_vrm_expressionmanager",
+      "target": "src_vrm_expressionmanager_emotion_families",
+      "relation": "contains",
+      "_origin": "ast",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "src/vrm/ExpressionManager.js",
+      "source_location": "L36",
+      "weight": 1.0
+    },
+    {
+      "source": "src_vrm_expressionmanager",
       "target": "src_vrm_expressionmanager_mouth_affecting_emotions",
       "relation": "contains",
       "_origin": "ast",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L32",
+      "source_location": "L45",
       "weight": 1.0
     },
     {
@@ -8750,7 +8772,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L34",
+      "source_location": "L47",
       "weight": 1.0
     },
     {
@@ -10420,7 +10442,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L101",
+      "source_location": "L116",
       "weight": 1.0
     },
     {
@@ -10431,7 +10453,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L115",
+      "source_location": "L164",
       "weight": 1.0
     },
     {
@@ -10442,7 +10464,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L119",
+      "source_location": "L168",
       "weight": 1.0
     },
     {
@@ -10453,7 +10475,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L127",
+      "source_location": "L176",
       "weight": 1.0
     },
     {
@@ -10464,7 +10486,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L167",
+      "source_location": "L227",
       "weight": 1.0
     },
     {
@@ -10475,7 +10497,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L185",
+      "source_location": "L253",
       "weight": 1.0
     },
     {
@@ -10486,7 +10508,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L193",
+      "source_location": "L261",
       "weight": 1.0
     },
     {
@@ -10497,7 +10519,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L241",
+      "source_location": "L309",
       "weight": 1.0
     },
     {
@@ -10508,7 +10530,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L255",
+      "source_location": "L323",
       "weight": 1.0
     },
     {
@@ -10519,7 +10541,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L274",
+      "source_location": "L342",
       "weight": 1.0
     },
     {
@@ -10530,7 +10552,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/ExpressionManager.js",
-      "source_location": "L35",
+      "source_location": "L48",
       "weight": 1.0
     },
     {
@@ -10717,7 +10739,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L219",
+      "source_location": "L225",
       "weight": 1.0
     },
     {
@@ -10728,7 +10750,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L237",
+      "source_location": "L243",
       "weight": 1.0
     },
     {
@@ -10750,7 +10772,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L422",
+      "source_location": "L465",
       "weight": 1.0
     },
     {
@@ -10761,7 +10783,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L463",
+      "source_location": "L506",
       "weight": 1.0
     },
     {
@@ -10772,7 +10794,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L476",
+      "source_location": "L519",
       "weight": 1.0
     },
     {
@@ -10783,7 +10805,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L536",
+      "source_location": "L579",
       "weight": 1.0
     },
     {
@@ -10794,7 +10816,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L574",
+      "source_location": "L617",
       "weight": 1.0
     },
     {
@@ -10805,7 +10827,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L611",
+      "source_location": "L654",
       "weight": 1.0
     },
     {
@@ -10816,7 +10838,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "src/vrm/LifeSimulator.js",
-      "source_location": "L627",
+      "source_location": "L670",
       "weight": 1.0
     },
     {
@@ -11366,5 +11388,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "2cde2da62f315e93364e7d8cf1ba07dcf444005e"
+  "built_at_commit": "5cddd79e866bd6e32f66e5325f12237af00eb0ea"
 }

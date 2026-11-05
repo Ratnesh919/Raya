@@ -212,6 +212,12 @@ export class LifeSimulator {
         exprMgr.setEmotion('love', 1.0);
       } else if (cleanName === 'think' || cleanName === 'curiosity') {
         exprMgr.setEmotion('think', 1.0);
+      } else if (cleanName === 'happy' || cleanName === 'joy' || cleanName === 'amusement' || cleanName === 'optimism') {
+        exprMgr.setEmotion('happy', 1.0);
+      } else if (cleanName === 'wink') {
+        exprMgr.setEmotion('wink', 1.0);
+      } else if (cleanName === 'neutral') {
+        exprMgr.setEmotion('neutral', 1.0);
       }
     }
   }
@@ -404,6 +410,43 @@ export class LifeSimulator {
       this.behaviorTarget.gazeOffsetY = 0.38 * ease;
       this.behaviorTarget.gazeOffsetX = -0.28 * ease;
       this.behaviorTarget.spinePitch = -0.03 * ease;
+    } else if (name === 'happy' || name === 'joy' || name === 'amusement' || name === 'optimism') {
+      // 5. HAPPY / JOY SEQUENCE:
+      // Cheerful buoyant head lift, friendly eye contact, light spirited chest expansion
+      let p = Math.min(1.0, t / 0.6);
+      if (t > dur - 0.8) {
+        p = Math.max(0, (dur - t) / 0.8);
+      }
+      const ease = p * p * (3 - 2 * p);
+
+      const nodBounce = Math.sin(t * Math.PI * 2.2) * 0.04 * ease;
+      this.behaviorTarget.headPitch = 0.04 * ease + nodBounce;
+      this.behaviorTarget.headRoll = 0.08 * ease;
+      this.behaviorTarget.headYaw = 0.05 * ease;
+
+      this.behaviorTarget.chestPitch = 0.05 * ease;
+      this.behaviorTarget.breatheFreqMult = 1.0 + (0.20 * ease);
+      this.behaviorTarget.breatheAmpMult = 1.0 + (0.35 * ease);
+
+      this.behaviorTarget.gazeOffsetX = 0;
+      this.behaviorTarget.gazeOffsetY = 0.05 * ease;
+    } else if (name === 'wink') {
+      // 6. WINK SEQUENCE:
+      // Playful lateral head cock, charming micro-nod, sparkling eye contact
+      let p = Math.min(1.0, t / 0.5);
+      if (t > dur - 0.7) {
+        p = Math.max(0, (dur - t) / 0.7);
+      }
+      const ease = p * p * (3 - 2 * p);
+
+      this.behaviorTarget.headRoll = -0.14 * ease; // Playful lateral cock
+      this.behaviorTarget.neckRoll = -0.06 * ease;
+      this.behaviorTarget.headYaw = 0.06 * ease;
+      this.behaviorTarget.headPitch = 0.03 * ease;
+
+      this.behaviorTarget.chestPitch = 0.03 * ease;
+      this.behaviorTarget.gazeOffsetX = 0;
+      this.behaviorTarget.gazeOffsetY = 0;
     }
 
     const blendSpeed = THREE.MathUtils.clamp(delta * 6.0, 0, 1);

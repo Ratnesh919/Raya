@@ -19,6 +19,19 @@ const EXPR_ALIASES = {
   ou: ['ou', 'U', 'u', 'OU']
 };
 
+// Universal raw morph target mappings across anime models (Changli, Yinlin, Yangyang, Camellya, Iuno, etc.)
+const RAW_MORPH_ALIASES = {
+  happy: ['にこり', '笑い', '笑い目', 'にこり２', 'にこりL', 'にこりR', 'にこり左', 'にこり右', 'smile', 'happy', 'joy'],
+  wink: ['ウィンク', 'ウィンク右', 'ウィンク２', 'wink', 'wink_l', 'wink_r'],
+  blush: ['照れ', 'FaceRed', '照れ2', 'はぁと', 'はぁと2', 'blush'],
+  shy: ['照れ', 'FaceRed', '照れ2', 'blush'],
+  sad: ['困る', '困る2', '悲しい目', '困るL', '困るR', '困る左', '困る右', 'sad', 'sorrow'],
+  concern: ['困る', '困る2', '悲しい目', '困る左', '困る右', 'sad'],
+  angry: ['怒り', '怒りL', '怒りR', '怒り左', '怒り右', 'angry'],
+  surprised: ['びっくり', 'びっくり左', 'びっくり右', '惊', '！', 'surprised'],
+  think: ['怪訝左', '怪訝右', 'じと目', 'じと目2', '……', '？', 'confused']
+};
+
 // Emotion families inspired by open-annie faces.js
 export const EMOTION_FAMILIES = {
   warm: ['happy', 'joy', 'relaxed', 'caring', 'love', 'gratitude', 'optimism', 'amusement'],
@@ -59,6 +72,8 @@ export class ExpressionManager {
     this.flutterTime = 0;
 
     this.lifeSimulator = null;
+    this.morphMeshes = [];
+    this.boundRawMorphs = new Map(); // key -> Array of { mesh, index, name }
     this.currentValues = new Map();
     this.targetValues = new Map();
     this.resetTimer = null;
@@ -102,12 +117,46 @@ export class ExpressionManager {
     this.vrm = vrm;
     this.currentValues.clear();
     this.targetValues.clear();
+    this.boundRawMorphs.clear();
+    this.morphMeshes = [];
+
+    // 1. Traverse scene to index all character SkinnedMeshes with morph targets
+    if (vrm?.scene) {
+      vrm.scene.traverse((node) => {
+        if (node.isMesh && node.morphTargetDictionary && node.morphTargetInfluences) {
+          this.morphMeshes.push(node);
+        }
+      });
+    }
+
+    // 2. Discover and bind raw Japanese/MMD morph targets across all anime models (Changli, Yinlin, Yangyang, Camellya, Iuno)
+    for (const [emotionKey, candidates] of Object.entries(RAW_MORPH_ALIASES)) {
+      const matched = [];
+      for (const mesh of this.morphMeshes) {
+        const dict = mesh.morphTargetDictionary;
+        for (const candidate of candidates) {
+          for (const [mName, mIdx] of Object.entries(dict)) {
+            const cleanMName = mName.toLowerCase();
+            const cleanCand = candidate.toLowerCase();
+            if (cleanMName.includes(cleanCand) || mName.endsWith(candidate) || (mName.includes('.') && mName.split('.')[1] === candidate)) {
+              if (!matched.some((item) => item.mesh === mesh && item.index === mIdx)) {
+                matched.push({ mesh, index: mIdx, name: mName });
+              }
+            }
+          }
+        }
+      }
+      if (matched.length > 0) {
+        this.boundRawMorphs.set(emotionKey, matched);
+      }
+    }
 
     const manager = this.getManager();
     if (manager?.expressions) {
       const names = manager.expressions.map((e) => `${e.expressionName || e.name} (${e.binds ? e.binds.length : 'unknown'} binds)`);
       console.log('[ExpressionManager] Registered expressions on avatar:', names);
     }
+    console.log('[ExpressionManager] Cached raw morphs for emotions:', Array.from(this.boundRawMorphs.keys()));
 
     this.setEmotion('neutral');
   }
@@ -126,58 +175,77 @@ export class ExpressionManager {
 
   setExpressionValue(name, value) {
     const manager = this.getManager();
-    if (!manager) return;
-
     const targets = EXPR_ALIASES[name] || [name];
     let applied = false;
 
-    for (const target of targets) {
-      if (typeof manager.getExpression === 'function') {
-        const expr = manager.getExpression(target);
-        if (expr) {
-          // If this expression exists but has zero binds, skip to next candidate (e.g. Joy with 0 binds -> Fun/relaxed)
-          if (expr.binds && expr.binds.length === 0) {
-            continue;
+    if (manager) {
+      for (const target of targets) {
+        if (typeof manager.getExpression === 'function') {
+          const expr = manager.getExpression(target);
+          if (expr) {
+            // If this expression exists but has zero binds, skip to next candidate (e.g. Joy with 0 binds -> Fun/relaxed)
+            if (expr.binds && expr.binds.length === 0) {
+              continue;
+            }
+            manager.setValue(target, value);
+            applied = true;
+            break;
           }
-          manager.setValue(target, value);
-          applied = true;
-          break;
+        } else {
+          try {
+            manager.setValue(target, value);
+            applied = true;
+            break;
+          } catch (e) {}
         }
-      } else {
+      }
+
+      // Fallback: try direct name if not already matched
+      if (!applied) {
         try {
-          manager.setValue(target, value);
-          applied = true;
-          break;
+          manager.setValue(name, value);
         } catch (e) {}
+      }
+
+      if (typeof manager.update === 'function') {
+        manager.update();
       }
     }
 
-    // Fallback: try direct name if not already matched
-    if (!applied) {
-      try {
-        manager.setValue(name, value);
-      } catch (e) {}
-    }
-
-    if (typeof manager.update === 'function') {
-      manager.update();
+    // Direct SkinnedMesh morph target integration (for Changli, Yinlin, Yangyang, Camellya, Iuno, and custom models)
+    const rawMatches = this.boundRawMorphs.get(name) || this.boundRawMorphs.get(name.toLowerCase());
+    if (rawMatches && rawMatches.length > 0) {
+      for (let i = 0; i < rawMatches.length; i++) {
+        const item = rawMatches[i];
+        if (item.mesh?.morphTargetInfluences) {
+          item.mesh.morphTargetInfluences[item.index] = value;
+        }
+      }
     }
   }
 
   getExpressionValue(name) {
     const manager = this.getManager();
-    if (!manager) return 0;
+    if (manager) {
+      const targets = EXPR_ALIASES[name] || [name];
+      for (const target of targets) {
+        try {
+          if (typeof manager.getExpression === 'function') {
+            const expr = manager.getExpression(target);
+            if (!expr || (expr.binds && expr.binds.length === 0)) continue;
+          }
+          const val = manager.getValue(target);
+          if (typeof val === 'number') return val;
+        } catch (e) {}
+      }
+    }
 
-    const targets = EXPR_ALIASES[name] || [name];
-    for (const target of targets) {
-      try {
-        if (typeof manager.getExpression === 'function') {
-          const expr = manager.getExpression(target);
-          if (!expr || (expr.binds && expr.binds.length === 0)) continue;
-        }
-        const val = manager.getValue(target);
-        if (typeof val === 'number') return val;
-      } catch (e) {}
+    const rawMatches = this.boundRawMorphs.get(name) || this.boundRawMorphs.get(name.toLowerCase());
+    if (rawMatches && rawMatches.length > 0) {
+      const item = rawMatches[0];
+      if (item.mesh?.morphTargetInfluences) {
+        return item.mesh.morphTargetInfluences[item.index] || 0;
+      }
     }
     return 0;
   }
@@ -230,7 +298,7 @@ export class ExpressionManager {
 
     if (syncBehavior && this.lifeSimulator && typeof this.lifeSimulator.triggerBehavior === 'function') {
       const cleanName = (name || '').toLowerCase().trim();
-      if (['shy', 'concern', 'caring', 'empathy', 'console', 'love', 'admiration', 'think', 'curiosity'].includes(cleanName)) {
+      if (['shy', 'concern', 'caring', 'empathy', 'console', 'love', 'admiration', 'think', 'curiosity', 'happy', 'joy', 'wink', 'amusement'].includes(cleanName)) {
         this.lifeSimulator.triggerBehavior(cleanName, 5.0);
       } else if (cleanName === 'neutral') {
         this.lifeSimulator.clearBehavior();
